@@ -55,23 +55,21 @@ void publishWidgets() {
     delete writer;
 }
 
-bool publishEntry(LogMetadata* meta, LogEntry entry) {
-    String buf = "{\"status\":";
-    buf += entry.asChartEntry();
-    buf += "}";
-
-    Writer* writer = MqttClient::getWriter(meta->getMqttTopic().c_str());
-    writer->begin(buf.length());
-    writer->write(buf.c_str());
-    writer->end();
-    delete writer;
-    return true;
-}
-
 void publishCharts() {
     Logger::forEach([](LoggerTask* task) {
-        task->readEntries([](LogMetadata* meta, LogEntry entry) {
-            publishEntry(meta, entry);
+        task->readEntries([](LogMetadata* meta, uint8_t* data) {
+            auto entry = LogEntry(data);
+            auto topic = meta->getMqttTopic();
+
+            String buf = "{\"status\":[";
+            buf += entry.asChartEntry();
+            buf += "]}";
+
+            Writer* writer = MqttClient::getWriter(topic.c_str());
+            writer->begin(buf.length());
+            writer->write(buf.c_str());
+            writer->end();
+            delete writer;
             return true;
         });
         return true;
@@ -81,7 +79,7 @@ void publishCharts() {
 void config_init() {
     load_config();
 
-    runtime.load();
+    runtime.reload();
     runtime.write("chipID", getChipId());
     runtime.write("firmware_version", FIRMWARE_VERSION);
     runtime.write("mqtt_prefix", config.mqtt()->getPrefix() + "/" + getChipId());
