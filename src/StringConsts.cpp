@@ -8,6 +8,7 @@ const char* DEVICE_RUNTIME_FILE = "runtime.json";
 const char* DEVICE_CONFIG_FILE = "config.json";
 const char* DEVICE_COMMAND_FILE = "dev_conf.txt";
 const char* DEVICE_SCENARIO_FILE = "dev_scen.txt";
+const char* DEVICE_BOOT_FILE = "boot.txt";
 
 const char* TAG_INIT = "init";
 const char* TAG_OPTIONS = "options";

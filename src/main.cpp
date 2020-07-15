@@ -1,6 +1,7 @@
 #include "Global.h"
 
 #include "Consts.h"
+#include "StringConsts.h"
 #include "Scenario.h"
 #include "NetworkManager.h"
 #include "Messages.h"

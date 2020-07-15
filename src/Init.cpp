@@ -72,11 +72,23 @@ void init_mod() {
     ts.add(
         SYS_TIMINGS, ONE_MINUTE_ms, [&](void*) { print_sys_timins(); }, nullptr, false);
 
-    device_init();
-
     if (NetworkManager::isNetworkActive()) {
         perform_updates_check();
     };
+
+    if (!fileExists(DEVICE_BOOT_FILE)) {
+        writeFile(DEVICE_BOOT_FILE, " ");
+        device_init();
+    } else {
+        String name = String(DEVICE_COMMAND_FILE) + ".bak";
+        copyFile(DEVICE_COMMAND_FILE, name);
+        writeFile(DEVICE_COMMAND_FILE, name);
+
+        name = String(DEVICE_SCENARIO_FILE) + ".bak";
+        copyFile(DEVICE_SCENARIO_FILE, name);
+        writeFile(DEVICE_SCENARIO_FILE, name);
+    }
+    removeFile(DEVICE_BOOT_FILE);
 }
 
 void telemetry_init() {
