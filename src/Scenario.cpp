@@ -75,6 +75,10 @@ bool ScenarioItem::isEnabled() {
 
 bool ScenarioItem::parseCondition(const String& str) {
     size_t s1 = str.indexOf(" ");
+    if (s1 < 0) {
+        pm.error("wrong line");
+        return false;
+    }
     size_t s2 = str.indexOf(" ", s1 + 1);
     _obj = str.substring(0, s1);
     if (_obj.isEmpty()) {
@@ -149,11 +153,21 @@ void reinit() {
     _ready = false;
 }
 
+bool extractBlock(const String buf, size_t& startIndex, String& block) {
+    int endIndex = buf.indexOf("end", startIndex);
+    if (endIndex < 0) {
+        return false;
+    }
+    block = buf.substring(startIndex, endIndex);
+    startIndex = endIndex + 4;
+    return true;
+}
+
 const String removeComments(const String buf) {
     String res = "";
     size_t startIndex = 0;
     while (startIndex < buf.length() - 1) {
-        size_t endIndex = buf.indexOf("\n", startIndex);
+        int endIndex = buf.indexOf("\n", startIndex);
         String line = buf.substring(startIndex, endIndex);
         startIndex = endIndex + 1;
         if (line.startsWith("//") || line.isEmpty()) {
@@ -177,17 +191,21 @@ void init() {
 
     buf = removeComments(buf);
 
-    while (!buf.isEmpty()) {
-        String block = selectToMarker(buf, "end");
-        if (block.isEmpty()) {
-            continue;
+    size_t pos = 0;
+    while (pos < buf.length() - 1) {
+        String item;
+        if (!extractBlock(buf, pos, item)) {
+            break;
         }
-        _items.push_back(new ScenarioItem(block));
-        buf = deleteBeforeDelimiter(buf, "end\n");
+        if (!item.isEmpty()) {
+            pm.info(item);
+            _items.push_back(new ScenarioItem(item));
+        }
     }
+
     pm.info("items: " + String(_items.size(), DEC));
     _ready = true;
-}  // namespace Scenario
+}
 
 void loop() {
     if (!_ready) {
