@@ -51,6 +51,18 @@ void uptime_task() {
         UPTIME, 5 * ONE_SECOND_ms, [&](void*) { runtime.write("uptime", now.getUptime()); }, nullptr, true);
 }
 
+void onStartCriticalBootSection() {
+    writeFile(DEVICE_BOOT_FILE, " ");
+}
+
+void onEndCriticalBootSection() {
+    removeFile(DEVICE_BOOT_FILE);
+}
+
+bool hasLastBootSucess() {
+    return !fileExists(DEVICE_BOOT_FILE);
+}
+
 void init_mod() {
     MqttClient::init();
 
@@ -76,19 +88,14 @@ void init_mod() {
         perform_updates_check();
     };
 
-    if (!fileExists(DEVICE_BOOT_FILE)) {
-        writeFile(DEVICE_BOOT_FILE, " ");
+    if (hasLastBootSucess()) {
+        onStartCriticalBootSection();
         device_init();
     } else {
-        String name = String(DEVICE_COMMAND_FILE) + ".bak";
-        copyFile(DEVICE_COMMAND_FILE, name);
-        writeFile(DEVICE_COMMAND_FILE, name);
-
-        name = String(DEVICE_SCENARIO_FILE) + ".bak";
-        copyFile(DEVICE_SCENARIO_FILE, name);
-        writeFile(DEVICE_SCENARIO_FILE, name);
+        replaceFileContent(DEVICE_COMMAND_FILE, "");
+        replaceFileContent(DEVICE_SCENARIO_FILE, "");
     }
-    removeFile(DEVICE_BOOT_FILE);
+    onEndCriticalBootSection();
 }
 
 void telemetry_init() {

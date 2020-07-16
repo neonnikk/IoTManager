@@ -62,3 +62,5 @@ bool copyFile(const String src, const String dst, bool overwrite = true);
 const String getFSSizeInfo();
 
 const String getConfigFile(uint8_t preset, ConfigType_t type);
+
+void replaceFileContent(const char* filename, const char* newcontent, bool backup = true);

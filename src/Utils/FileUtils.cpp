@@ -163,3 +163,11 @@ const String getConfigFile(uint8_t preset, ConfigType_t type) {
     sprintf(buf, "/conf/%s%03d.txt", (type == CT_CONFIG) ? "c" : "s", preset);
     return String(buf);
 }
+
+void replaceFileContent(const char* filename, const char* content, bool backup) {
+    String backup_name = String(filename) + ".bak";
+    if (backup) {
+        copyFile(filename, backup_name);
+    }
+    writeFile(filename, content);
+}
