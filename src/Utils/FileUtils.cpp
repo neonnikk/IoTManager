@@ -165,9 +165,8 @@ const String getConfigFile(uint8_t preset, ConfigType_t type) {
 }
 
 void replaceFileContent(const char* filename, const char* content, bool backup) {
-    String backup_name = String(filename) + ".bak";
     if (backup) {
-        copyFile(filename, backup_name);
+        copyFile(filename, String(filename) + ".bak");
     }
     writeFile(filename, content);
 }
