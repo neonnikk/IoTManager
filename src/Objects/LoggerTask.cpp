@@ -56,16 +56,16 @@ void LoggerTask::update() {
 
     if ((millis_since(_lastUpdated) >= _interval) || !_lastUpdated) {
         unsigned long epoch = now.getEpoch();
-        String name = _meta.getName();
+        String key = _meta.getName();
         String value;
         ValueType_t valueType;
-        if (liveData.read(name, value, valueType)) {
+        if (liveData.read(key, value, valueType)) {
             if (now.hasSynced()) {
                 LogEntry entry = LogEntry(epoch, value.toFloat());
                 _buffer.push(entry);
             }
-            MqttClient::publishStatus(name, value, valueType);
-            pm.info(name + ": " + value + ", buf: " + String(_buffer.size(), DEC) + "/" + String(_limit, DEC));
+            MqttClient::publishStatus(key, value, valueType);
+            pm.info(key + ": " + value + ", buf: " + String(_buffer.size(), DEC) + "/" + String(_limit, DEC));
         }
         _lastUpdated = millis();
     }

@@ -1,29 +1,38 @@
 #include "NetworkManager.h"
 
-#include "Global.h"
-
+#include "HttpServer.h"
+#include "PrintMessage.h"
 #include "Utils/TimeUtils.h"
 
 namespace NetworkManager {
 
 static const char* MODULE = "Network";
 
-enum ConnectionStatus_t {
-    CONNECTION_ERROR,
-    CONNECTION_OK,
+enum class Connection : bool {
+    ERROR,
+    OK,
 };
 
-int wifi_error = 0;
-int mqtt_error = 0;
-bool _lastStatus = false;
+Connection _lastStatus = Connection::ERROR;
+bool _connected = false;
+bool _intitialized = false;
+
+static WiFiEventHandler staGotIpEvent, staDisconnectedEvent;
 
 void init() {
-    pm.info("init");
-#ifdef ESP8266
     WiFi.hostname(config.network()->getHostname());
-#else
-#endif
     WiFiMode_t mode = (WiFiMode_t)config.network()->getMode();
+
+    staGotIpEvent = WiFi.onStationModeGotIP([](WiFiEventStationModeGotIP event) {
+        pm.info("Connected: " + String(WiFi.status() == WL_CONNECTED ? "yes" : "no"));
+        pm.info("http://" + event.ip.toString());
+        _connected = true;
+    });
+    staDisconnectedEvent = WiFi.onStationModeDisconnected([](WiFiEventStationModeDisconnected event) {
+        pm.error("Disconnected: " + event.ssid);
+        pm.error("Reason: " + String(event.reason, DEC));
+        _connected = false;
+    });
 
     switch (mode) {
         case WIFI_AP:
@@ -38,7 +47,7 @@ void init() {
 }
 
 boolean isNetworkActive() {
-    return WiFi.status() == WL_CONNECTED;
+    return _connected;
 }
 
 IPAddress getHostIP() {
@@ -48,20 +57,27 @@ IPAddress getHostIP() {
 void check_network_status() {
     LedStatus_t _led = LED_OFF;
     if (isNetworkActive()) {
-        if (_lastStatus == CONNECTION_ERROR) {
-            _lastStatus = CONNECTION_OK;
-        }
+        _lastStatus = Connection::OK;
         if (config.mqtt()->isEnabled()) {
             if (!MqttClient::isConnected()) {
                 _led = LED_SLOW;
+                MqttClient::connect();
             }
         }
+        if (!_intitialized) {
+            pm.info("HttpServer");
+            HttpServer::init();
+            pm.info("WebAdmin");
+            web_init();
+            perform_updates_check();
+            _intitialized = true;
+        }
     } else {
-        if (_lastStatus == CONNECTION_OK) {
+        if (_lastStatus == Connection::OK) {
             pm.error("connection lost");
             _led = LED_FAST;
-            _lastStatus = CONNECTION_ERROR;
         }
+        _lastStatus = Connection::ERROR;
     }
     setLedStatus(_led);
 }
@@ -83,43 +99,35 @@ void startSTAMode() {
             pm.error("on begin");
         }
     }
+    WiFi.setAutoReconnect(true);
+    // int connRes;
+    // do {
+    //     connRes = WiFi.waitForConnectResult();
+    //     switch (connRes) {
+    //         case -1: {
+    //             pm.error("on timeout");
+    //         } break;
+    //         case WL_NO_SSID_AVAIL: {
+    //             pm.error("no network");
+    //             keepConnecting = false;
+    //         } break;
+    //         case WL_CONNECTED: {
+    //             keepConnecting = false;
+    //         } break;
+    //         case WL_CONNECT_FAILED: {
+    //             pm.error("check credentials");
+    //             keepConnecting = false;
+    //         } break;
+    //         default:
+    //             break;
+    //     }
 
-    bool keepConnecting = true;
-    uint8_t tries = 20;
-    int connRes;
-    do {
-        connRes = WiFi.waitForConnectResult();
-        switch (connRes) {
-            case -1: {
-                pm.error("on timeout");
-            } break;
-            case WL_NO_SSID_AVAIL: {
-                pm.error("no network");
-                keepConnecting = false;
-            } break;
-            case WL_CONNECTED: {
-                String hostIpStr = WiFi.localIP().toString();
-                pm.info("http://" + hostIpStr);
-                runtime.write("ip", hostIpStr);
-                keepConnecting = false;
-            } break;
-            case WL_CONNECT_FAILED: {
-                pm.error("check credentials");
-                keepConnecting = false;
-            } break;
-            default:
-                break;
-        }
-    } while (keepConnecting && tries--);
-
-    if (isNetworkActive()) {
-        ts.add(
-            NETWORK_CONNECTION, ONE_SECOND_ms, [&](void*) {
-                check_network_status();
-            },
-            nullptr, false);
-    }
-}
+    ts.add(
+        NETWORK_CONNECTION, ONE_SECOND_ms, [&](void*) {
+            check_network_status();
+        },
+        nullptr, false);
+};
 
 bool startAPMode() {
     setLedStatus(LED_ON);
@@ -144,7 +152,7 @@ bool startAPMode() {
         },
         nullptr, true);
     return true;
-}
+};
 
 void startScaninng() {
     WiFi.scanNetworksAsync([](int n) {
@@ -164,6 +172,5 @@ void startScaninng() {
         if (res) startSTAMode();
     },
                            true);
-}
-
+};
 }  // namespace NetworkManager

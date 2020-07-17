@@ -66,8 +66,6 @@ bool hasLastBootSucess() {
 void init_mod() {
     MqttClient::init();
 
-    Logger::init();
-
     cmd_init();
 
     sensors_task();

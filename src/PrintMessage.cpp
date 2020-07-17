@@ -5,7 +5,8 @@
 #include "Utils\StringUtils.h"
 #include "Utils\TimeUtils.h"
 
-const char* PrintMessage::error_levels[] = {"I", "W", "E", "?"};
+static const char* error_levels[] = {"I", "W", "E", "?"};
+
 bool PrintMessage::mqttEnabled = false;
 bool PrintMessage::fileEnabled = false;
 bool PrintMessage::printEnabled = true;
@@ -41,8 +42,11 @@ void PrintMessage::print(const char* time, const char* level, const char* module
     if (mqttEnabled) {
         snprintf(buf, 256, "%s %s", module, str);
         auto writer = MqttClient::getWriter("syslog");
-        writer->print(buf);
-        delete writer;
+        if (writer->begin()) {
+            writer->write(buf, strlen(buf));
+            writer->end();
+        }
+        delete writer; 
     }
 
     if (fileEnabled) {
@@ -59,16 +63,16 @@ void PrintMessage::print(const char* time, const char* level, const char* module
 
 PrintMessage::PrintMessage(const char* module) : _module{module} {};
 
-void PrintMessage::error(const String str) {
-    print(EL_ERROR, str);
+void PrintMessage::error(const String& str) {
+    print(EL_ERROR, str.c_str());
 }
 
-void PrintMessage::info(const String str) {
-    print(EL_INFO, str);
+void PrintMessage::info(const String& str) {
+    print(EL_INFO, str.c_str());
 }
 
-void PrintMessage::print(ErrorLevel_t level, const String& str) {
-    print(getErrorLevelStr(level), str.c_str());
+void PrintMessage::print(ErrorLevel_t level, const char* str) {
+    print(getErrorLevelStr(level), str);
 }
 
 void PrintMessage::print(const char* level, const char* str) {

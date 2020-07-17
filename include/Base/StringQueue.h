@@ -3,6 +3,7 @@
 #include <Arduino.h>
 
 #include <list>
+
 class StringQueue {
    private:
     std::list<String> _pool;
@@ -13,12 +14,12 @@ class StringQueue {
     }
 
     bool pop(String& item) {
-        if (_pool.empty()) {
-            return false;
-        };
-        item = _pool.front();
-        _pool.pop_front();
-        return true;
+        bool res = available();
+        if (res) {
+            item = _pool.front();
+            _pool.pop_front();
+        }
+        return res;
     }
 
     size_t available() {

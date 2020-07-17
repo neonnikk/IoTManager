@@ -233,16 +233,6 @@ void cmd_timeSet() {
     MqttClient::publishStatus(objName, value, VT_STRING);
 }
 
-void cmd_text() {
-    String name = sCmd.next();
-    String descr = sCmd.next();
-    String page = sCmd.next();
-    String order = sCmd.next();
-
-    String objName = "text" + name;
-    Widgets::createWidget(descr, page, order, "anydata", objName);
-}
-
 void cmd_stepper() {
     String name = sCmd.next();
     String pin_step = sCmd.next();
@@ -330,7 +320,8 @@ void cmd_servo() {
     // options.writeInt("s_max_deg" + name, max_deg);
     // liveData.writeInt("servo" + name, value);
 
-    Widgets::createWidget(descr, page, order, "range", "servo" + name, "min", String(min_value), "max", String(max_value), "k", "1");
+    Widgets::createWidget(descr, page, order, "range", "servo" + name);
+    // , "min", String(min_value), "max", String(max_value), "k", "1");
 }
 
 void cmd_servoSet() {
@@ -650,12 +641,12 @@ void cmd_bme280H() {
 void cmd_bme280A() {
     String name = sCmd.next();
     String address = sCmd.next();
-    String widget_name = sCmd.next();
-    String page_name = sCmd.next();
-    String type = sCmd.next();
+    String descr = sCmd.next();
+    String page = sCmd.next();
+    String templateMame = sCmd.next();
     String order = sCmd.next();
 
-    Widgets::createWidget(widget_name, page_name, order, type, name);
+    Widgets::createWidget(descr, page, order, templateMame, name);
 }
 
 void cmd_firmwareUpdate() {
@@ -671,13 +662,6 @@ void cmd_firmwareVersion() {
     Widgets::createWidget(widget, page, order, "anydata", "firmver");
 }
 
-void fileExecute(const String filename) {
-    String buf;
-    if (readFile(filename.c_str(), buf)) {
-        stringExecute(buf);
-    }
-}
-
 void stringExecute(String str) {
     str += "\r\n";
     str.replace("\r\n", "\n");
@@ -685,11 +669,16 @@ void stringExecute(String str) {
     while (!str.isEmpty()) {
         String buf = selectToMarker(str, "\n");
         // Comments
-        if (!buf.startsWith("//")) {
-            sCmd.readStr(buf);
+        if (!buf.startsWith("//") && !buf.isEmpty()) {
+            addOrder(buf);
         }
         str = deleteBeforeDelimiter(str, "\n");
     }
+}
+
+void ExecuteCommand(const String &str) {
+    pm.info("Execute: " + str);
+    sCmd.readStr(str);
 }
 
 void addOrder(const String &str) {
@@ -698,9 +687,9 @@ void addOrder(const String &str) {
 
 void loop_cmd() {
     if (_orders.available()) {
-        String buf;
-        _orders.pop(buf);
-        pm.info("execute: " + buf);
-        sCmd.readStr(buf);
+        String cmd;
+        _orders.pop(cmd);
+        pm.info("execute: " + cmd);
+        sCmd.readStr(cmd);
     }
 }

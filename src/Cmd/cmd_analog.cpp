@@ -21,8 +21,5 @@ void cmd_analog() {
     AnalogSensor *item = (AnalogSensor *)Sensors::add(SENSOR_ADC, name, pin);
     item->setMap(in_min.toInt(), in_max.toInt(), out_min.toInt(), out_max.toInt());
 
-    BaseSensor* a;
-
-
     Widgets::createWidget(descr, page, order, templat, name);
 }

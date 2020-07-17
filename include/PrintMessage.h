@@ -14,8 +14,8 @@ class PrintMessage {
    public:
     PrintMessage(const char* module);
 
-    void error(const String str);
-    void info(const String str);
+    void error(const String& str);
+    void info(const String& str);
 
    public:
     static void setOutput(Print* out);
@@ -24,7 +24,7 @@ class PrintMessage {
     static void enableLog(bool value);
 
    private:
-    void print(ErrorLevel_t level, const String& str);
+    void print(ErrorLevel_t level, const char*);
     void print(const char* level, const char* str);
     void print(const char* module, const char* level, const char* str);
 
@@ -38,7 +38,6 @@ class PrintMessage {
     const char* _module;
 
    private:
-    static const char* error_levels[];
     static bool mqttEnabled;
     static bool printEnabled;
     static bool fileEnabled;

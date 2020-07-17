@@ -6,6 +6,7 @@
 #include "Utils/FileUtils.h"
 #include "Utils/WebUtils.h"
 #include "FSEditor.h"
+#include "Cmd.h"
 
 namespace HttpServer {
 
@@ -156,7 +157,7 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 
 void initMDNS() {
     MDNS.addService("http", "tcp", 80);
-    // TODO Add Adduino OTA
+    MDNS.enableArduino(8266);
 }
 
 void initWS() {

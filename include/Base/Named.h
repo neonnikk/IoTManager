@@ -9,7 +9,7 @@ class Named {
     }
 
     ~Named() {
-        delete _name;
+        free(_name);
     }
 
     const char* getName() const {

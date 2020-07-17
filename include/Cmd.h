@@ -12,18 +12,29 @@ extern const String getObjectName(const char *type, const char *id);
 void addOrder(const String &str);
 void stringExecute(String cmdStr);
 
+void cmd_analog();
+
+void cmd_oneWire();
+
+void cmd_dallas();
+
 void cmd_pinSet();
 void cmd_pinChange();
-void cmd_pwm();
+
 void cmd_switch();
+
+void cmd_pwm();
 void cmd_pwmSet();
+
 void cmd_stepper();
 void cmd_stepperSet();
+
 void cmd_servo();
 void cmd_servoSet();
 
 void cmd_text();
 void cmd_textSet();
+
 void cmd_mqtt();
 void cmd_http();
 void cmd_push();
@@ -31,20 +42,17 @@ void cmd_push();
 void cmd_button();
 void cmd_buttonSet();
 void cmd_buttonChange();
-void cmd_switch();
 
 void cmd_logging();
-void cmd_inputDigit();
-void cmd_digitSet();
+
 void cmd_timeSet();
 void cmd_inputTime();
+void cmd_inputDigit();
+void cmd_digitSet();
 
 void cmd_firmwareUpdate();
 void cmd_firmwareVersion();
 void cmd_reboot();
-
-void cmd_analog();
-void cmd_dallas();
 
 void cmd_levelPr();
 void cmd_ultrasonicCm();
@@ -64,16 +72,14 @@ void cmd_dhtComfort();
 void cmd_dhtDewpoint();
 void cmd_dhtPerception();
 
-void cmd_get();
-
 void cmd_serialBegin();
 void cmd_serialEnd();
 void cmd_serialWrite();
 void cmd_serialLog();
 
+void cmd_get();
+
 void cmd_telnet();
 
 void cmd_timerStop();
 void cmd_timerStart();
-
-void cmd_oneWire();

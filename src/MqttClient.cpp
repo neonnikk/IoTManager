@@ -1,9 +1,10 @@
 #include "MqttClient.h"
 
+#include <ESP.h>
 #include <PubSubClient.h>
 #include <WiFiClient.h>
 
-#include "Global.h"
+#include "Cmd.h"
 
 #include "Collection/Logger.h"
 
@@ -13,9 +14,26 @@ static const char* MODULE = "Mqtt";
 
 namespace MqttClient {
 
+struct MqttMessage {
+   private:
+    String _topic;
+    String _data;
+
+   public:
+    MqttMessage(const String& topic, const String& data) : _topic{topic}, _data{data} {}
+
+    const String getTopic() {
+        return _topic;
+    }
+    const String getData() {
+        return _data;
+    }
+};
+
 WiFiClient espClient;
 PubSubClient _mqtt(espClient);
-MqttWriter* _mqttWriter;
+
+std::list<MqttMessage> _queue;
 
 static unsigned long RECONNECT_INTERVAL = 5000;
 static size_t RECONNECT_ATTEMPTS_MAX = 10;
@@ -34,10 +52,9 @@ MqttWriter* getWriter(const char* topic) {
     String path = _deviceRoot + "/" + topic;
     return new MqttWriter(&_mqtt, path.c_str());
 }
+void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length);
 
 void init() {
-    pm.info(TAG_INIT);
-
     _addr = config.mqtt()->getServer();
     _port = config.mqtt()->getPort();
     _user = config.mqtt()->getUser();
@@ -54,6 +71,7 @@ bool connect() {
     res = _mqtt.connect(_uuid.c_str(), _user.c_str(), _pass.c_str());
     if (res) {
         pm.info("connected " + _addr + ":" + String(_port, DEC));
+        subscribe();
     } else {
         pm.error("could't connect: " + getStateStr());
     }
@@ -70,9 +88,7 @@ void reconnect() {
         _mqtt.disconnect();
     }
     init();
-    if (connect()) {
-        subscribe();
-    }
+    connect();
 }
 
 void subscribe() {
@@ -84,6 +100,26 @@ void subscribe() {
     _mqtt.subscribe((_deviceRoot + "/update").c_str());
     _mqtt.subscribe((_deviceRoot + "/devc").c_str());
     _mqtt.subscribe((_deviceRoot + "/devs").c_str());
+}
+
+boolean _mqtt_publish(const char* topic, const char* data) {
+    if (!_mqtt.connected()) {
+        pm.error("not connected");
+        return false;
+    }
+    if (_mqtt.beginPublish(topic, strlen(data), false)) {
+        _mqtt.print(data);
+        return _mqtt.endPublish();
+    }
+    pm.error("on publish");
+    return false;
+}
+
+boolean addMqttQueue(const String& topic, const String& data) {
+    pm.info(topic);
+    pm.info(data);
+    _queue.push_back(MqttMessage(topic.c_str(), data.c_str()));
+    return true;
 }
 
 bool isConnected() {
@@ -119,6 +155,15 @@ void loop() {
         }
     }
 
+    if (!_queue.empty()) {
+        auto* writer = new MqttWriter(&_mqtt, _queue.front().getTopic());
+        writer->begin();
+        writer->write(_queue.front().getData(), _queue.front().getData().length());
+        writer->end();
+        _queue.pop_front();
+        delete writer;
+    }
+
     _mqtt.loop();
 }
 
@@ -133,14 +178,6 @@ const String parseControl(const String& str) {
             res = str.substring(0, str.length() - 1) + "Set" + num1;
         }
     }
-    return res;
-}
-
-const String getStatusPath(const String& name) {
-    String res = _deviceRoot;
-    res += "/";
-    res += name.c_str();
-    res += "/status";
     return res;
 }
 
@@ -181,58 +218,58 @@ void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
     }
 }
 
-boolean mqtt_publish(const String& topic, const String& data) {
-    if (!_mqtt.connected()) {
-        pm.error("not connected " + topic + " " + data);
-        return false;
-    }
-    if (_mqtt.beginPublish(topic.c_str(), data.length(), false)) {
-        _mqtt.print(data);
-        return _mqtt.endPublish();
-    }
-    pm.error("beginPublish " + topic + " " + data);
-    return false;
-}
-
 boolean publishData(const String& topic, const String& data) {
     String path = _deviceRoot + "/" + topic;
-    return mqtt_publish(path, data);
+    return addMqttQueue(path, data);
+}
+
+boolean publistWidget(const String& data) {
+    String path = _deviceRoot + "/config";
+    return addMqttQueue(path, data);
 }
 
 boolean publishChart(const String& name, const String& data) {
-    String path = _deviceRoot + "/" + name + "/status";
-    return mqtt_publish(path, data);
+    String path = _deviceRoot;
+    path += "/";
+    path += name;
+    path += "_ch";
+    return addMqttQueue(path, data);
 }
 
 boolean publishControl(const String& id, const String& topic, const String& data) {
-    String path = _prefix + "/" + id + "/" + topic + "/control";
-    return mqtt_publish(path, data);
+    String path = _prefix;
+    path += "/";
+    path += id;
+    path += "/";
+    path += topic;
+    path += "/control";
+    return addMqttQueue(path, data);
 }
 
-const String getOrderPath(const String& topic) {
-    String res = _prefix;
-    res += "/";
-    res += topic;
-    res += "/order";
-    return res;
-}
+boolean publishStatus(const String& key, const String& value, const ValueType_t type) {
+    String path = _deviceRoot;
+    path += "/";
+    path += key;
+    path += "/status";
 
-boolean publishStatus(const String& name, const String& value, const ValueType_t type) {
-    String status = "{\"status\":";
+    String data = "{\"status\":";
     if (type == VT_STRING) {
-        status += "\"";
+        data += "\"";
     }
-    status += value;
+    data += value;
     if (type == VT_STRING) {
-        status += "\"";
+        data += "\"";
     }
-    status += "}";
-
-    return mqtt_publish(getStatusPath(name).c_str(), status);
+    data += "}";
+    return addMqttQueue(path, data);
 }
 
 boolean publishOrder(const String& topic, const String& order) {
-    return mqtt_publish(getOrderPath(topic), order);
+    String path = _prefix;
+    path += "/";
+    path += topic;
+    path += "/order";
+    return addMqttQueue(path, order);
 }
 
 const String getStateStr() {

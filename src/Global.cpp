@@ -2,14 +2,14 @@
 
 #include "Collection/Widgets.h"
 #include "Collection/Logger.h"
-#include "MqttWriter.h"
 
 KeyValueStore options;
-KeyValueStore liveData;
+
 KeyValueFile runtime(DEVICE_RUNTIME_FILE);
 
 TickerScheduler ts(SYS_MEMORY + 1);
 
+WiFiClient wifiClient;
 AsyncWebServer server{80};
 AsyncWebSocket ws{"/ws"};
 AsyncEventSource events{"/events"};
@@ -45,32 +45,18 @@ void publishState() {
 }
 
 void publishWidgets() {
-    Writer* writer = MqttClient::getWriter("config");
-    Widgets::forEach([writer](String json) {
-        writer->begin(json.length());
-        writer->write(json.c_str());
-        writer->end();
-        return true;
+    Widgets::forEach([](String json) {
+        return MqttClient::publistWidget(json);
     });
-    delete writer;
 }
 
 void publishCharts() {
     Logger::forEach([](LoggerTask* task) {
         task->readEntries([](LogMetadata* meta, uint8_t* data) {
-            auto entry = LogEntry(data);
-            auto topic = meta->getMqttTopic();
-
             String buf = "{\"status\":[";
-            buf += entry.asChartEntry();
+            buf += LogEntry(data).asChartEntry();
             buf += "]}";
-
-            Writer* writer = MqttClient::getWriter(topic.c_str());
-            writer->begin(buf.length());
-            writer->write(buf.c_str());
-            writer->end();
-            delete writer;
-            return true;
+            return MqttClient::publishChart(meta->getName(), buf);
         });
         return true;
     });
@@ -79,7 +65,7 @@ void publishCharts() {
 void config_init() {
     load_config();
 
-    runtime.reload();
+    runtime.load();
     runtime.write("chipID", getChipId());
     runtime.write("firmware_version", FIRMWARE_VERSION);
     runtime.write("mqtt_prefix", config.mqtt()->getPrefix() + "/" + getChipId());
@@ -95,8 +81,32 @@ void setPreset(size_t num) {
     device_init();
 }
 
+bool extractCommand(const String buf, size_t& startIndex, String& block) {
+    int endIndex = buf.indexOf("\n", startIndex);
+    if (endIndex < 0) {
+        return false;
+    }
+    block = buf.substring(startIndex, endIndex);
+    startIndex = endIndex + 1;
+    return true;
+}
+
 void device_init() {
     Widgets::clear();
-    fileExecute(DEVICE_COMMAND_FILE);
+    String buf;
+    if (!readFile(DEVICE_COMMAND_FILE, buf)) {
+        return;
+    }
+    size_t pos = 0;
+    while (pos < buf.length() - 1) {
+        String item;
+        if (!extractCommand(buf, pos, item)) {
+            break;
+        }
+        if (!item.startsWith("//") && !item.isEmpty()) {
+            ExecuteCommand(item);
+        }
+    }
+
     Scenario::init();
 }

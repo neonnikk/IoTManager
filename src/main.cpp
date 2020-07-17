@@ -272,12 +272,6 @@ void setup() {
 
     NetworkManager::init();
 
-    pm.info("HttpServer");
-    HttpServer::init();
-
-    pm.info("WebAdmin");
-    web_init();
-
     pm.info("Broadcast");
     Broadcast::init();
 

@@ -16,7 +16,11 @@ class Value {
     Value(ValueType_t type) : _type{type}, _lastValue{"0"}, _lastTime{0} {}
 
     void setValue(const String& value) {
-        onSetValue(value);
+        if (!value.equals(_lastValue)) {
+            onValueChange(_lastValue, value);
+            _lastValue = value;
+        }
+        onValueUpdate(value);
         _lastTime = millis();
     }
 
@@ -38,18 +42,10 @@ class Value {
     virtual void onValueChange(const String& prev, const String& value) {}
 
     virtual const String onGetValue() {
-        return "0";
+        return _lastValue;
     }
 
    private:
-    void onSetValue(const String& value) {
-        if (!value.equals(_lastValue)) {
-            onValueChange(_lastValue, value);
-            _lastValue = value;
-        }
-        onValueUpdate(value);
-    };
-
     ValueType_t _type;
     String _lastValue;
     unsigned long _lastTime;
@@ -58,6 +54,11 @@ class Value {
 class ValueMap {
    public:
     ValueMap(Value* obj) : _obj{obj}, _mapper{NULL} {};
+    ~ValueMap() {
+        if (_mapper) {
+            delete _mapper;
+        }
+    }
 
     void setMap(long in_min, long in_max, long out_min, long out_max) {
         if (_mapper) {

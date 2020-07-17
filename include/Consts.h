@@ -3,7 +3,7 @@
 * Main consts
 */
 #define FIRMWARE_VERSION "2.3.5-dev"
-#define LED_PIN 2
+#define LED_PIN LED_BUILTIN
 #define FLASH_4MB true
 // 1000 * 60 * 60 * 2
 #define TELEMETRY_UPDATE_INTERVAL 0

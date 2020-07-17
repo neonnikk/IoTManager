@@ -6,17 +6,16 @@
 
 class MqttWriter : public Writer {
    public:
-    MqttWriter(PubSubClient* client, const char* topic);
-    ~MqttWriter();
+    MqttWriter(PubSubClient* client, const String& topic);
 
-    bool begin(size_t length) override;
-    bool write(const char* data) override;
-    bool end() override;
-
-    bool print(const char* data) override;
+    bool begin() override;
+    bool write(const String& data, size_t length) override;
+    void end() override;
 
    private:
-    char* _topic;
-    size_t _length;
     PubSubClient* _client;
+    String _topic;
+    bool _retain;
+    uint8_t _qos;
+    size_t _length;
 };

@@ -5,48 +5,55 @@
 
 static const char* MODULE = "Scenario";
 
-LiveParam::LiveParam(const String& name) : _name{name} {};
-
-const String LiveParam::value() {
-    return liveData.read(_name);
+ParamItem::ParamItem(const String& value) {
+    _value = strdup(value.c_str());
 }
 
-StaticParam::StaticParam(const String& value) : _value{value} {};
+ParamItem::~ParamItem() {
+    delete _value;
+}
 
-const String StaticParam::value() {
+const char* ParamItem::value() {
     return _value;
 }
 
-ScenarioItem::ScenarioItem(const String& str) {
-    size_t split = str.indexOf("\n");
-    String first_line = str.substring(0, split);
-    _commands = str.substring(split + 1, str.indexOf("\nend"));
-    _valid = parseCondition(first_line) && !_commands.isEmpty();
+const char* LiveParam::value() {
+    return liveData.read(_value).c_str();
 }
 
-bool ScenarioItem::equation(const String& object, const String& value) {
+ScenBlock::ScenBlock(const String& str) {
+    size_t split = str.indexOf("\n");
+    _commands = str.substring(split + 1, str.indexOf("\nend"));
+    _valid = parseCondition(str.substring(0, split)) && !_commands.isEmpty();
+}
+
+ScenBlock::~ScenBlock() {
+    delete _param;
+}
+
+bool ScenBlock::equation(const String& object, const String& value) {
     bool res = false;
     if (!object.equalsIgnoreCase(_obj)) {
         return res;
     }
     switch (_sign) {
-        case OP_EQUAL:
+        case EquationSign::OP_EQUAL:
             res = value.equals(_param->value());
             break;
-        case OP_NOT_EQUAL:
+        case EquationSign::OP_NOT_EQUAL:
             res = !value.equals(_param->value());
             break;
-        case OP_LESS:
-            res = value.toFloat() < _param->value().toFloat();
+        case EquationSign::OP_LESS:
+            res = value.toFloat() < atof(_param->value());
             break;
-        case OP_LESS_OR_EQAL:
-            res = value.toFloat() <= _param->value().toFloat();
+        case EquationSign::OP_LESS_OR_EQAL:
+            res = value.toFloat() <= atof(_param->value());
             break;
-        case OP_GREATER:
-            res = value.toFloat() > _param->value().toFloat();
+        case EquationSign::OP_GREATER:
+            res = value.toFloat() > atof(_param->value());
             break;
-        case OP_GREATER_OR_EQAL:
-            res = value.toFloat() >= _param->value().toFloat();
+        case EquationSign::OP_GREATER_OR_EQAL:
+            res = value.toFloat() >= atof(_param->value());
             break;
         default:
             break;
@@ -54,7 +61,7 @@ bool ScenarioItem::equation(const String& object, const String& value) {
     return res;
 }
 
-bool ScenarioItem::run(const String& event) {
+bool ScenBlock::process(const String& event) {
     String obj = event;
     String value = liveData.read(obj);
     if (equation(obj, value)) {
@@ -64,16 +71,16 @@ bool ScenarioItem::run(const String& event) {
     return false;
 }
 
-bool ScenarioItem::enable(bool value) {
+bool ScenBlock::enable(bool value) {
     _enabled = value;
     return isEnabled();
 }
 
-bool ScenarioItem::isEnabled() {
+bool ScenBlock::isEnabled() {
     return _valid & _enabled;
 }
 
-bool ScenarioItem::parseCondition(const String& str) {
+bool ScenBlock::parseCondition(const String& str) {
     size_t s1 = str.indexOf(" ");
     if (s1 < 0) {
         pm.error("wrong line");
@@ -98,25 +105,25 @@ bool ScenarioItem::parseCondition(const String& str) {
     if (paramStr.startsWith("digit") || paramStr.startsWith("time")) {
         _param = new LiveParam(paramStr);
     } else {
-        _param = new StaticParam(paramStr);
+        _param = new ParamItem(paramStr);
     }
     return true;
 }
 
-bool ScenarioItem::parseSign(const String& str, EquationSign& sign) {
+bool ScenBlock::parseSign(const String& str, EquationSign& sign) {
     bool res = true;
     if (str.equals("=")) {
-        sign = OP_EQUAL;
+        sign = EquationSign::OP_EQUAL;
     } else if (str.equals("!=")) {
-        sign = OP_NOT_EQUAL;
+        sign = EquationSign::OP_NOT_EQUAL;
     } else if (str.equals("<")) {
-        sign = OP_LESS;
+        sign = EquationSign::OP_LESS;
     } else if (str.equals(">")) {
-        sign = OP_GREATER;
+        sign = EquationSign::OP_GREATER;
     } else if (str.equals(">=")) {
-        sign = OP_GREATER_OR_EQAL;
+        sign = EquationSign::OP_GREATER_OR_EQAL;
     } else if (str.equals("<=")) {
-        sign = OP_LESS_OR_EQAL;
+        sign = EquationSign::OP_LESS_OR_EQAL;
     } else {
         res = false;
     }
@@ -125,7 +132,7 @@ bool ScenarioItem::parseSign(const String& str, EquationSign& sign) {
 
 namespace Scenario {
 
-std::vector<ScenarioItem*> _items;
+std::vector<ScenBlock*> _items;
 
 StringQueue _events;
 
@@ -198,8 +205,7 @@ void init() {
             break;
         }
         if (!item.isEmpty()) {
-            pm.info(item);
-            _items.push_back(new ScenarioItem(item));
+            _items.push_back(new ScenBlock(item));
         }
     }
 
@@ -222,7 +228,7 @@ void loop() {
     }
     for (auto item : _items) {
         if (item->isEnabled()) {
-            item->run(buf);
+            item->process(buf);
         }
     }
 }

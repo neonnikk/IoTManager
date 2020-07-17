@@ -37,18 +37,23 @@ void cmd_button() {
     String descr = sCmd.next();
     String page = sCmd.next();
     String order = sCmd.next();
-    String state = sCmd.next();
+    String value = sCmd.next();
     String inverted = sCmd.next();
 
-    state = state.isEmpty() ? "0" : state;
+    value = value.isEmpty() ? "0" : value;
     inverted = inverted.isEmpty() ? "0" : inverted;
 
     ButtonType_t type;
-    if (getButtonType(assign, type)) {
-        buttons.add(type, name, assign, state, inverted);
-        liveData.write(name, state, VT_INT);
-        Widgets::createWidget(descr, page, order, "toggle", name);
+    if (!getButtonType(assign, type)) {
+        pm.error("wrong type");
+        return;
     }
+
+    buttons.add(type, name, assign, value, inverted);
+
+    liveData.write(name, value, VT_INT);
+    MqttClient::publishStatus(name, value, VT_INT);
+    Widgets::createWidget(descr, page, order, "toggle", name);
 }
 
 void cmd_buttonChange() {
@@ -58,9 +63,10 @@ void cmd_buttonChange() {
         return;
     }
 
-    item->toggleState();
-    String value = item->getValue();
+    String value = item->toggleState();
+
     liveData.write(name, value, VT_INT);
+    Scenario::fire(name);
     MqttClient::publishStatus(name, value, VT_INT);
 }
 
@@ -70,10 +76,11 @@ void cmd_buttonSet() {
     if (!item) {
         return;
     }
-    String state = sCmd.next();
+    String value = sCmd.next();
 
-    item->setValue(state);
-    liveData.write(name, state, VT_INT);
+    item->setValue(value);
+
+    liveData.write(name, value, VT_INT);
     Scenario::fire(name);
-    MqttClient::publishStatus(name, state, VT_INT);
+    MqttClient::publishStatus(name, value, VT_INT);
 }

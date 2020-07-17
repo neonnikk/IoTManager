@@ -36,9 +36,8 @@ void update() {
 
         if (item->hasValue()) {
             String value = item->getValue();
-
-            Scenario::fire(item);
             liveData.write(name, value, item->getValueType());
+            Scenario::fire(item);
         }
     }
 }

@@ -42,26 +42,31 @@ const String check() {
 }
 
 bool upgrade_fs_image() {
-    pm.info(TAG_FS_IMAGE);
-    WiFiClient wifiClient;
+    BearSSL::WiFiClientSecure UpdateClient;
+    UpdateClient.setInsecure();
 #ifdef ESP8266
+    String url = buildUpdateUrl(TAG_FS_IMAGE);
+    pm.info(url);
     ESPhttpUpdate.rebootOnUpdate(false);
-    HTTPUpdateResult ret = ESPhttpUpdate.updateSpiffs(wifiClient, buildUpdateUrl(TAG_FS_IMAGE));
+    ESPhttpUpdate.setLedPin(LED_BUILTIN);
+    HTTPUpdateResult ret = ESPhttpUpdate.updateFS(UpdateClient, url);
 #else
     httpUpdate.rebootOnUpdate(false);
     HTTPUpdateResult ret = httpUpdate.updateSpiffs(wifiClient, buildUpdateUrl(TAG_FS_IMAGE));
 #endif
     if (ret != HTTP_UPDATE_OK) {
-        pm.error(TAG_FS_IMAGE);
+        pm.error(ESPhttpUpdate.getLastErrorString());
     }
     return ret == HTTP_UPDATE_OK;
 }  // namespace Updater
 
 bool upgrade_firmware() {
+    BearSSL::WiFiClientSecure UpdateClient;
+    UpdateClient.setInsecure();
+    ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
     pm.info(TAG_FIRMWARE_BIN);
-    WiFiClient wifiClient;
 #ifdef ESP8266
-    HTTPUpdateResult ret = ESPhttpUpdate.update(wifiClient, buildUpdateUrl(TAG_FIRMWARE_BIN));
+    HTTPUpdateResult ret = ESPhttpUpdate.update(UpdateClient, buildUpdateUrl(TAG_FIRMWARE_BIN));
 #else
     HTTPUpdateResult ret = httpUpdate.update(wifiClient, buildUpdateUrl(TAG_FIRMWARE_BIN));
 #endif

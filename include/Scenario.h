@@ -5,7 +5,7 @@
 #include "Base/Named.h"
 #include "Base/StringQueue.h"
 
-enum EquationSign {
+enum class EquationSign : uint8_t {
     OP_EQUAL,
     OP_NOT_EQUAL,
     OP_LESS,
@@ -16,34 +16,28 @@ enum EquationSign {
 
 class ParamItem {
    public:
-    virtual const String value();
+    ParamItem(const String&);
+    virtual ~ParamItem();
+
+    virtual const char* value();
+
+   protected:
+    char* _value;
 };
 
 class LiveParam : public ParamItem {
    public:
-    LiveParam(const String& name);
-    const String value() override;
-
-   private:
-    String _name;
+    LiveParam(const String& value) : ParamItem(value){};
+    const char* value() override;
 };
 
-class StaticParam : public ParamItem {
+class ScenBlock {
    public:
-    StaticParam(const String& value);
-    const String value() override;
-
-   private:
-    String _value;
-};
-
-class ScenarioItem {
-   public:
-    ScenarioItem(const String& str);
-    bool isValid();
+    ScenBlock(const String& str);
+    ~ScenBlock();
+    bool process(const String& value);
+    bool enable(bool enabled);
     bool isEnabled();
-    bool enable(bool value);
-    bool run(const String& value);
 
    private:
     bool equation(const String& object, const String& value);

@@ -2,17 +2,26 @@
 
 #include "Global.h"
 
-#include "Objects/Widget.h"
+#include "Base/KeyValueStore.h"
 
 static const char* MODULE = "Widgets";
 
 namespace Widgets {
-std::vector<Widget*> _list;
 
-void createWidget(String descr, String page, String order, String templateName, String topic,
-                  String name1, String param1, String name2, String param2, String name3, String param3) {
-    Widget* widget = new Widget();
-    if (!widget->loadTemplate(templateName.c_str())) {
+std::vector<KeyValueFile*> _list;
+
+const String getFilename(const String& name) {
+    String res;
+    res = "/widgets/";
+    res += name;
+    res += ".json";
+    return res;
+};
+
+void createWidget(String& descr, String& page, const String& order, const String& templateName, const String& name) {
+    KeyValueFile* widget = new KeyValueFile(getFilename(templateName).c_str());
+    if (!widget->load()) {
+        delete widget;
         return;
     }
     descr.replace("#", " ");
@@ -20,27 +29,19 @@ void createWidget(String descr, String page, String order, String templateName, 
 
     page.replace("#", " ");
     widget->write("page", page);
+    
     widget->writeInt("order", order);
 
     String prefix = runtime.read("mqtt_prefix");
-    widget->write("topic", prefix + "/" + topic);
-
-    if (!name1.isEmpty()) {
-        widget->write(name1, param1);
-    }
-    if (!name2.isEmpty()) {
-        widget->write(name2, param1);
-    }
-    if (!name3.isEmpty()) {
-        widget->write(name3, param1);
-    }
+    widget->write("topic", prefix + "/" + name);
 
     _list.push_back(widget);
-}
+};
 
 void createChart(String series, String page, String order, String templateName, String topic, size_t maxCount) {
-    Widget* widget = new Widget();
-    if (!widget->loadTemplate(templateName.c_str())) {
+    KeyValueFile* widget = new KeyValueFile(getFilename(templateName).c_str());
+    if (!widget->load()) {
+        delete widget;
         return;
     }
 

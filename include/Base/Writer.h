@@ -5,10 +5,7 @@
 class Writer {
    public:
     virtual ~Writer(){};
-
-    virtual bool print(const char* data) = 0;
-
-    virtual bool begin(size_t length) = 0;
-    virtual bool write(const char* data) = 0;
-    virtual bool end() = 0;
+    virtual bool begin() = 0;
+    virtual bool write(const String&, size_t length) = 0;
+    virtual void end() = 0;
 };

@@ -27,9 +27,10 @@ class Button : public Item,
         return _inverted;
     }
 
-    void toggleState() {
+    const String toggleState() {
         bool state = !getValue().toInt();
         setValue(String(state));
+        return getValue();
     }
 
    private:

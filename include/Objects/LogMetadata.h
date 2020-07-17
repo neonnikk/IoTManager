@@ -50,10 +50,6 @@ class LogMetadata : public Printable {
         return "/log_" + String(_header.name) + ".dat";
     }
 
-    const String getMqttTopic() const {
-        return String(_header.name) + "_ch";
-    }
-
     ValueType_t getValueType() const {
         return _header.type;
     }

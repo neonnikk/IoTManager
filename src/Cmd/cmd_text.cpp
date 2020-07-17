@@ -1,18 +1,31 @@
 #include "Cmd.h"
 
+#include "Collection/Widgets.h"
+
+void cmd_text() {
+    String name = getObjectName(TAG_TEXT, sCmd.next());
+    String value = sCmd.next();
+    String page = sCmd.next();
+    String order = sCmd.next();
+
+    Widgets::createWidget(value, page, order, "anydata", name);
+
+    liveData.write(name, value, VT_STRING);
+    MqttClient::publishStatus(name, value, VT_STRING);
+}
+
 void cmd_textSet() {
-    String name = sCmd.next();
+    String name = getObjectName(TAG_TEXT, sCmd.next());
     String value = sCmd.next();
 
     value.replace("_", " ");
+    value.replace("#", " ");
 
     if (value.indexOf("-time") >= 0) {
         value.replace("-time", "");
-        value.replace("#", " ");
         value = value + " " + now.getDateTimeDotFormated();
     }
 
-    String objName = "text" + name;
-    liveData.write(objName, value, VT_STRING);
-    MqttClient::publishStatus(objName, value, VT_STRING);
+    liveData.write(name, value, VT_STRING);
+    MqttClient::publishStatus(name, value, VT_STRING);
 }

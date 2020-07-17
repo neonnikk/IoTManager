@@ -41,7 +41,7 @@ extern KeyValueStore liveData;
 extern KeyValueFile runtime;
 
 extern TickerScheduler ts;
-extern WiFiClient espClient;
+extern WiFiClient wifiClient;
 
 extern AsyncWebServer server;
 extern AsyncWebSocket ws;
@@ -83,7 +83,7 @@ extern void fileExecute(const String filename);
 * Запуск комманд из строки
 */
 extern void stringExecute(String cmdStr);
-
+extern void ExecuteCommand(const String& cmdStr);
 extern void load_runtime();
 extern void load_config();
 
@@ -102,13 +102,6 @@ extern void save_config();
 extern void setPreset(size_t num);
 extern void setLedStatus(LedStatus_t);
 
-//Scenario
-extern String add_set(String param_name);
-
-// PushingBox
-extern void pushControl(const String& title, const String& body);
-
-extern void addOrder(const String& cmdStr);
 extern void config_init();
 extern void loop_serial();
 extern void loop_cmd();

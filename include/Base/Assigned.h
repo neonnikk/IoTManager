@@ -11,7 +11,7 @@ class Assigned {
     }
 
     ~Assigned() {
-        delete _assign;
+        free(_assign);
     }
 
     char* getAssign() {

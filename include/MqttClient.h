@@ -17,14 +17,16 @@ void reconnect();
 void loop();
 void subscribe();
 
-boolean mqtt_publish(const String& topic, const String& data);
 boolean publishData(const String& topic, const String& data);
-boolean publishChart(const String& topic, const String& data);
+boolean publishChart(const String& name, const String& data);
+boolean publistWidget(const String& data);
+
 boolean publishControl(String id, String topic, String state);
+
 boolean publishStatus(const String& name, const String& value, const ValueType_t type);
+
 boolean publishOrder(const String& topic, const String& data);
 
-void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length);
 const String getStateStr();
 
 }  // namespace MqttClient
