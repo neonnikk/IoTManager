@@ -23,13 +23,14 @@ Timer* add(const String& name, unsigned long time) {
 
     _items.push_back(new Timer{name.c_str(), time});
 
-    return _items.at(_items.size() - 1);
+    return _items.back();
+    //return _items.at(_items.size() - 1);
 }
 
 void erase(const String& name) {
     for (size_t i = 0; i < _items.size(); i++) {
         Timer* item = _items.at(i);
-        if (name.equalsIgnoreCase(item->name())) {
+        if (name.equals(item->name())) {
             _items.erase(_items.begin() + i);
             break;
         }

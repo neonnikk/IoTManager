@@ -5,12 +5,12 @@
 Timer::Timer(const char* name, unsigned long time) {
     _name = strdup(name);
     _time = time;
-    liveData.write(name, true);
+    runtime.write(name, true);
 }
 
 Timer::~Timer() {
-    liveData.erase(_name);
-    delete _name;
+    runtime.erase(_name);
+    free(_name);
 }
 
 bool Timer::tick() {
@@ -29,8 +29,7 @@ const char* Timer::name() const {
 }
 
 void Timer::onTimer() {
-    liveData.write(_name, false);
-    Scenario::fire(_name);
+    runtime.write(_name, false);
 }
 
 void Timer::setTime(unsigned long value) {

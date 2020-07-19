@@ -2,40 +2,24 @@
 /*
 * Main consts
 */
-#define FIRMWARE_VERSION "2.3.5-dev"
+#define FIRMWARE_VERSION "2.3.6-dev"
 #define LED_PIN LED_BUILTIN
 #define FLASH_4MB true
-// 1000 * 60 * 60 * 2
-#define TELEMETRY_UPDATE_INTERVAL 0
+#define TELEMETRY_UPDATE_INTERVAL_s 0
 
 enum SchedulerTask { WIFI_SCAN,
                      NETWORK_CONNECTION,
                      SENSORS,
-                     STEPPER1,
-                     STEPPER2,
                      LOGGER,
-                     TIMERS,
                      TIME,
-                     TIME_SYNC,
                      STATISTICS,
-                     UPTIME,
-                     ANNOUNCE,
-                     UDP_DB,
-                     SYS_TIMINGS,
-                     SYS_MEMORY };
+                     ANNOUNCE };
 
 enum ErrorType_t {
     ET_NONE,
     ET_FUNCTION,
     ET_MODULE,
     ET_SYSTEM
-};
-
-enum LedStatus_t {
-    LED_OFF,
-    LED_ON,
-    LED_SLOW,
-    LED_FAST
 };
 
 enum ConfigType_t {

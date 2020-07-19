@@ -3,8 +3,7 @@
 #include "Global.h"
 
 static const char* MODULE = "Web";
-static const char* PAGE_UTILITIES = "/?set.utilities";
-static const char* PAGE_SETUP = "/?set.device";
+
 
 void web_init() {
     // dnsServer.start(53, "*", WiFi.softAPIP());
@@ -22,7 +21,7 @@ void web_init() {
     server.on(
         "/config", HTTP_GET, [](AsyncWebServerRequest* request) {
             if (request->hasArg("add")) {
-                configAdd(request->getParam("add")->value());
+                config_add(request->getParam("add")->value());
                 request->redirect(PAGE_SETUP);
                 return;
             }

@@ -1,55 +1,10 @@
 #include "Base/KeyValueStore.h"
 
 #include <PrintMessage.h>
+
 #include <Utils/FileUtils.h>
 
 static const char* MODULE = "KeyValueStore";
-
-KeyValue::KeyValue(const char* key, const char* value, ValueType_t type) : _type{type} {
-    _key = strdup(key);
-    _value = strdup(value);
-}
-
-KeyValue::~KeyValue() {
-    free(_key);
-    free(_value);
-}
-
-ValueType_t KeyValue::getType() const {
-    return _type;
-}
-
-const char* KeyValue::getKey() const {
-    return _key;
-}
-
-const char* KeyValue::getValue() const {
-    return _value;
-}
-
-void KeyValue::setValue(const char* value, const ValueType_t type) {
-    _type = type;
-    size_t new_len = strlen(value);
-    if (strlen(_value) < new_len) {
-        _value = (char*)realloc(_value, new_len);
-    }
-    strcpy(_value, value);
-};
-
-void KeyValue::setValue(const char* value) {
-    setValue(value, VT_STRING);
-};
-
-void KeyValue::setValueInt(int value) {
-    char buf[16];
-    utoa(value, buf, DEC);
-    setValue(buf, VT_INT);
-};
-
-void KeyValue::setValueFloat(float value) {
-    char buf[16];
-    setValue(dtostrf(value, 4, 2, buf), VT_FLOAT);
-};
 
 KeyValueStore::KeyValueStore(){};
 
@@ -113,7 +68,7 @@ void KeyValueStore::erase(const String key) {
     }
 }
 
-KeyValue* KeyValueStore::findKey(const String key) {
+KeyValue* KeyValueStore::find(const String key) const {
     for (size_t i = 0; i < _items.size(); i++) {
         if (key.equals(_items.at(i)->getKey())) {
             return _items.at(i);
@@ -122,47 +77,66 @@ KeyValue* KeyValueStore::findKey(const String key) {
     return NULL;
 }
 
+void KeyValueStore::write(const String& key, const String& value, ValueType_t type, KeyType_t key_type) {
+    bool new_flag = false;
+    auto item = find(key);
+    if (!item) {
+        new_flag = true;
+        item = new KeyValue(key.c_str(), value.c_str(), type, key_type);
+        _items.push_back(item);
+    };
+    item->setValue(value.c_str(), type);
+    if (new_flag) {
+        onAdd(item);
+    } else {
+        onUpdate(item);
+    }
+}
+
 void KeyValueStore::write(const String& key, int value) {
     write(key, String(value, DEC), VT_INT);
 }
 
-void KeyValueStore::writeInt(const String& key, const String& value) {
+void KeyValueStore::writeAsInt(const String& key, const String& value) {
     write(key, value, VT_INT);
 }
 
-void KeyValueStore::write(const String& key, const String& value, ValueType_t type) {
-    auto item = findKey(key);
+void KeyValueStore::writeAsFloat(const String& key, const String& value) {
+    write(key, value, VT_FLOAT);
+}
+
+const String KeyValueStore::read(const String& key) const {
+    return read(key, "");
+}
+
+const String KeyValueStore::read(const String& key, const char* default_value) const {
+    auto item = find(key);
+    String value;
     if (item) {
-        item->setValue(value.c_str(), type);
+        value = item->getValue();
     } else {
-        _items.push_back(new KeyValue{key.c_str(), value.c_str(), type});
+        pm.error("not found: " + key + ", default: " + default_value);
+        value = default_value;
     }
+    return value;
 }
 
-const String KeyValueStore::read(const String& key) {
-    auto item = findKey(key);
-    return item ? item->getValue() : "";
+int KeyValueStore::readInt(const String& key) const {
+    return read(key).toInt();
 }
 
-bool KeyValueStore::read(const String& key, String& value, ValueType_t& type) {
-    auto item = findKey(key);
+float KeyValueStore::readFloat(const String& key) const {
+    return read(key).toFloat();
+}
+
+bool KeyValueStore::get(const String& key, String& value, ValueType_t& type) const {
+    auto item = find(key);
     if (!item) {
-        pm.error("not found:" + key);
         return false;
     }
     value = item->getValue();
     type = item->getType();
     return true;
-}
-
-int KeyValueStore::readInt(const String& key) {
-    String buf = read(key);
-    return buf.toInt();
-}
-
-float KeyValueStore::readFloat(const String& key) {
-    String buf = read(key);
-    return buf.toFloat();
 }
 
 KeyValueFile::KeyValueFile(const char* filename) {

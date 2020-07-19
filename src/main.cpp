@@ -6,11 +6,14 @@
 #include "NetworkManager.h"
 #include "Messages.h"
 #include "Broadcast.h"
+#include "Cmd.h"
 #include "Collection/Sensors.h"
 #include "Collection/Logger.h"
 #include "Collection/Devices.h"
+#include "Collection/Timers.h"
 #include "MqttClient.h"
 #include "HttpServer.h"
+#include "WebClient.h"
 #include "Sensors/I2CScanner.h"
 #include "Sensors/OneWireScanner.h"
 #include "TickerScheduler/Metric.h"
@@ -104,7 +107,7 @@ void loop() {
     m.add(LT_LOGGER);
 
     if (config.hasChanged()) {
-        save_config();
+        config_save();
     }
 }
 
@@ -175,58 +178,15 @@ void flag_actions() {
     }
 }
 
-#ifdef ESP8266
-void setLedStatus(LedStatus_t status) {
-    pinMode(LED_PIN, OUTPUT);
-    switch (status) {
-        case LED_OFF:
-            noTone(LED_PIN);
-            digitalWrite(LED_PIN, HIGH);
-            break;
-        case LED_ON:
-            noTone(LED_PIN);
-            digitalWrite(LED_PIN, LOW);
-            break;
-        case LED_SLOW:
-            tone(LED_PIN, 1);
-            break;
-        case LED_FAST:
-            tone(LED_PIN, 20);
-            break;
-        default:
-            break;
-    }
-}
-#else
-void setLedStatus(LedStatus_t status) {
-    pinMode(LED_PIN, OUTPUT);
-    switch (status) {
-        case LED_OFF:
-            digitalWrite(LED_PIN, HIGH);
-            break;
-        case LED_ON:
-            digitalWrite(LED_PIN, LOW);
-            break;
-        case LED_SLOW:
-            break;
-        case LED_FAST:
-            break;
-        default:
-            break;
-    }
-}
-#endif
-
-void clock_init() {
-    now.setConfig(config.clock());
-
+void clock_task() {
     ts.add(
-        TIME, 1000, [&](void*) {
-            runtime.write("time", now.getTime());
-            runtime.write("timenow", now.getTimeJson());
-            Scenario::fire("timenow");
+        TIME, ONE_SECOND_ms, [&](void*) {
+            runtime.write(TAG_UPTIME, now.getUptime(), VT_STRING, KT_MQTT);
+            if (now.hasSynced()) {
+                runtime.write(TAG_TIME, now.getTime(), VT_STRING, KT_EVENT);
+            }
         },
-        nullptr, true);
+        nullptr, false);
 }
 
 String scenarioBackup, commandBackup, configBackup;
@@ -243,16 +203,75 @@ void config_restore() {
     load_config();
 }
 
-void print_sys_memory() {
-    pm.info(getHeapStats());
-}
-
 void print_sys_timins() {
     m.print(Serial);
     m.reset();
 
     ts.print(Serial);
     ts.reset();
+}
+
+void load_runtime() {
+    runtime.load();
+    runtime.write("chipID", getChipId());
+    runtime.write("firmware_version", FIRMWARE_VERSION);
+    runtime.write("mqtt_prefix", config.mqtt()->getPrefix() + "/" + getChipId());
+}
+
+void telemetry_task() {
+    if (!TELEMETRY_UPDATE_INTERVAL_s) {
+        pm.info("Telemetry: disabled");
+        return;
+    }
+    if (TELEMETRY_UPDATE_INTERVAL_s) {
+        ts.add(
+            STATISTICS, TELEMETRY_UPDATE_INTERVAL_s * ONE_SECOND_ms, [&](void*) {
+                if (!NetworkManager::isNetworkActive()) {
+                    return;
+                }
+                String url = "http://backup.privet.lv/visitors/?";
+                WebClient::get(url);
+            },
+            nullptr, false);
+    }
+}
+
+void sensors_task() {
+    ts.add(
+        SENSORS, ONE_SECOND_ms, [&](void*) {
+            Sensors::update();
+        },
+        nullptr, false);
+}
+
+void announce_task() {
+    ts.add(
+        ANNOUNCE, random(0.9 * config.general()->getBroadcastInterval() * ONE_SECOND_ms, config.general()->getBroadcastInterval()), [&](void*) {
+            if (config.general()->isBroadcastEnabled()) {
+                String data;
+                data += getChipId();
+                data += ";";
+                data += config.general()->getBroadcastName();
+                data += ";";
+                data += NetworkManager::getHostIP().toString();
+                data += ";";
+
+                Messages::post(BM_ANNOUNCE, data);
+            }
+        },
+        nullptr, false);
+}
+
+void onStartCriticalBootSection() {
+    writeFile(DEVICE_BOOT_FILE, " ");
+}
+
+void onEndCriticalBootSection() {
+    removeFile(DEVICE_BOOT_FILE);
+}
+
+bool hasLastBootSucess() {
+    return !fileExists(DEVICE_BOOT_FILE);
 }
 
 void setup() {
@@ -266,19 +285,34 @@ void setup() {
 
     fs_init();
 
-    config_init();
+    load_config();
 
-    clock_init();
+    MqttClient::init();
+
+    now.setConfig(config.clock());
 
     NetworkManager::init();
 
-    pm.info("Broadcast");
-    Broadcast::init();
+    load_runtime();
 
-    telemetry_init();
+    cmd_init();
 
-    pm.info("Init");
-    init_mod();
+    clock_task();
+
+    sensors_task();
+
+    telemetry_task();
+
+    announce_task();
+
+    if (hasLastBootSucess()) {
+        onStartCriticalBootSection();
+        device_init();
+    } else {
+        replaceFileContent(DEVICE_COMMAND_FILE, "");
+        replaceFileContent(DEVICE_SCENARIO_FILE, "");
+    }
+    onEndCriticalBootSection();
 
     initialized = true;
 }

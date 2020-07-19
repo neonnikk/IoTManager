@@ -1,24 +1,25 @@
 #include "Collection/Buttons.h"
 
+#include "StringConsts.h"
+
 #include "PrintMessage.h"
 
-static const char* MODULE = "Buttons";
+static const char* MODULE = TAG_BUTTON;
 
 Buttons buttons;
 
 Button* Buttons::add(const ButtonType_t type, const String& name, const String& assign, const String& value, const String& inverted) {
-    pm.info("name:\"" + name + "\", pin:" + assign + ", state:" + value + ", inverted:" + inverted);
-
     Button* item;
+
     switch (type) {
         case BUTTON_VIRTUAL:
-            item = new VirtualButton(name, assign, value);
+            item = new VirtualButton(name, assign);
             break;
         case BUTTON_GPIO:
-            item = new PinButton(name, assign, value);
+            item = new PinButton(name, assign);
             break;
         case BUTTON_SCEN:
-            item = new ScenButton(name, assign, value);
+            item = new ScenButton(name, assign);
             break;
         case BUTTON_SCEN_LINE:
             // String str = assign;
@@ -43,7 +44,6 @@ Button* Buttons::add(const ButtonType_t type, const String& name, const String& 
     item->setValue(value);
 
     _list.push_back(item);
-
     return last();
 }
 

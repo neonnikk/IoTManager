@@ -1,5 +1,7 @@
 #include "HttpServer.h"
 
+#include "StringConsts.h"
+
 #include "Collection/Logger.h"
 #include "Collection/Devices.h"
 #include "Sensors/OnewireBus.h"
@@ -42,14 +44,6 @@ void init() {
         }
     });
 
-    server.on("/live.json", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(200, "application/json", liveData.asJson());
-    });
-
-    server.on("/option.json", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(200, "application/json", options.asJson());
-    });
-
     server.on("/runtime.json", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(200, "application/json", runtime.asJson());
     });
@@ -75,7 +69,7 @@ void init() {
     server.on("/add", HTTP_GET, [](AsyncWebServerRequest *request) {
         String cmdStr = request->getParam("command")->value();
         addOrder(cmdStr);
-        request->redirect("/?set.device");
+        request->redirect(PAGE_SETUP);
     });
 
     server.begin();
@@ -98,9 +92,7 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
         AwsFrameInfo *info = (AwsFrameInfo *)arg;
         String msg = "";
         if (info->final && info->index == 0 && info->len == len) {
-            //the whole message is in a single frame and we got all of it's data
-            Serial.printf("ws[%s][%u] %s-message[%llu]: ", server->url(), client->id(), (info->opcode == WS_TEXT) ? "text" : "binary", info->len);
-
+            Serial.printf("ws[%s][%u] %s [%llu]: ", server->url(), client->id(), (info->opcode == WS_TEXT) ? "text" : "binary", info->len);
             if (info->opcode == WS_TEXT) {
                 for (size_t i = 0; i < info->len; i++) {
                     msg += (char)data[i];
@@ -112,22 +104,18 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
                     msg += buff;
                 }
             }
-            Serial.printf("%s\n", msg.c_str());
-
+            Serial.println(msg);
             if (info->opcode == WS_TEXT)
                 client->text("{}");
             else
                 client->binary("{}");
         } else {
-            //message is comprised of multiple frames or the frame is split into multiple packets
             if (info->index == 0) {
                 if (info->num == 0)
-                    Serial.printf("ws[%s][%u] %s-message start\n", server->url(), client->id(), (info->message_opcode == WS_TEXT) ? "text" : "binary");
-                Serial.printf("ws[%s][%u] frame[%u] start[%llu]\n", server->url(), client->id(), info->num, info->len);
+                    Serial.printf("ws[%s][%u] %s\n", server->url(), client->id(), (info->message_opcode == WS_TEXT) ? "text" : "binary");
+                Serial.printf("ws[%s][%u] [%u] [%llu]\n", server->url(), client->id(), info->num, info->len);
             }
-
-            Serial.printf("ws[%s][%u] frame[%u] %s[%llu - %llu]: ", server->url(), client->id(), info->num, (info->message_opcode == WS_TEXT) ? "text" : "binary", info->index, info->index + len);
-
+            Serial.printf("ws[%s][%u] [%u] %s [%llu - %llu]\n: ", server->url(), client->id(), info->num, (info->message_opcode == WS_TEXT) ? "text" : "binary", info->index, info->index + len);
             if (info->opcode == WS_TEXT) {
                 for (size_t i = 0; i < len; i++) {
                     msg += (char)data[i];
@@ -139,16 +127,15 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
                     msg += buff;
                 }
             }
-            Serial.printf("%s\n", msg.c_str());
-
+            Serial.println(msg);
             if ((info->index + len) == info->len) {
                 Serial.printf("ws[%s][%u] frame[%u] end[%llu]\n", server->url(), client->id(), info->num, info->len);
                 if (info->final) {
                     Serial.printf("ws[%s][%u] %s-message end\n", server->url(), client->id(), (info->message_opcode == WS_TEXT) ? "text" : "binary");
                     if (info->message_opcode == WS_TEXT)
-                        client->text("I got your text message");
+                        client->text("text");
                     else
-                        client->binary("I got your binary message");
+                        client->binary("binary");
                 }
             }
         }

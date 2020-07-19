@@ -10,18 +10,22 @@
 
 #include "Base/Item.h"
 
-class BaseServo : public Item,
+class BasicServo : public Item,
                   public PinAssigned,
                   public Value,
                   public ValueMap {
    public:
-    BaseServo(const String& name, const String& assign, const String& value) : Item{name, assign},
-                                                                               PinAssigned{this},
-                                                                               Value{VT_INT},
-                                                                               ValueMap{this} {
+    BasicServo(const String& name, const String& assign) : Item{name, assign},
+                                                          PinAssigned{this},
+                                                          Value{VT_INT},
+                                                          ValueMap{this} {
         _obj = new Servo();
         _obj->attach(getPin());
     };
+
+    ~BasicServo() {
+        delete _obj;
+    }
 
     void onValueUpdate(const String& value) override {
         _obj->write(value.toInt());

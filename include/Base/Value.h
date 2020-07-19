@@ -11,6 +11,13 @@ enum ValueType_t {
     VT_INT
 };
 
+enum KeyType_t {
+    MT_MQTT_EVENT,
+    KT_MQTT,
+    KT_EVENT,
+    KT_PRIVATE
+};
+
 class Value {
    public:
     Value(ValueType_t type) : _type{type}, _lastValue{"0"}, _lastTime{0} {}

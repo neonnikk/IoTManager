@@ -1,10 +1,9 @@
 #include "Collection/Widgets.h"
 
-#include "Global.h"
-
+#include "Runtime.h"
 #include "Base/KeyValueStore.h"
 
-static const char* MODULE = "Widgets";
+// static const char* MODULE = "Widgets";
 
 namespace Widgets {
 
@@ -29,8 +28,8 @@ void createWidget(String& descr, String& page, const String& order, const String
 
     page.replace("#", " ");
     widget->write("page", page);
-    
-    widget->writeInt("order", order);
+
+    widget->writeAsInt("order", order);
 
     String prefix = runtime.read("mqtt_prefix");
     widget->write("topic", prefix + "/" + name);
@@ -46,7 +45,7 @@ void createChart(String series, String page, String order, String templateName, 
     }
 
     widget->write("page", page);
-    widget->writeInt("order", order);
+    widget->writeAsInt("order", order);
 
     series.replace("#", " ");
     widget->write("series", series);
@@ -64,7 +63,7 @@ void clear() {
 
 void forEach(JsonHandler func) {
     for (auto item : _list) {
-        if (!func(item->asJson())) break;
+        func(item->asJson());
     }
 }
 }  // namespace Widgets

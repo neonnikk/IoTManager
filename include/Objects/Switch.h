@@ -8,6 +8,10 @@
 #include "Base/Item.h"
 #include "Base/Assigned.h"
 
+class Switch;
+
+typedef std::function<void(Switch*)> OnSwitchChangeState;
+
 class Switch : public Item,
                public Value,
                public PinAssigned {
@@ -17,6 +21,10 @@ class Switch : public Item,
                                                        PinAssigned{this} {
         _obj = new Bounce();
         _obj->attach(getPin(), INPUT);
+    }
+
+    ~Switch() {
+        delete _obj;
     }
 
     void setDebounce(int value) {
@@ -31,26 +39,6 @@ class Switch : public Item,
         return _obj->read() ? "1" : "0";
     }
 
-   private:
+   protected:
     Bounce* _obj;
 };
-
-typedef std::function<void(Switch*)> OnSwitchChangeState;
-
-class Switches {
-   public:
-    Switch* add(const String& name, const String& assign);
-    void loop();
-    Switch* last();
-    Switch* at(size_t index);
-    Switch* get(const String name);
-    size_t count();
-
-    void setOnChangeState(OnSwitchChangeState);
-
-   private:
-    std::vector<Switch*> _items;
-    OnSwitchChangeState _onChange;
-};
-
-extern Switches mySwitches;

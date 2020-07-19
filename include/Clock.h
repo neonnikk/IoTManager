@@ -41,17 +41,9 @@ class Clock {
     */
     const String getDateTimeDotFormated();
     /*
-    * Локальное время "чч:мм:cc"
+    * Локальное время "чч:мм:cc" , seconds = false то "чч:мм"
     */
-    const String getTime();
-
-    const String getTimeJson();
-
-    /*
-    * Локальное время "чч:мм"
-    */
-    const String getTimeWOsec();
-
+    const String getTime(bool seconds = true);
     /*
     * Время с момента запуска "чч:мм:cc" далее "дд чч:мм"
     */

@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-#include "Base/Named.h"
+#include "Base/KeyValue.h"
 #include "Base/StringQueue.h"
 
 enum class EquationSign : uint8_t {
@@ -55,9 +55,9 @@ class ScenBlock {
 
 namespace Scenario {
 
-void fire(Named* obj);
+void process(KeyValue*);
 
-void fire(const String& name);
+void process(const String);
 
 void reinit();
 

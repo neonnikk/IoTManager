@@ -3,18 +3,14 @@
 #include "Collection/Widgets.h"
 #include "Collection/Logger.h"
 
-KeyValueStore options;
-
-KeyValueFile runtime(DEVICE_RUNTIME_FILE);
-
-TickerScheduler ts(SYS_MEMORY + 1);
+TickerScheduler ts(ANNOUNCE + 1);
 
 WiFiClient wifiClient;
 AsyncWebServer server{80};
 AsyncWebSocket ws{"/ws"};
 AsyncEventSource events{"/events"};
 
-void save_config() {
+void config_save() {
     String buf;
     config.save(buf);
     writeFile(DEVICE_CONFIG_FILE, buf);
@@ -26,22 +22,6 @@ void load_config() {
     if (readFile(DEVICE_CONFIG_FILE, buf)) {
         config.load(buf);
     }
-}
-
-bool isExcludedKey(const String& key) {
-    return key.equals("time") ||
-           key.equals("name") ||
-           key.equals("lang") ||
-           key.equals("ip") ||
-           key.endsWith("_in");
-}
-
-void publishState() {
-    liveData.forEach([](KeyValue* item) {
-        if (!isExcludedKey(item->getKey())) {
-            MqttClient::publishStatus(item->getKey(), item->getValue(), item->getType());
-        }
-    });
 }
 
 void publishWidgets() {
@@ -62,16 +42,7 @@ void publishCharts() {
     });
 }
 
-void config_init() {
-    load_config();
-
-    runtime.load();
-    runtime.write("chipID", getChipId());
-    runtime.write("firmware_version", FIRMWARE_VERSION);
-    runtime.write("mqtt_prefix", config.mqtt()->getPrefix() + "/" + getChipId());
-}
-
-void configAdd(const String& str) {
+void config_add(const String& str) {
     addFile(DEVICE_COMMAND_FILE, str);
 }
 
@@ -107,6 +78,4 @@ void device_init() {
             ExecuteCommand(item);
         }
     }
-
-    Scenario::init();
 }

@@ -1,5 +1,6 @@
 #include "NetworkManager.h"
 
+#include "StatusLed.h"
 #include "HttpServer.h"
 #include "PrintMessage.h"
 #include "Utils/TimeUtils.h"
@@ -19,19 +20,64 @@ bool _intitialized = false;
 
 static WiFiEventHandler staGotIpEvent, staDisconnectedEvent;
 
+void onConnect(IPAddress ip) {
+    _connected = true;
+
+    pm.info("http://" + ip.toString());
+    if (!_intitialized) {
+        pm.info("HttpServer");
+        HttpServer::init();
+        pm.info("WebAdmin");
+        web_init();
+        perform_updates_check();
+        _intitialized = true;
+    }
+
+    ts.add(
+        NETWORK_CONNECTION, ONE_SECOND_ms * 5, [&](void*) {
+            if (isNetworkActive()) {
+                if (config.mqtt()->isEnabled()) {
+                    if (MqttClient::isConnected()) {
+                        led.set(LedStatus::OFF);
+                        _lastStatus = Connection::OK;
+                        return;
+                    } else {
+                        led.set(LedStatus::FAST);
+                    }
+                } else {
+                    led.set(LedStatus::OFF);
+                }
+            } else {
+                if (_lastStatus == Connection::OK) {
+                    pm.error("connection lost");
+                    led.set(LedStatus::FAST);
+                }
+                _lastStatus = Connection::ERROR;
+            }
+        },
+        nullptr, false);
+}
+
+void onDisconnect(uint8_t reason) {
+    led.set(LedStatus::SLOW);
+    pm.error("disconnected: " + String(reason, DEC));
+    _connected = false;
+}
+
 void init() {
+    led.set(LedStatus::SLOW);
+
     WiFi.hostname(config.network()->getHostname());
     WiFiMode_t mode = (WiFiMode_t)config.network()->getMode();
 
     staGotIpEvent = WiFi.onStationModeGotIP([](WiFiEventStationModeGotIP event) {
-        pm.info("Connected: " + String(WiFi.status() == WL_CONNECTED ? "yes" : "no"));
-        pm.info("http://" + event.ip.toString());
-        _connected = true;
+        if (WiFi.status() == WL_CONNECTED) {
+            onConnect(event.ip);
+        }
     });
+
     staDisconnectedEvent = WiFi.onStationModeDisconnected([](WiFiEventStationModeDisconnected event) {
-        pm.error("Disconnected: " + event.ssid);
-        pm.error("Reason: " + String(event.reason, DEC));
-        _connected = false;
+        onDisconnect(event.reason);
     });
 
     switch (mode) {
@@ -54,34 +100,6 @@ IPAddress getHostIP() {
     return WiFi.getMode() == WIFI_STA ? WiFi.localIP() : WiFi.localIP();
 }
 
-void check_network_status() {
-    LedStatus_t _led = LED_OFF;
-    if (isNetworkActive()) {
-        _lastStatus = Connection::OK;
-        if (config.mqtt()->isEnabled()) {
-            if (!MqttClient::isConnected()) {
-                _led = LED_SLOW;
-                MqttClient::connect();
-            }
-        }
-        if (!_intitialized) {
-            pm.info("HttpServer");
-            HttpServer::init();
-            pm.info("WebAdmin");
-            web_init();
-            perform_updates_check();
-            _intitialized = true;
-        }
-    } else {
-        if (_lastStatus == Connection::OK) {
-            pm.error("connection lost");
-            _led = LED_FAST;
-        }
-        _lastStatus = Connection::ERROR;
-    }
-    setLedStatus(_led);
-}
-
 void startSTAMode() {
     ts.remove(WIFI_SCAN);
 
@@ -100,37 +118,13 @@ void startSTAMode() {
         }
     }
     WiFi.setAutoReconnect(true);
-    // int connRes;
-    // do {
-    //     connRes = WiFi.waitForConnectResult();
-    //     switch (connRes) {
-    //         case -1: {
-    //             pm.error("on timeout");
-    //         } break;
-    //         case WL_NO_SSID_AVAIL: {
-    //             pm.error("no network");
-    //             keepConnecting = false;
-    //         } break;
-    //         case WL_CONNECTED: {
-    //             keepConnecting = false;
-    //         } break;
-    //         case WL_CONNECT_FAILED: {
-    //             pm.error("check credentials");
-    //             keepConnecting = false;
-    //         } break;
-    //         default:
-    //             break;
-    //     }
-
-    ts.add(
-        NETWORK_CONNECTION, ONE_SECOND_ms, [&](void*) {
-            check_network_status();
-        },
-        nullptr, false);
 };
 
 bool startAPMode() {
-    setLedStatus(LED_ON);
+    WiFi.setAutoReconnect(false);
+
+    led.set(LedStatus::ON);
+
     String ssid, passwd;
     config.network()->getSSID(WIFI_AP, ssid);
     config.network()->getPasswd(WIFI_AP, passwd);
@@ -138,9 +132,9 @@ bool startAPMode() {
 
     WiFi.mode(WIFI_AP);
     WiFi.softAP(ssid.c_str(), passwd.c_str());
+
     String hostIpStr = WiFi.softAPIP().toString();
     pm.info("http://" + hostIpStr);
-
     runtime.write("ip", hostIpStr.c_str());
 
     ts.add(

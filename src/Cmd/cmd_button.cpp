@@ -17,10 +17,10 @@ static Button *getObjectByName(const String &name) {
 }
 
 static bool getButtonType(const String &assign, ButtonType_t &type) {
-    if (isDigitStr(assign)) {
-        type = BUTTON_GPIO;
-    } else if (assign == "na") {
+    if (assign.isEmpty()) {
         type = BUTTON_VIRTUAL;
+    } else if (isDigitStr(assign)) {
+        type = BUTTON_GPIO;
     } else if ((assign == "scen") || assign.startsWith("line")) {
         type = BUTTON_SCEN;
     } else {
@@ -31,17 +31,18 @@ static bool getButtonType(const String &assign, ButtonType_t &type) {
 }
 
 void cmd_button() {
-    String name = getObjectName(TAG_BUTTON, sCmd.next());
+    KeyValueStore *params = new KeyValueStore(sCmd.next());
 
-    String assign = sCmd.next();
-    String descr = sCmd.next();
-    String page = sCmd.next();
-    String order = sCmd.next();
-    String value = sCmd.next();
-    String inverted = sCmd.next();
+    String name = getObjectName(TAG_BUTTON, params->read("id").c_str());
+    String descr = params->read("name");
+    String assign = params->read("pin");
+    String inverted = params->read("inverted", "false");
+    String state = params->read("state", "0");
+    String widget = params->read("widget", "toggle");
+    String page = params->read("page");
+    String order = params->read("order");
 
-    value = value.isEmpty() ? "0" : value;
-    inverted = inverted.isEmpty() ? "0" : inverted;
+    delete params;
 
     ButtonType_t type;
     if (!getButtonType(assign, type)) {
@@ -49,11 +50,11 @@ void cmd_button() {
         return;
     }
 
-    buttons.add(type, name, assign, value, inverted);
+    buttons.add(type, name, assign, state, inverted);
 
-    liveData.write(name, value, VT_INT);
-    MqttClient::publishStatus(name, value, VT_INT);
-    Widgets::createWidget(descr, page, order, "toggle", name);
+    runtime.write(name, state, VT_INT);
+
+    Widgets::createWidget(descr, page, order, widget, name);
 }
 
 void cmd_buttonChange() {
@@ -62,25 +63,20 @@ void cmd_buttonChange() {
     if (!item) {
         return;
     }
+    String state = item->toggleState();
 
-    String value = item->toggleState();
-
-    liveData.write(name, value, VT_INT);
-    Scenario::fire(name);
-    MqttClient::publishStatus(name, value, VT_INT);
+    runtime.write(name, state, VT_INT);
 }
 
 void cmd_buttonSet() {
     String name = getObjectName(TAG_BUTTON, sCmd.next());
+    String state = sCmd.next();
     auto *item = getObjectByName(name);
     if (!item) {
         return;
     }
-    String value = sCmd.next();
 
-    item->setValue(value);
+    item->setValue(state);
 
-    liveData.write(name, value, VT_INT);
-    Scenario::fire(name);
-    MqttClient::publishStatus(name, value, VT_INT);
+    runtime.write(name, state, VT_INT);
 }

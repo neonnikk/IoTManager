@@ -5,9 +5,9 @@
 #include <WiFiClient.h>
 
 #include "Cmd.h"
-
+#include "Runtime.h"
+#include "Config/MqttConfig.h"
 #include "Collection/Logger.h"
-
 #include "Utils/TimeUtils.h"
 
 static const char* MODULE = "Mqtt";
@@ -66,6 +66,7 @@ void init() {
 }
 
 bool connect() {
+    init();
     bool res = false;
     _mqtt.setServer(_addr.c_str(), _port);
     res = _mqtt.connect(_uuid.c_str(), _user.c_str(), _pass.c_str());
@@ -115,11 +116,8 @@ boolean _mqtt_publish(const char* topic, const char* data) {
     return false;
 }
 
-boolean addMqttQueue(const String& topic, const String& data) {
-    pm.info(topic);
-    pm.info(data);
+void pushToQueue(const String& topic, const String& data) {
     _queue.push_back(MqttMessage(topic.c_str(), data.c_str()));
-    return true;
 }
 
 bool isConnected() {
@@ -190,8 +188,8 @@ void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
         payloadStr += (char)payload[i];
     }
     if (payloadStr.equalsIgnoreCase("hello")) {
+        runtime.publish();
         publishWidgets();
-        publishState();
         publishCharts();
     } else if (topicStr.indexOf("control")) {
         // название топика -  команда,
@@ -218,58 +216,52 @@ void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
     }
 }
 
-boolean publishData(const String& topic, const String& data) {
-    String path = _deviceRoot + "/" + topic;
-    return addMqttQueue(path, data);
+void publishData(const String& topic, const String& data) {
+    String path = _deviceRoot;
+    path += "/";
+    path += topic;
+    pushToQueue(path, data);
 }
 
-boolean publistWidget(const String& data) {
-    String path = _deviceRoot + "/config";
-    return addMqttQueue(path, data);
+void publistWidget(const String& data) {
+    String path = _deviceRoot;
+    path += "/config";
+    pushToQueue(path, data);
 }
 
-boolean publishChart(const String& name, const String& data) {
+void publishChart(const String& name, const String& data) {
     String path = _deviceRoot;
     path += "/";
     path += name;
     path += "_ch";
-    return addMqttQueue(path, data);
+    pushToQueue(path, data);
 }
 
-boolean publishControl(const String& id, const String& topic, const String& data) {
+void publishControl(const String& deviceId, const String& objName, const String& data) {
     String path = _prefix;
     path += "/";
-    path += id;
+    path += deviceId;
     path += "/";
-    path += topic;
+    path += objName;
     path += "/control";
-    return addMqttQueue(path, data);
+    pushToQueue(path, data);
 }
 
-boolean publishStatus(const String& key, const String& value, const ValueType_t type) {
+void publishState(const String& objName, const String& data) {
     String path = _deviceRoot;
     path += "/";
-    path += key;
+    path += objName;
     path += "/status";
 
-    String data = "{\"status\":";
-    if (type == VT_STRING) {
-        data += "\"";
-    }
-    data += value;
-    if (type == VT_STRING) {
-        data += "\"";
-    }
-    data += "}";
-    return addMqttQueue(path, data);
+    pushToQueue(path, data);
 }
 
-boolean publishOrder(const String& topic, const String& order) {
+void publishOrder(const String& deviceId, const String& data) {
     String path = _prefix;
     path += "/";
-    path += topic;
+    path += deviceId;
     path += "/order";
-    return addMqttQueue(path, order);
+    pushToQueue(path, data);
 }
 
 const String getStateStr() {

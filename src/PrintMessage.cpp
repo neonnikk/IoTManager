@@ -2,6 +2,7 @@
 
 #include "Clock.h"
 #include "MqttClient.h"
+#include "Utils\SysUtils.h"
 #include "Utils\StringUtils.h"
 #include "Utils\TimeUtils.h"
 
@@ -46,15 +47,15 @@ void PrintMessage::print(const char* time, const char* level, const char* module
             writer->write(buf, strlen(buf));
             writer->end();
         }
-        delete writer; 
+        delete writer;
     }
 
     if (fileEnabled) {
         //
     }
     if (printEnabled) {
-        snprintf(buf, 256, "%s [%s] [%s] %s",
-                 time, level, module, str);
+        snprintf(buf, 256, "%s [%s] [%s] [%s] %s",
+                 time, level, getHeapStats().c_str(), module, str);
         if (out) {
             out->println(buf);
         };

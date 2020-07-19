@@ -1,9 +1,8 @@
 #pragma once
 
 #include <Arduino.h>
-#include "Base/KeyValueStore.h"
+
 #include "MqttWriter.h"
-#include "Config/MqttConfig.h"
 
 namespace MqttClient {
 
@@ -12,20 +11,26 @@ MqttWriter* getWriter(const char* topic);
 void init();
 
 bool isConnected();
+
 bool connect();
+
 void reconnect();
+
 void loop();
+
 void subscribe();
 
-boolean publishData(const String& topic, const String& data);
-boolean publishChart(const String& name, const String& data);
-boolean publistWidget(const String& data);
+void publishData(const String& topic, const String& data);
 
-boolean publishControl(String id, String topic, String state);
+void publishChart(const String& name, const String& data);
 
-boolean publishStatus(const String& name, const String& value, const ValueType_t type);
+void publistWidget(const String& data);
 
-boolean publishOrder(const String& topic, const String& data);
+void publishControl(const String& id, const String& topic, const String& state);
+
+void publishState(const String& topic, const String& data);
+
+void publishOrder(const String& topic, const String& data);
 
 const String getStateStr();
 

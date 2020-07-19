@@ -10,8 +10,7 @@ void cmd_text() {
 
     Widgets::createWidget(value, page, order, "anydata", name);
 
-    liveData.write(name, value, VT_STRING);
-    MqttClient::publishStatus(name, value, VT_STRING);
+    runtime.write(name, value);
 }
 
 void cmd_textSet() {
@@ -26,6 +25,5 @@ void cmd_textSet() {
         value = value + " " + now.getDateTimeDotFormated();
     }
 
-    liveData.write(name, value, VT_STRING);
-    MqttClient::publishStatus(name, value, VT_STRING);
+    runtime.write(name, value);
 }

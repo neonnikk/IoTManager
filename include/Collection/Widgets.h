@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <functional>
 
-typedef std::function<bool(String)> JsonHandler;
+typedef std::function<void(String)> JsonHandler;
 
 namespace Widgets {
 void createWidget(String& descr, String& page, const String& order, const String& templateName, const String& topic);

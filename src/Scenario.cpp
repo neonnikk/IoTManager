@@ -18,7 +18,7 @@ const char* ParamItem::value() {
 }
 
 const char* LiveParam::value() {
-    return liveData.read(_value).c_str();
+    return runtime.read(_value).c_str();
 }
 
 ScenBlock::ScenBlock(const String& str) {
@@ -62,9 +62,9 @@ bool ScenBlock::equation(const String& object, const String& value) {
 }
 
 bool ScenBlock::process(const String& event) {
-    String obj = event;
-    String value = liveData.read(obj);
-    if (equation(obj, value)) {
+    String value = runtime.read(event);
+    pm.info("event:" + event + ":" + value);
+    if (equation(event, value)) {
         stringExecute(_commands);
         return true;
     }
@@ -138,11 +138,11 @@ StringQueue _events;
 
 bool _ready = false;
 
-void fire(Named* obj) {
-    fire(obj->getName());
+void process(KeyValue* obj) {
+    process(obj->getKey());
 }
 
-void fire(const String& name) {
+void process(const String name) {
     if (config.general()->isScenarioEnabled()) {
         _events.push(name);
     }
@@ -221,14 +221,14 @@ void loop() {
     if (!_events.available()) {
         return;
     }
-    String buf;
-    _events.pop(buf);
-    if (buf.isEmpty()) {
+    String event;
+    _events.pop(event);
+    if (event.isEmpty()) {
         return;
     }
     for (auto item : _items) {
         if (item->isEnabled()) {
-            item->process(buf);
+            item->process(event);
         }
     }
 }

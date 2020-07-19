@@ -10,56 +10,63 @@ static const char* MODULE = "Devices";
 
 namespace Devices {
 
-DeviceList _list;
+std::vector<DeviceItem*> _list;
 
-void loadFromFile() {
+DeviceItem* find(const String& id) {
+    for (size_t i = 0; i < _list.size(); i++) {
+        if (id.equals(_list.at(i)->id())) {
+            return _list.at(i);
+        }
+    }
+    return NULL;
 }
 
 void get(String& res, unsigned long ttl_sec) {
-    _list.asString(res, ttl_sec);
+    for (auto item : _list) {
+        if (ttl_sec && (item->seenago() > ttl_sec)) {
+            continue;
+        }
+        res += item->asString();
+        res += "\r\n";
+    }
 }
 
-void saveToFile(const String filename) {
+void toCSV(const String filename) {
     auto file = LittleFS.open(filename, "w");
     if (!file) {
         pm.error("save: " + filename);
         return;
     }
     file.println("id;name;url;lastseen");
-    for (size_t i = 0; i < _list.size(); i++) {
-        DeviceItem* item = _list.at(i);
-        String data;
-        data = item->id();
-        data += ";";
-        data += item->name();
-        data += ";";
-        data += "<a href=\"http://";
-        data += item->ip();
-        data += "\" target=\"_blank\"\">";
-        data += item->ip();
-        data += "</a>";
-        data += ";";
-        data += item->lastseen();
+
+    for (auto* item : _list) {
+        String data = item->asString();
         file.println(data);
     }
     file.close();
 }
 
 void add(const String& id, const String& name, const String& ip) {
-    DeviceItem* item = _list.get(id);
+    DeviceItem* item = find(id);
     if (item) {
         item->update(name, ip);
         pm.info("updated");
     } else {
-        _list.add(id, name, ip);
+        item = new DeviceItem(id, name, ip);
+        _list.push_back(item);
         pm.info("added");
     }
 }
 
+size_t size() {
+    return _list.size();
+}
+
 const String asJson() {
+    size_t count = _list.size();
+    size_t n = 1;
     String res = "{\"devices\":[";
-    for (size_t i = 0; i < _list.size(); i++) {
-        DeviceItem* item = _list.at(i);
+    for (auto* item : _list) {
         res += "{\"id\":\"";
         res += item->id();
         res += "\",";
@@ -68,14 +75,14 @@ const String asJson() {
         res += "\",";
         res += "\"url\":\"";
         res += "<a href='http://";
-        res += item->ip();
+        res += item->ip().toString();
         res += "' target='_blank'>";
-        res += item->ip();
+        res += item->ip().toString();
         res += "</a>";
         res += "\",";
         res += "\"lastseen\":";
-        res += item->lastseen();
-        res += i < _list.size() - 1 ? "}," : "}";
+        res += item->seenago();
+        res += (n++ < count ? "}," : "}");
     }
     res += "]}";
     return res;

@@ -106,27 +106,15 @@ const String Clock::getDateTimeDotFormated() {
 /*
     * Локальное время "чч:мм:cc"
     */
-const String Clock::getTime() {
-    char buf[16];
-    sprintf(buf, "%02d:%02d:%02d", _time_local.hour, _time_local.minute, _time_local.second);
-    return String(buf);
-}
-
-const String Clock::getTimeJson() {
-    char buf[16];
-    sprintf(buf, "%02d-%02d-%02d", _time_local.hour, _time_local.minute, _time_local.second);
-    return String(buf);
-}
-
-/*
-* Локальное время "чч:мм"
-*/
-const String Clock::getTimeWOsec() {
+const String Clock::getTime(bool seconds) {
     char buf[32];
-    sprintf(buf, "%02d:%02d", _time_local.hour, _time_local.minute);
+    if (seconds) {
+        sprintf(buf, "%02d:%02d:%02d", _time_local.hour, _time_local.minute, _time_local.second);
+    } else {
+        sprintf(buf, "%02d:%02d", _time_local.hour, _time_local.minute);
+    }
     return String(buf);
 }
-
 /*
 * Время с момента запуска "чч:мм:cc" далее "дд чч:мм"
 */

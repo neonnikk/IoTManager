@@ -4,15 +4,16 @@
 #include "Collection/Devices.h"
 #include "Collection/Logger.h"
 #include "Collection/Sensors.h"
+#include "Collection/Servos.h"
+#include "Collection/Switches.h"
 #include "Collection/Timers.h"
 #include "Collection/Widgets.h"
 
 #include "Sensors/AnalogSensor.h"
 #include "Sensors/OneWireBus.h"
 
-#include "Objects/Switches.h"
 #include "Objects/Pwm.h"
-#include "Objects/ServoItems.h"
+
 #include "Objects/Terminal.h"
 #include "Objects/Telnet.h"
 
@@ -41,7 +42,7 @@ HardwareSerial *mySerial = nullptr;
 unsigned long parsePeriod(const String &str, unsigned long default_time_syfix) {
     unsigned long res = 0;
     if (str.indexOf("digit") != -1) {
-        res = liveData.readInt(str);
+        res = runtime.readInt(str);
     } else {
         if (str.endsWith("ms")) {
             res = str.substring(0, str.indexOf("ms")).toInt();
@@ -63,13 +64,9 @@ const String getObjectName(const char *type, const char *id) {
 }
 
 void cmd_init() {
-    pm.info(TAG_INIT);
-
-    mySwitches.setOnChangeState([](Switch *obj) {
+    switches.setOnChangeState([](Switch *obj) {
         String name = String("switch") + obj->getName();
-        pm.info(name);
-        Scenario::fire(name);
-        liveData.write(name, obj->getValue(), VT_INT);
+        runtime.write(name, obj->getValue(), VT_INT);
     });
 
     sCmd.addCommand("button", cmd_button);
@@ -159,23 +156,6 @@ void cmd_pinChange() {
     digitalWrite(pin_number.toInt(), !digitalRead(pin_number.toInt()));
 }
 
-void cmd_switch() {
-    String name = sCmd.next();
-    String assign = sCmd.next();
-    String debounce = sCmd.next();
-
-    Switch *item = mySwitches.add(name, assign);
-    if (!item) {
-        pm.error("bad command");
-        return;
-    }
-    item->setDebounce(debounce.toInt());
-
-    String objName = "switch" + name;
-
-    liveData.write(objName, item->getValue(), VT_INT);
-}
-
 void loop_items() {
     if (term) {
         term->loop();
@@ -184,7 +164,7 @@ void loop_items() {
         telnet->loop();
     }
 
-    mySwitches.loop();
+    switches.loop();
 }
 
 void cmd_inputDigit() {
@@ -197,7 +177,7 @@ void cmd_inputDigit() {
     String start_state = sCmd.next();
     String order = sCmd.next();
 
-    liveData.write("digit" + number, start_state, VT_STRING);
+    runtime.write("digit" + number, start_state, VT_STRING);
     Widgets::createWidget(widget_name, page_name, order, "inputNum", "digit" + number);
 }
 
@@ -206,8 +186,7 @@ void cmd_digitSet() {
     String value = sCmd.next();
 
     String objName = "digit" + name;
-    liveData.write(objName, value, VT_STRING);
-    MqttClient::publishStatus(objName, value, VT_STRING);
+    runtime.write(objName, value);
 }
 
 void cmd_inputTime() {
@@ -220,7 +199,8 @@ void cmd_inputTime() {
     String state = sCmd.next();
     String order = sCmd.next();
 
-    liveData.write("time" + number, state, VT_STRING);
+    String objName = "time" + name;
+    runtime.write(objName, state);
     Widgets::createWidget(widget_name, page_name, order, "inputTime", "time" + number);
 }
 
@@ -229,8 +209,7 @@ void cmd_timeSet() {
     String value = sCmd.next();
 
     String objName = "time" + name;
-    liveData.write(objName, value, VT_STRING);
-    MqttClient::publishStatus(objName, value, VT_STRING);
+    runtime.write(objName, value);
 }
 
 void cmd_stepper() {
@@ -309,7 +288,7 @@ void cmd_servo() {
 
     String order = sCmd.next();
 
-    myServo.add(name, pin, value, min_value, max_value, min_deg, max_deg);
+    servos.add(name, pin, value, min_value, max_value, min_deg, max_deg);
 
     // options.write("servo_pin" + name, pin);
     // value = map(value, min_value, max_value, min_deg, max_deg);
@@ -322,21 +301,6 @@ void cmd_servo() {
 
     Widgets::createWidget(descr, page, order, "range", "servo" + name);
     // , "min", String(min_value), "max", String(max_value), "k", "1");
-}
-
-void cmd_servoSet() {
-    String name = sCmd.next();
-    String value = sCmd.next();
-
-    BaseServo *servo = myServo.get(name);
-    if (servo) {
-        servo->setValue(value);
-    }
-    String objName = "servo" + name;
-
-    Scenario::fire(objName);
-    liveData.write(objName, value, VT_INT);
-    MqttClient::publishStatus(objName, value, VT_INT);
 }
 
 void cmd_serialBegin() {
@@ -395,12 +359,8 @@ void cmd_get() {
     String param = sCmd.next();
     String res = "";
     if (!obj.isEmpty()) {
-        if (obj.equalsIgnoreCase(TAG_OPTIONS)) {
-            res = param.isEmpty() ? options.asJson() : options.read(param);
-        } else if (obj.equalsIgnoreCase(TAG_RUNTIME)) {
+        if (obj.equalsIgnoreCase("state")) {
             res = param.isEmpty() ? runtime.asJson() : runtime.read(param);
-        } else if (obj.equalsIgnoreCase("state")) {
-            res = param.isEmpty() ? liveData.asJson() : liveData.read(param);
         } else if (obj.equalsIgnoreCase("devices")) {
             Devices::get(res, param.toInt());
         } else {
@@ -658,7 +618,7 @@ void cmd_firmwareVersion() {
     String page = sCmd.next();
     String order = sCmd.next();
 
-    liveData.write("firmver", FIRMWARE_VERSION, VT_STRING);
+    runtime.write("firmver", FIRMWARE_VERSION, VT_STRING);
     Widgets::createWidget(widget, page, order, "anydata", "firmver");
 }
 

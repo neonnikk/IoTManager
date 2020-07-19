@@ -1,10 +1,10 @@
-#include "Objects/Switches.h"
+#include "Collection/Switches.h"
 
 #include "PrintMessage.h"
 
-static const char* MODULE = "Switch";
+static const char* MODULE = "Switches";
 
-Switches mySwitches;
+Switches switches;
 
 void Switches::setOnChangeState(OnSwitchChangeState h) {
     _onChange = h;

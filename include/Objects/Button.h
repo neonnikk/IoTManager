@@ -17,10 +17,13 @@ enum ButtonType_t {
 class Button : public Item,
                public Value {
    public:
-    Button(const String& name, const String& assign, const String& value) : Item{name, assign}, Value{VT_INT} {};
+    Button(const String& name, const String& assign) : Item{name, assign},
+                                                       Value{VT_INT},
+                                                       _inverted{false} {};
+    ~Button() {}
 
-    void setInverted(bool value) {
-        _inverted = value;
+    void setInverted(bool inverted) {
+        _inverted = inverted;
     }
 
     bool isInverted() {
@@ -28,27 +31,31 @@ class Button : public Item,
     }
 
     const String toggleState() {
-        bool state = !getValue().toInt();
-        setValue(String(state));
+        bool state = getValue().toInt();
+        setValue(String(!state));
         return getValue();
     }
 
-   private:
+   protected:
     bool _inverted;
 };
 
 class VirtualButton : public Button {
    public:
-    VirtualButton(const String& name, const String& assign, const String& value) : Button{name, assign, value} {};
+    VirtualButton(const String& name, const String& assign) : Button{name, assign} {};
+
+    ~VirtualButton(){};
 };
 
 class ScenButton : public Button {
    public:
-    ScenButton(const String& name, const String& assign, const String& value) : Button{name, assign, value} {};
+    ScenButton(const String& name, const String& assign) : Button{name, assign} {};
+
+    ~ScenButton(){};
 
    protected:
     void onValueUpdate(const String& value) override {
-        bool state = getValue().toInt();
+        bool state = value.toInt();
         config.general()->enableScenario(state);
     }
 };
@@ -56,15 +63,18 @@ class ScenButton : public Button {
 class PinButton : public Button,
                   public PinAssigned {
    public:
-    PinButton(const String& name, const String& assign, const String& value) : Button{name, assign, value},
-                                                                               PinAssigned{this} {
-        Serial.printf("%s onCreate: %d\n", getName(), getPin());
+    PinButton(const String& name, const String& assign) : Button{name, assign},
+                                                          PinAssigned{this} {
         pinMode(getPin(), OUTPUT);
     };
 
+    ~PinButton(){};
+
    protected:
     void onValueUpdate(const String& value) override {
-        Serial.printf("%s onValueUpdate (pin:%d, inverted:%d): %li\n", getName(), getPin(), isInverted(), value.toInt());
-        digitalWrite(getPin(), isInverted() ? value.toInt() : !value.toInt());
+        uint8_t pin = getPin();
+        uint8_t state = isInverted() ? value.toInt() : !value.toInt();
+        digitalWrite(pin, state);
+        // Serial.printf("digitalWrite %d,%d\n", pin, state);
     }
 };

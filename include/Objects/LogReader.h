@@ -10,7 +10,7 @@
 #define FILE_READ "r"
 #define FILE_WRITE "w"
 
-typedef std::function<bool(LogMetadata *, uint8_t *)> LogEntryHandler;
+typedef std::function<void(LogMetadata *, uint8_t *)> LogEntryHandler;
 
 class LogReader {
    private:

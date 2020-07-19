@@ -12,7 +12,6 @@
 #include "ESP8266.h"
 //
 
-#include "Base/KeyValueStore.h"
 #include "Base/StringQueue.h"
 
 #include "StringCommand.h"
@@ -25,6 +24,7 @@
 #include "MqttClient.h"
 #include "NetworkManager.h"
 #include "PrintMessage.h"
+#include "Runtime.h"
 
 #include "Utils/FileUtils.h"
 #include "Utils/JsonUtils.h"
@@ -36,9 +36,7 @@
 #include <ArduinoOTA.h>
 #include <time.h>
 
-extern KeyValueStore options;
-extern KeyValueStore liveData;
-extern KeyValueFile runtime;
+extern Runtime runtime;
 
 extern TickerScheduler ts;
 extern WiFiClient wifiClient;
@@ -49,7 +47,6 @@ extern AsyncEventSource events;
 
 void perform_mqtt_restart();
 
-extern void print_sys_memory();
 extern void print_sys_timins();
 /*
 * Запрос на проверку обновлений
@@ -84,30 +81,23 @@ extern void fileExecute(const String filename);
 */
 extern void stringExecute(String cmdStr);
 extern void ExecuteCommand(const String& cmdStr);
-extern void load_runtime();
+
 extern void load_config();
 
 extern void statistics_init();
 extern void device_init();
-extern void cmd_init();
-extern void init_mod();
 
-extern void publishState();
 extern void publishWidgets();
 extern void publishCharts();
 
-extern void configAdd(const String&);
-extern void save_runtime();
-extern void save_config();
-extern void setPreset(size_t num);
-extern void setLedStatus(LedStatus_t);
+extern void config_add(const String&);
+extern void config_save();
 
-extern void config_init();
-extern void loop_serial();
+extern void setPreset(size_t num);
+
 extern void loop_cmd();
 extern void loop_items();
-extern void loop_scenario();
 
-// Init
+extern void init_mod();
 extern void web_init();
-extern void telemetry_init();
+extern void telemetry_task();

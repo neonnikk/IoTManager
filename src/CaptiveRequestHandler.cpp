@@ -1,5 +1,7 @@
 #include "Global.h"
 
+#include <Arduino.h>
+
 class CaptiveRequestHandler : public AsyncWebHandler {
    public:
     CaptiveRequestHandler(const char *host);

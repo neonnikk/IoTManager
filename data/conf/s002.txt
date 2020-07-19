@@ -1,6 +1,6 @@
-timenow = time1
+time = time1
 buttonSet 1 1
 end
-timenow = time2
+time = time2
 buttonSet 1 0
 end

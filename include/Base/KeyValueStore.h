@@ -4,62 +4,53 @@
 #include <ArduinoJson.h>
 #include <functional>
 
-#include <PrintMessage.h>
-#include <Utils/FileUtils.h>
-#include "Value.h"
-
-class KeyValue {
-   private:
-    char* _key;
-    char* _value;
-    ValueType_t _type;
-
-   public:
-    KeyValue(const char* key, const char* value, ValueType_t type);
-
-    ~KeyValue();
-    ValueType_t getType() const;
-    const char* getKey() const;
-    const char* getValue() const;
-
-    void setValue(const char* value, const ValueType_t type);
-    void setValue(const char* value);
-    void setValueInt(int value);
-    void setValueFloat(float value);
-};
-
-typedef std::function<void(KeyValue*)> KeyValueHandler;
+#include "PrintMessage.h"
+#include "Base/KeyValue.h"
+#include "Utils/FileUtils.h"
 
 class KeyValueStore {
    protected:
     std::vector<KeyValue*> _items;
 
+   protected:
+    virtual void onUpdate(KeyValue*){};
+    virtual void onAdd(KeyValue*){};
+
    public:
     KeyValueStore();
-    KeyValueStore(const char* content);
-    ~KeyValueStore();
 
-    void loadString(const char* content);
+    KeyValueStore(const char* content);
+
+    virtual ~KeyValueStore();
 
     void erase(const String key);
 
-    KeyValue* findKey(const String key);
+    void clear();
 
-    void writeInt(const String& key, const String& value);
+    KeyValue* find(const String key) const;
+
+    bool get(const String& key, String& value, ValueType_t& type) const;
+
+    void writeAsInt(const String& key, const String& value);
+
+    void writeAsFloat(const String& key, const String& value);
+
     void write(const String& key, int value);
 
-    void write(const String& key, const String& value, ValueType_t type = VT_STRING);
+    void write(const String& key, const String& value, ValueType_t type = VT_STRING, KeyType_t key_type = MT_MQTT_EVENT);
 
-    const String read(const String& key);
+    const String read(const String& key) const;
 
-    bool read(const String& key, String& value, ValueType_t& type);
+    const String read(const String& key, const char* default_value) const;
 
-    int readInt(const String& key);
+    int readInt(const String& key) const;
 
-    float readFloat(const String& key);
+    float readFloat(const String& key) const;
+
+    void loadString(const char* content);
 
     void forEach(KeyValueHandler func);
-    void clear();
+
     const String asJson();
 };
 

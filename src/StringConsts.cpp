@@ -4,6 +4,9 @@
 
 #include "Arduino.h"
 
+const char* PAGE_UTILITIES = "/?set.utilities";
+const char* PAGE_SETUP = "/?set.device";
+
 const char* DEVICE_RUNTIME_FILE = "runtime.json";
 const char* DEVICE_CONFIG_FILE = "config.json";
 const char* DEVICE_COMMAND_FILE = "dev_conf.txt";
@@ -13,6 +16,8 @@ const char* DEVICE_BOOT_FILE = "boot.txt";
 const char* TAG_INIT = "init";
 const char* TAG_OPTIONS = "options";
 const char* TAG_RUNTIME = "runtime";
+const char* TAG_UPTIME = "uptime";
+const char* TAG_TIME = "time";
 const char* TAG_LAST_VERSION = "last_version";
 
 const char* TAG_ONE_WIRE = "oneWire";

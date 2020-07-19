@@ -1,5 +1,8 @@
 #pragma once
 
+extern const char* PAGE_UTILITIES;
+extern const char* PAGE_SETUP;
+
 extern const char* DEVICE_RUNTIME_FILE;
 extern const char* DEVICE_CONFIG_FILE;
 extern const char* DEVICE_COMMAND_FILE;
@@ -19,5 +22,7 @@ extern const char* TAG_BUTTON;
 extern const char* TAG_TIMER;
 extern const char* TAG_PWM;
 extern const char* TAG_TEXT;
+extern const char* TAG_UPTIME;
+extern const char* TAG_TIME;
 
 extern const char* strBoolEnabled(bool value);
