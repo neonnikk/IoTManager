@@ -5,7 +5,6 @@
 #include "Base/Writer.h"
 #include "MqttClient.h"
 
-#include "TickerScheduler/TickerScheduler.h"
 
 #include "Utils/StringUtils.h"
 

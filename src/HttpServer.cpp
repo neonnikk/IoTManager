@@ -10,6 +10,10 @@
 #include "FSEditor.h"
 #include "Cmd.h"
 
+AsyncWebServer server{80};
+AsyncWebSocket ws{"/ws"};
+AsyncEventSource events{"/events"};
+
 namespace HttpServer {
 
 static const char *MODULE = "Http";

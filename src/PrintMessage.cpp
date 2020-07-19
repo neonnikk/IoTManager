@@ -5,6 +5,8 @@
 #include "Utils\SysUtils.h"
 #include "Utils\StringUtils.h"
 #include "Utils\TimeUtils.h"
+#include "TickerScheduler.h"
+#include "Metric.h"
 
 static const char* error_levels[] = {"I", "W", "E", "?"};
 
@@ -54,8 +56,8 @@ void PrintMessage::print(const char* time, const char* level, const char* module
         //
     }
     if (printEnabled) {
-        snprintf(buf, 256, "%s [%s] [%s] [%s] %s",
-                 time, level, getHeapStats().c_str(), module, str);
+        snprintf(buf, 256, "%s [%s] [%s %lu] [%s] %s",
+                 time, level, getHeapStats().c_str(), metric.getLps(), module, str);
         if (out) {
             out->println(buf);
         };

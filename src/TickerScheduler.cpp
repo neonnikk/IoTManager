@@ -1,4 +1,8 @@
-#include "TickerScheduler/TickerScheduler.h"
+#include "TickerScheduler.h"
+
+#include "Consts.h"
+
+TickerScheduler ts(ANNOUNCE + 1);
 
 TickerScheduler::TickerScheduler(uint8_t size) {
     this->items = new TickerSchedulerItem[size];
@@ -94,40 +98,9 @@ void TickerScheduler::enableAll() {
 }
 
 void TickerScheduler::update() {
-    unsigned long loop_start = micros();
     for (size_t i = 0; i < this->size; i++) {
         if (this->items[i].is_used) {
-            unsigned long ticket_start = micros();
-
             handleTicker(this->items[i].cb, this->items[i].cb_arg, &this->items[i].flag);
-
-            this->items[i].metric.add(micros() - ticket_start);
         }
     }
-    _total_mu += (micros() - loop_start);
-    _loop_cnt++;
-}
-
-void TickerScheduler::print(Print& p) {
-    if (!_total_mu || !_loop_cnt) {
-        return;
-    }
-    unsigned long long total_ms = _total_mu / 1000;
-    p.printf("loops: %llu total: %llu ms ", _loop_cnt, total_ms);
-    for (size_t i = 0; i < size; i++) {
-        Timing* tt = &items[i].metric;
-        float per = (float)(tt->_total_mu / 1000) / total_ms * 100;
-        if (!per) {
-            continue;
-        }
-        p.printf("%d: %2.2f%%%s", i, per, i < size - 1 ? ", " : "\n");
-    }
-}
-
-void TickerScheduler::reset() {
-    for (size_t i = 0; i < this->size; i++) {
-        this->items[i].metric.reset();
-    }
-    _total_mu = 0;
-    _loop_cnt = 0;
 }

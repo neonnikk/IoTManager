@@ -35,12 +35,12 @@ class ScenBlock {
    public:
     ScenBlock(const String& str);
     ~ScenBlock();
-    bool process(const String& value);
     bool enable(bool enabled);
     bool isEnabled();
+    bool checkCondition(const String& object, const String& value);
+    const String getCommands();
 
    private:
-    bool equation(const String& object, const String& value);
     bool parseCondition(const String& str);
     bool parseSign(const String& str, EquationSign& sign);
 
@@ -48,7 +48,7 @@ class ScenBlock {
     bool _valid;
     bool _enabled;
     String _commands;
-    String _obj;
+    String _key;
     EquationSign _sign;
     ParamItem* _param;
 };

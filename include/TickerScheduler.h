@@ -6,8 +6,6 @@
 #include <Ticker.h>
 #include <functional>
 
-#include "Timings.h"
-
 void tickerFlagHandle(volatile bool *flag);
 
 typedef std::function<void(void *)> tscallback_t;
@@ -19,7 +17,6 @@ struct TickerSchedulerItem {
     void *cb_arg;
     uint32_t period;
     volatile boolean is_used = false;
-    Timing metric;
 };
 
 class TickerScheduler {
@@ -33,6 +30,7 @@ class TickerScheduler {
    private:
     unsigned long long _loop_cnt;
     unsigned long long _total_mu;
+    size_t _lps;
 
    public:
     TickerScheduler(uint8_t size);
@@ -49,3 +47,5 @@ class TickerScheduler {
     void print(Print &p);
     void reset();
 };
+
+extern TickerScheduler ts;

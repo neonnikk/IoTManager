@@ -16,7 +16,8 @@
 #include "WebClient.h"
 #include "Sensors/I2CScanner.h"
 #include "Sensors/OneWireScanner.h"
-#include "TickerScheduler/Metric.h"
+#include "TickerScheduler.h"
+#include "Metric.h"
 
 static const char* MODULE = "Main";
 
@@ -69,46 +70,38 @@ void loop() {
     if (!initialized) {
         return;
     }
-    m.loop();
+    metric.start();
 
     now.loop();
-    m.add(LI_CLOCK);
 
     ArduinoOTA.handle();
     // ws.cleanupClients();
 
     flag_actions();
-    m.add(LT_FLAG_ACTION);
 
     MqttClient::loop();
-    m.add(LI_MQTT_CLIENT);
 
     loop_cmd();
-    m.add(LI_CMD);
 
     loop_items();
-    m.add(LI_ITEMS);
 
     if (config.general()->isScenarioEnabled()) {
         Scenario::loop();
-        m.add(LI_SCENARIO);
     }
 
     if (config.general()->isBroadcastEnabled()) {
         Messages::loop();
         Broadcast::loop();
-        m.add(LI_BROADCAST);
     }
 
     ts.update();
-    m.add(LT_TASKS);
 
     Logger::update();
-    m.add(LT_LOGGER);
 
     if (config.hasChanged()) {
         config_save();
     }
+    metric.finish();
 }
 
 void flag_actions() {
@@ -201,14 +194,6 @@ void config_restore() {
     writeFile(DEVICE_COMMAND_FILE, commandBackup);
     writeFile(DEVICE_CONFIG_FILE, configBackup);
     load_config();
-}
-
-void print_sys_timins() {
-    m.print(Serial);
-    m.reset();
-
-    ts.print(Serial);
-    ts.reset();
 }
 
 void load_runtime() {

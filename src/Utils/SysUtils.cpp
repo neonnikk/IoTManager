@@ -27,7 +27,7 @@ const String getHeapStats() {
     uint8_t frag;
     ESP.getHeapStats(&free, &max, &frag);
     char buf[32];
-    sprintf(buf, "%s(%d%%)", prettyBytes(free).c_str(), frag);
+    sprintf(buf, "%s %d%%", prettyBytes(free).c_str(), frag);
     return buf;
 }
 #else

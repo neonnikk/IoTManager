@@ -3,13 +3,6 @@
 #include "Collection/Widgets.h"
 #include "Collection/Logger.h"
 
-TickerScheduler ts(ANNOUNCE + 1);
-
-WiFiClient wifiClient;
-AsyncWebServer server{80};
-AsyncWebSocket ws{"/ws"};
-AsyncEventSource events{"/events"};
-
 void config_save() {
     String buf;
     config.save(buf);

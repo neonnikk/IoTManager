@@ -31,23 +31,10 @@
 #include "Utils/StringUtils.h"
 #include "Utils/SysUtils.h"
 
-#include "TickerScheduler/TickerScheduler.h"
-
 #include <ArduinoOTA.h>
 #include <time.h>
 
-extern Runtime runtime;
-
-extern TickerScheduler ts;
-extern WiFiClient wifiClient;
-
-extern AsyncWebServer server;
-extern AsyncWebSocket ws;
-extern AsyncEventSource events;
-
 void perform_mqtt_restart();
-
-extern void print_sys_timins();
 /*
 * Запрос на проверку обновлений
 */

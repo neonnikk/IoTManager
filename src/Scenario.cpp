@@ -31,11 +31,15 @@ ScenBlock::~ScenBlock() {
     delete _param;
 }
 
-bool ScenBlock::equation(const String& object, const String& value) {
-    bool res = false;
-    if (!object.equalsIgnoreCase(_obj)) {
-        return res;
+const String ScenBlock::getCommands() {
+    return _commands;
+}
+
+bool ScenBlock::checkCondition(const String& key, const String& value) {
+    if (!key.equals(_key)) {
+        return false;
     }
+    bool res = false;
     switch (_sign) {
         case EquationSign::OP_EQUAL:
             res = value.equals(_param->value());
@@ -61,16 +65,6 @@ bool ScenBlock::equation(const String& object, const String& value) {
     return res;
 }
 
-bool ScenBlock::process(const String& event) {
-    String value = runtime.read(event);
-    pm.info("event:" + event + ":" + value);
-    if (equation(event, value)) {
-        stringExecute(_commands);
-        return true;
-    }
-    return false;
-}
-
 bool ScenBlock::enable(bool value) {
     _enabled = value;
     return isEnabled();
@@ -87,8 +81,8 @@ bool ScenBlock::parseCondition(const String& str) {
         return false;
     }
     size_t s2 = str.indexOf(" ", s1 + 1);
-    _obj = str.substring(0, s1);
-    if (_obj.isEmpty()) {
+    _key = str.substring(0, s1);
+    if (_key.isEmpty()) {
         pm.error("wrong obj");
         return false;
     }
@@ -217,6 +211,7 @@ void loop() {
     if (!_ready) {
         init();
         _ready = true;
+        return;
     }
     if (!_events.available()) {
         return;
@@ -226,9 +221,12 @@ void loop() {
     if (event.isEmpty()) {
         return;
     }
+    String value = runtime.read(event);
     for (auto item : _items) {
         if (item->isEnabled()) {
-            item->process(event);
+            if (item->checkCondition(event, value)) {
+                stringExecute(item->getCommands());
+            }
         }
     }
 }

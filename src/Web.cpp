@@ -1,11 +1,13 @@
-#include <Arduino.h>
+#include "Web.h"
 
+#include "HttpServer.h"
 #include "Global.h"
 
 static const char* MODULE = "Web";
 
+namespace Web {
 
-void web_init() {
+void init() {
     // dnsServer.start(53, "*", WiFi.softAPIP());
     // server.addHandler(new CaptiveRequestHandler(jsonReadStr(configSetupJson, "name").c_str())).setFilter(ON_AP_FILTER);
 
@@ -127,4 +129,5 @@ void web_init() {
         perform_upgrade();
         request->send(200);
     });
+}
 }

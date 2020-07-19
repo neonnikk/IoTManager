@@ -1,9 +1,13 @@
 #include "NetworkManager.h"
 
+#include "Global.h"
 #include "StatusLed.h"
+#include "Config.h"
 #include "HttpServer.h"
 #include "PrintMessage.h"
 #include "Utils/TimeUtils.h"
+#include "TickerScheduler.h"
+#include "Web.h"
 
 namespace NetworkManager {
 
@@ -28,7 +32,7 @@ void onConnect(IPAddress ip) {
         pm.info("HttpServer");
         HttpServer::init();
         pm.info("WebAdmin");
-        web_init();
+        Web::init();
         perform_updates_check();
         _intitialized = true;
     }

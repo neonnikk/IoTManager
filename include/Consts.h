@@ -53,6 +53,7 @@ enum LoopItems {
 };
 
 #define ONE_SECOND_ms 1000
+#define ONE_SECOND_mu ONE_SECOND_ms * 1000
 #define ONE_MINUTE_s 60
 #define ONE_HOUR_m 60
 #define ONE_HOUR_s ONE_HOUR_m* ONE_MINUTE_s
