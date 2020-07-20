@@ -2,6 +2,13 @@
 
 #include "Value.h"
 
+enum KeyType_t {
+    KT_STATE,
+    KT_PROPERTY,
+    KT_EVENT,
+    KT_PRIVATE
+};
+
 class KeyValue;
 typedef std::function<void(KeyValue*)> KeyValueHandler;
 
@@ -13,7 +20,7 @@ class KeyValue {
     KeyType_t _key_type;
 
    public:
-    KeyValue(const char* key, const char* value, const ValueType_t type, const KeyType_t key_type = KT_STATE_OBJECT);
+    KeyValue(const char* key, const char* value, const ValueType_t type, const KeyType_t key_type = KT_STATE);
 
     ~KeyValue();
 

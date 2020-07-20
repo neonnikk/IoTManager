@@ -9,21 +9,22 @@
 #endif
 
 #include "Base/Item.h"
+#include "Base/Value.h"
+#include "Base/ValueMap.h"
 
 class BasicServo : public Item,
-                  public PinAssigned,
-                  public Value,
-                  public ValueMap {
+                   public PinAssigned,
+                   public Value,
+                   public ValueMap {
    public:
     BasicServo(const String& name, const String& assign) : Item{name, assign},
-                                                          PinAssigned{this},
-                                                          Value{VT_INT},
-                                                          ValueMap{this} {
+                                                           PinAssigned{this},
+                                                           Value{VT_INT},
+                                                           ValueMap{this} {
         _obj.attach(getPin());
     };
 
     ~BasicServo() {
-
     }
 
     void onValueUpdate(const String& value) override {

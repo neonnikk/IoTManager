@@ -6,6 +6,7 @@
 #include <Bounce2.h>
 
 #include "Base/Item.h"
+#include "Base/Value.h"
 #include "Base/Assigned.h"
 
 class Switch;

@@ -11,6 +11,8 @@
 
 #include "Base/Item.h"
 #include "Base/Assigned.h"
+#include "Base/Value.h"
+#include "Base/ValueMap.h"
 
 class Pwm : public Item,
             public PinAssigned,

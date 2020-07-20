@@ -21,7 +21,7 @@ class KeyValueStore {
 
    protected:
     KeyValue* find(const char* key) const;
-    bool write(const char* key, const char* value, ValueType_t valueType = VT_STRING, KeyType_t keyType = KT_STATE_OBJECT);
+    bool write(const char* key, const char* value, ValueType_t valueType = VT_STRING, KeyType_t keyType = KT_STATE);
     bool erase(const char* key);
     void clear();
 

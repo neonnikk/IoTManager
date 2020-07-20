@@ -3,14 +3,13 @@
 #include <Arduino.h>
 
 #include "Base/Sensor.h"
+#include "Base/ValueMap.h"
 
 class ADCSensor : public Sensor,
-                  public PinAssigned,
-                  public ValueMap {
+                  public PinAssigned {
    public:
     ADCSensor(const String& name, const String& assign) : Sensor{name, assign, VT_INT},
-                                                          PinAssigned{this},
-                                                          ValueMap{this} {
+                                                          PinAssigned{this} {
         pinMode(getPin(), INPUT);
     }
 

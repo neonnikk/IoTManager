@@ -20,6 +20,10 @@ class DallasSensor : public Sensor,
         }
     };
 
+    ~DallasSensor() {
+        delete _obj;
+    }
+
     const bool hasValue() override {
         bool res = false;
         switch (_state) {
@@ -44,6 +48,7 @@ class DallasSensor : public Sensor,
         };
         return res;
     }
+    
     const String onReadSensor() override {
         return String(_value, 2);
     }

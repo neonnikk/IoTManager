@@ -11,16 +11,11 @@ enum ValueType_t {
     VT_INT
 };
 
-enum KeyType_t {
-    KT_STATE_OBJECT,
-    KT_PROPERTY,
-    KT_EVENT,
-    KT_PRIVATE
-};
-
 class Value {
    public:
-    Value(ValueType_t type) : _type{type}, _lastValue{"0"}, _lastTime{0} {}
+    Value(ValueType_t type) : _type{type},
+                              _lastValue{"0"},
+                              _lastTime{0} {}
 
     void setValue(const String& value) {
         if (!value.equals(_lastValue)) {
@@ -56,33 +51,4 @@ class Value {
     ValueType_t _type;
     String _lastValue;
     unsigned long _lastTime;
-};
-
-class ValueMap {
-   public:
-    ValueMap(Value* obj) : _obj{obj}, _mapper{NULL} {};
-    ~ValueMap() {
-        if (_mapper) {
-            delete _mapper;
-        }
-    }
-
-    void setMap(long in_min, long in_max, long out_min, long out_max) {
-        if (_mapper) {
-            delete _mapper;
-        }
-        _mapper = new Mapper{in_min, in_max, out_min, out_max};
-    }
-
-    int mapValue(const int value) {
-        if (_mapper) {
-            return _mapper->mapValue(value);
-        } else {
-            return value;
-        }
-    }
-
-   private:
-    Value* _obj;
-    Mapper* _mapper;
 };
