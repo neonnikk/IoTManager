@@ -186,13 +186,15 @@ void init() {
         config.general()->enableScenario(false);
         return;
     }
-    buf += "\n";
-    buf.replace("\r\n", "\n");
-    buf.replace("\r", "\n");
     if (buf.isEmpty()) {
         return;
     }
+    buf += "\n";
+    buf.replace("\r\n", "\n");
+    buf.replace("\r", "\n");
+
     buf = removeComments(buf);
+
     size_t pos = 0;
     while (pos < buf.length() - 1) {
         String item;

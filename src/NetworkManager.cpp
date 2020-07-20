@@ -29,13 +29,14 @@ void onConnect(IPAddress ip) {
     _connected = true;
     String hostIpStr = ip.toString();
     pm.info("http://" + hostIpStr);
+    runtime.property(TAG_IP, hostIpStr);
     if (!_intitialized) {
         pm.info("HttpServer");
         HttpServer::init();
         pm.info("WebAdmin");
         Web::init();
         perform_updates_check();
-        // runtime.property(TAG_IP, hostIpStr);
+        
         ts.add(
             NETWORK_CONNECTION, ONE_SECOND_ms * 5, [&](void*) {
                 if (isNetworkActive()) {
