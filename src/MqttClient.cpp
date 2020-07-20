@@ -129,6 +129,9 @@ bool hasAttempts() {
 }
 
 void loop() {
+    if (!NetworkManager::isNetworkActive()) {
+        return;
+    }
     if (!config.mqtt()->isEnabled()) {
         if (isConnected()) {
             disconnect();

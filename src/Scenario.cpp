@@ -191,7 +191,9 @@ void init() {
     buf.replace("\r", "\n");
 
     buf = removeComments(buf);
-
+    if (buf.isEmpty()) {
+        return;
+    }
     size_t pos = 0;
     while (pos < buf.length() - 1) {
         String item;
@@ -204,13 +206,12 @@ void init() {
     }
 
     pm.info("items: " + String(_items.size(), DEC));
-    _ready = true;
 }
 
 void loop() {
     if (!_ready) {
-        init();
         _ready = true;
+        init();
         return;
     }
     if (!_events.available()) {
