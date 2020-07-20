@@ -27,5 +27,6 @@ extern const char* TAG_PWM;
 extern const char* TAG_TEXT;
 extern const char* TAG_UPTIME;
 extern const char* TAG_TIME;
+extern const char* TAG_DIGIT;
 
 extern const char* strBoolEnabled(bool value);

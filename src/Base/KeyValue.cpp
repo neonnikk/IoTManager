@@ -17,7 +17,7 @@ ValueType_t KeyValue::getType() const {
 
 // TODO bitmask
 bool KeyValue::isEvent() const {
-    return _key_type == KT_STATE;
+    return _key_type == KT_EVENT || _key_type == KT_STATE;
 }
 
 bool KeyValue::isPublished() const {

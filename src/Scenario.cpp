@@ -3,133 +3,17 @@
 #include "Global.h"
 #include "Cmd.h"
 
+#include "Base/KeyValue.h"
+#include "Base/StringQueue.h"
+
+#include "ScenBlock.h"
+
 static const char* MODULE = "Scenario";
-
-ParamItem::ParamItem(const String& value) {
-    _value = strdup(value.c_str());
-}
-
-ParamItem::~ParamItem() {
-    delete _value;
-}
-
-const char* ParamItem::value() {
-    return _value;
-}
-
-const char* LiveParam::value() {
-    return runtime.read(_value).c_str();
-}
-
-ScenBlock::ScenBlock(const String& str) {
-    size_t split = str.indexOf("\n");
-    _commands = str.substring(split + 1, str.indexOf("\nend"));
-    _valid = parseCondition(str.substring(0, split)) && !_commands.isEmpty();
-}
-
-ScenBlock::~ScenBlock() {
-    delete _param;
-}
-
-const String ScenBlock::getCommands() {
-    return _commands;
-}
-
-bool ScenBlock::checkCondition(const String& key, const String& value) {
-    if (!key.equals(_key)) {
-        return false;
-    }
-    bool res = false;
-    switch (_sign) {
-        case EquationSign::OP_EQUAL:
-            res = value.equals(_param->value());
-            break;
-        case EquationSign::OP_NOT_EQUAL:
-            res = !value.equals(_param->value());
-            break;
-        case EquationSign::OP_LESS:
-            res = value.toFloat() < atof(_param->value());
-            break;
-        case EquationSign::OP_LESS_OR_EQAL:
-            res = value.toFloat() <= atof(_param->value());
-            break;
-        case EquationSign::OP_GREATER:
-            res = value.toFloat() > atof(_param->value());
-            break;
-        case EquationSign::OP_GREATER_OR_EQAL:
-            res = value.toFloat() >= atof(_param->value());
-            break;
-        default:
-            break;
-    }
-    return res;
-}
-
-bool ScenBlock::enable(bool value) {
-    _enabled = value;
-    return isEnabled();
-}
-
-bool ScenBlock::isEnabled() {
-    return _valid & _enabled;
-}
-
-bool ScenBlock::parseCondition(const String& str) {
-    size_t s1 = str.indexOf(" ");
-    if (s1 < 0) {
-        pm.error("wrong line");
-        return false;
-    }
-    size_t s2 = str.indexOf(" ", s1 + 1);
-    _key = str.substring(0, s1);
-    if (_key.isEmpty()) {
-        pm.error("wrong obj");
-        return false;
-    }
-    String signStr = str.substring(s1 + 1, s2);
-    if (!parseSign(signStr, _sign)) {
-        pm.error("wrong sign");
-        return false;
-    };
-    String paramStr = str.substring(s2 + 1);
-    if (paramStr.isEmpty()) {
-        pm.error("wrong param");
-        return false;
-    }
-    if (paramStr.startsWith("digit") || paramStr.startsWith("time")) {
-        _param = new LiveParam(paramStr);
-    } else {
-        _param = new ParamItem(paramStr);
-    }
-    return true;
-}
-
-bool ScenBlock::parseSign(const String& str, EquationSign& sign) {
-    bool res = true;
-    if (str.equals("=")) {
-        sign = EquationSign::OP_EQUAL;
-    } else if (str.equals("!=")) {
-        sign = EquationSign::OP_NOT_EQUAL;
-    } else if (str.equals("<")) {
-        sign = EquationSign::OP_LESS;
-    } else if (str.equals(">")) {
-        sign = EquationSign::OP_GREATER;
-    } else if (str.equals(">=")) {
-        sign = EquationSign::OP_GREATER_OR_EQAL;
-    } else if (str.equals("<=")) {
-        sign = EquationSign::OP_LESS_OR_EQAL;
-    } else {
-        res = false;
-    }
-    return res;
-}
 
 namespace Scenario {
 
 std::vector<ScenBlock*> _items;
-
 StringQueue _events;
-
 bool _ready = false;
 
 void process(KeyValue* obj) {

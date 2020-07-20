@@ -79,13 +79,11 @@ void loop() {
     ArduinoOTA.handle();
     // ws.cleanupClients();
 
-    flag_actions();
-
-    MqttClient::loop();
-
     loop_cmd();
 
     loop_items();
+
+    MqttClient::loop();
 
     if (config.general()->isScenarioEnabled()) {
         Scenario::loop();
@@ -103,6 +101,9 @@ void loop() {
     if (config.hasChanged()) {
         config_save();
     }
+
+    flag_actions();
+
     metric.finish();
 }
 
@@ -113,7 +114,7 @@ void flag_actions() {
     }
 
     if (perform_updates_check_flag) {
-        runtime.write(TAG_LAST_VERSION, Updater::check());
+        runtime.property(TAG_LAST_VERSION, Updater::check());
         perform_updates_check_flag = false;
     }
 

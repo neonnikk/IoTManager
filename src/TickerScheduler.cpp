@@ -7,9 +7,6 @@ TickerScheduler ts(ANNOUNCE + 1);
 TickerScheduler::TickerScheduler(uint8_t size) {
     this->items = new TickerSchedulerItem[size];
     this->size = size;
-
-    _loop_cnt = 0;
-    _total_mu = 0;
 }
 
 TickerScheduler::~TickerScheduler() {

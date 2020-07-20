@@ -36,7 +36,8 @@ void onConnect(IPAddress ip) {
         pm.info("WebAdmin");
         Web::init();
         perform_updates_check();
-        
+        _intitialized = true;
+
         ts.add(
             NETWORK_CONNECTION, ONE_SECOND_ms * 5, [&](void*) {
                 if (isNetworkActive()) {
@@ -51,7 +52,6 @@ void onConnect(IPAddress ip) {
                 }
             },
             nullptr, false);
-        _intitialized = true;
     }
 }
 

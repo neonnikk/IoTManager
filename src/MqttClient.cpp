@@ -3,6 +3,7 @@
 #include <ESP.h>
 #include <PubSubClient.h>
 #include <WiFiClient.h>
+#include <StreamString.h>
 
 #include "Cmd.h"
 #include "Runtime.h"
@@ -49,9 +50,11 @@ String _uuid;
 String _prefix;
 
 MqttWriter* getWriter(const char* topic) {
-    String path = _deviceRoot + "/" + topic;
+    String path = _deviceRoot;
+    path += topic;
     return new MqttWriter(&_mqtt, path.c_str());
 }
+
 void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length);
 
 void init() {
@@ -62,17 +65,25 @@ void init() {
     _prefix = config.mqtt()->getPrefix();
 
     _uuid = getDeviceId();
-    _deviceRoot = _prefix + "/" + _uuid;
+    _deviceRoot = _prefix;
+    _deviceRoot += "/";
+    _deviceRoot += _uuid;
+    _deviceRoot += "/";
 }
 
 bool connect() {
-    init();
     bool res = false;
     _mqtt.setServer(_addr.c_str(), _port);
     res = _mqtt.connect(_uuid.c_str(), _user.c_str(), _pass.c_str());
     if (res) {
-        pm.info("connected " + _addr + ":" + String(_port, DEC));
-        subscribe();
+        pm.info("connected " + _addr + ":" + String(_port, DEC) + " " + _prefix);
+        _mqtt.setCallback(handleSubscribedUpdates);
+        _mqtt.subscribe(_prefix.c_str());
+        _mqtt.subscribe((_deviceRoot + "+/" + "control").c_str());
+        _mqtt.subscribe((_deviceRoot + "order").c_str());
+        _mqtt.subscribe((_deviceRoot + "update").c_str());
+        _mqtt.subscribe((_deviceRoot + "devc").c_str());
+        _mqtt.subscribe((_deviceRoot + "devs").c_str());
     } else {
         pm.error("could't connect: " + getStateStr());
     }
@@ -85,22 +96,9 @@ void disconnect() {
 }
 
 void reconnect() {
-    if (_mqtt.connected()) {
-        _mqtt.disconnect();
-    }
+    disconnect();
     init();
     connect();
-}
-
-void subscribe() {
-    pm.info("subscribe: " + _prefix);
-    _mqtt.setCallback(handleSubscribedUpdates);
-    _mqtt.subscribe(_prefix.c_str());
-    _mqtt.subscribe((_deviceRoot + "/+/control").c_str());
-    _mqtt.subscribe((_deviceRoot + "/order").c_str());
-    _mqtt.subscribe((_deviceRoot + "/update").c_str());
-    _mqtt.subscribe((_deviceRoot + "/devc").c_str());
-    _mqtt.subscribe((_deviceRoot + "/devs").c_str());
 }
 
 boolean _mqtt_publish(const char* topic, const char* data) {
@@ -125,7 +123,7 @@ bool isConnected() {
 }
 
 bool hasAttempts() {
-    return RECONNECT_ATTEMPTS_MAX ? _connectionAttempts < RECONNECT_ATTEMPTS_MAX : true;
+    return !RECONNECT_ATTEMPTS_MAX || (_connectionAttempts < RECONNECT_ATTEMPTS_MAX);
 }
 
 void loop() {
@@ -145,24 +143,25 @@ void loop() {
         if (millis_since(_lastConnetionAttempt) < RECONNECT_INTERVAL) {
             return;
         }
-        reconnect();
+        init();
+        connect();
         _lastConnetionAttempt = millis();
-        if (!isConnected()) {
-            _connectionAttempts++;
-            if (!hasAttempts()) {
-                config.mqtt()->enable(false);
-            }
-            return;
-        }
     }
 
+    if (!isConnected()) {
+        pm.error(getStateStr());
+        _connectionAttempts++;
+        if (!hasAttempts()) {
+            config.mqtt()->enable(false);
+        }
+        return;
+    }
+
+    _connectionAttempts = 0;
     if (!_queue.empty()) {
-        auto* writer = new MqttWriter(&_mqtt, _queue.front().getTopic());
-        writer->begin();
-        writer->write(_queue.front().getData(), _queue.front().getData().length());
-        writer->end();
+        pm.info(String(_queue.size(), DEC));
+        _mqtt_publish(_queue.front().getTopic().c_str(), _queue.front().getData().c_str());
         _queue.pop_front();
-        delete writer;
     }
 
     _mqtt.loop();
@@ -184,12 +183,11 @@ const String parseControl(const String& str) {
 
 void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
     pm.info("<= " + String(topic));
+
     String topicStr = String(topic);
-    String payloadStr = "";
-    payloadStr.reserve(length + 1);
-    for (size_t i = 0; i < length; i++) {
-        payloadStr += (char)payload[i];
-    }
+    StreamString payloadStr;
+    payloadStr.write(payload, length);
+
     if (payloadStr.equalsIgnoreCase("hello")) {
         runtime.publish();
         pubish_widget_collection();
@@ -221,30 +219,25 @@ void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
 
 void publishData(const String& topic, const String& data) {
     String path = _deviceRoot;
-    path += "/";
     path += topic;
     pushToQueue(path, data);
 }
 
 void publistWidget(const String& data) {
     String path = _deviceRoot;
-    path += "/config";
+    path += "config";
     pushToQueue(path, data);
 }
 
 void publishChart(const String& name, const String& data) {
     String path = _deviceRoot;
-    path += "/";
     path += name;
     path += "_ch";
     pushToQueue(path, data);
 }
 
 void publishControl(const String& deviceId, const String& objName, const String& data) {
-    String path = _prefix;
-    path += "/";
-    path += deviceId;
-    path += "/";
+    String path = _deviceRoot;
     path += objName;
     path += "/control";
     pushToQueue(path, data);
@@ -252,10 +245,8 @@ void publishControl(const String& deviceId, const String& objName, const String&
 
 void publishState(const String& objName, const String& data) {
     String path = _deviceRoot;
-    path += "/";
     path += objName;
     path += "/status";
-
     pushToQueue(path, data);
 }
 

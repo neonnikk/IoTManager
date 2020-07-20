@@ -27,11 +27,6 @@ class TickerScheduler {
     void handleTicker(tscallback_t, void *, boolean *flag);
     static void handleTickerFlag(boolean *flag);
 
-   private:
-    unsigned long long _loop_cnt;
-    unsigned long long _total_mu;
-    size_t _lps;
-
    public:
     TickerScheduler(uint8_t size);
     ~TickerScheduler();

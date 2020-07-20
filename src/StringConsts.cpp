@@ -31,6 +31,7 @@ const char* TAG_BUTTON = "button";
 const char* TAG_TIMER = "timer";
 const char* TAG_TEXT = "text";
 const char* TAG_PWM = "pwm";
+const char* TAG_DIGIT = "digit";
 
 const char* strBoolEnabled(bool value) {
     return value ? "enabled" : "disabled";

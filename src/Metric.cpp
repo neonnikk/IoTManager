@@ -4,7 +4,9 @@
 
 Metric metric;
 
-Metric::Metric() : _loop_cnt{0}, _start{0}, _lps{0} {};
+Metric::Metric() : _loop_cnt{0},
+                   _start{0},
+                   _lps{0} {};
 
 void Metric::start() {
     _start = micros();
