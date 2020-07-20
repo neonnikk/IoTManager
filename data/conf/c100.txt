@@ -1,8 +1,8 @@
-button 1 na Включить#все Реле 1 0 
-button 2 13 Прихожая Реле 2 0
-button 3 14 Кухня Реле 3 0 
-pwm 1 3 Яркость#коридор: Реле 1023 4
-pwm 2 4 Яркость#ванная: Реле 510 5
+button {id:1,name:"Включить#все",page:"Реле",order:1}
+button {id:2,pin:13,name:"Прихожая",page:"Реле",order:2}
+button {id:3,pin:14,name:"Кухня",page:"Реле",order:3}
+pwm {id:1,pin:3,name:"Яркость#коридор",pin:3,state:100,page:"Реле",order:4}
+pwm {id:2,pin:4,name:"Яркость#ванная",pin:4,state:50,page:"Реле",order:5}
 analog adc 0 Аналоговый#вход Датчики fillgauge 1 1023 1 1023 6
 logging adc 1 100 Аналоговый#вход Датчики 7
 
