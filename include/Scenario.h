@@ -61,8 +61,6 @@ void process(const String);
 
 void reinit();
 
-void init();
-
 void loop();
 
 void enableBlock(size_t num, boolean enable);

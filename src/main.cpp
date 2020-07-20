@@ -317,6 +317,7 @@ void load_device_config() {
             executeCommand(line);
         }
     }
+    file.close();
 }
 
 void load_device_preset(size_t num) {

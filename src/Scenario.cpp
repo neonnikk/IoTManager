@@ -154,7 +154,7 @@ void reinit() {
     _ready = false;
 }
 
-bool extractBlock(const String buf, size_t& startIndex, String& block) {
+bool extractBlock(const String& buf, size_t& startIndex, String& block) {
     int endIndex = buf.indexOf("end", startIndex);
     if (endIndex < 0) {
         return false;
@@ -189,11 +189,10 @@ void init() {
     buf += "\n";
     buf.replace("\r\n", "\n");
     buf.replace("\r", "\n");
-
-    buf = removeComments(buf);
     if (buf.isEmpty()) {
         return;
     }
+    buf = removeComments(buf);
     size_t pos = 0;
     while (pos < buf.length() - 1) {
         String item;
