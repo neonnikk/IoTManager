@@ -19,18 +19,17 @@ class BasicServo : public Item,
                                                           PinAssigned{this},
                                                           Value{VT_INT},
                                                           ValueMap{this} {
-        _obj = new Servo();
-        _obj->attach(getPin());
+        _obj.attach(getPin());
     };
 
     ~BasicServo() {
-        delete _obj;
+
     }
 
     void onValueUpdate(const String& value) override {
-        _obj->write(value.toInt());
+        _obj.write(value.toInt());
     }
 
    private:
-    Servo* _obj;
+    Servo _obj;
 };

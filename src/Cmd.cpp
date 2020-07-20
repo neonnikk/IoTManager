@@ -143,7 +143,6 @@ void cmd_init() {
     sCmd.addCommand("oneWire", cmd_oneWire);
 }
 
-
 void cmd_inputDigit() {
     String name = sCmd.next();
     String number = name.substring(5);
@@ -515,7 +514,7 @@ void cmd_firmwareVersion() {
     String page = sCmd.next();
     String order = sCmd.next();
 
-    Widgets::createWidget(widget, page, order, "anydata", "firmware");
+    Widgets::createWidget(widget, page, order, "anydata", TAG_FIRMWARE);
 }
 
 bool extractCommand(const String &buf, size_t &startIndex, String &block) {
@@ -524,6 +523,11 @@ bool extractCommand(const String &buf, size_t &startIndex, String &block) {
         return false;
     }
     block = buf.substring(startIndex, endIndex);
+    block.replace("\r\n", "");
+    block.replace("\r", "");
+    if (block.startsWith("//")) {
+        block = "";
+    }
     startIndex = endIndex + 1;
     return true;
 }
@@ -535,14 +539,14 @@ void addCommands(const String &str) {
         if (!extractCommand(str, pos, buf)) {
             break;
         }
-        addCommand(buf);
+        if (!buf.isEmpty()) {
+            addCommand(buf);
+        }
     }
 }
 
 void addCommand(const String &str) {
-    if (!str.startsWith("//") && !str.isEmpty()) {
-        _orders.push(str);
-    }
+    _orders.push(str);
 }
 
 void executeCommand(const String &str) {

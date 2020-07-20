@@ -11,7 +11,7 @@ std::vector<Widget*> _list;
 const String getWidgetTopic(const String& objName) {
     String res = config.mqtt()->getPrefix();
     res += "/";
-    res += getChipId();
+    res += getDeviceId();
     res += "/";
     res += objName;
     return res;

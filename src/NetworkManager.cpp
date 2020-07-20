@@ -27,8 +27,9 @@ static WiFiEventHandler staGotIpEvent, staDisconnectedEvent;
 
 void onConnect(IPAddress ip) {
     _connected = true;
-    pm.info("http://" + ip.toString());
-
+    String hostIpStr = ip.toString();
+    pm.info("http://" + hostIpStr);
+    runtime.property(TAG_IP, hostIpStr);
     if (!_intitialized) {
         pm.info("HttpServer");
         HttpServer::init();
@@ -131,7 +132,7 @@ bool startAPMode() {
     String hostIpStr = WiFi.softAPIP().toString();
     pm.info("http://" + hostIpStr);
 
-    runtime.write("ip", WiFi.softAPIP());
+    runtime.property(TAG_IP, hostIpStr);
 
     ts.add(
         WIFI_SCAN, 10 * ONE_SECOND_ms,

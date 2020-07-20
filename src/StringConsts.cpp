@@ -19,7 +19,9 @@ const char* TAG_RUNTIME = "runtime";
 const char* TAG_UPTIME = "uptime";
 const char* TAG_TIME = "time";
 const char* TAG_LAST_VERSION = "last_version";
-
+const char* TAG_IP = "ip";
+const char* TAG_DEVICEID = "deviceId";
+const char* TAG_FIRMWARE = "firmware";
 const char* TAG_ONE_WIRE = "oneWire";
 const char* TAG_I2C = "i2c";
 const char* TAG_SHARE_MQTT = "share_mqtt";

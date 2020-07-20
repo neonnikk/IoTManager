@@ -7,6 +7,7 @@ class Runtime : public ParamFile {
     Runtime();
 
     void publish();
+    void property(const String& name, const String value);
 
    protected:
     void onAdd(KeyValue* item) override;

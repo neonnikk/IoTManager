@@ -17,7 +17,7 @@
     },
     {
       "type": "h4",
-      "title": "{{LS_device_id}}: {{chipID}}"
+      "title": "{{LS_device_id}}: {{deviceId}}"
     },
     {
       "type": "h4",

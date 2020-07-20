@@ -17,11 +17,11 @@ ValueType_t KeyValue::getType() const {
 
 // TODO bitmask
 bool KeyValue::isEvent() const {
-    return _key_type == KT_EVENT || _key_type == MT_MQTT_EVENT;
+    return _key_type == KT_STATE_OBJECT;
 }
 
 bool KeyValue::isPublished() const {
-    return _key_type == KT_MQTT || _key_type == MT_MQTT_EVENT;
+    return _key_type == KT_STATE_OBJECT;
 }
 
 const char* KeyValue::getKey() const {

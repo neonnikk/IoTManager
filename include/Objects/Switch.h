@@ -19,26 +19,24 @@ class Switch : public Item,
     Switch(const String& name, const String& assign) : Item{name, assign},
                                                        Value{VT_INT},
                                                        PinAssigned{this} {
-        _obj = new Bounce();
-        _obj->attach(getPin(), INPUT);
+        _obj.attach(getPin(), INPUT);
     }
 
     ~Switch() {
-        delete _obj;
     }
 
     void setDebounce(int value) {
-        _obj->interval(value);
+        _obj.interval(value);
     }
 
     const bool hasValue() override {
-        return _obj->update();
+        return _obj.update();
     }
 
     const String onGetValue() override {
-        return _obj->read() ? "1" : "0";
+        return _obj.read() ? "1" : "0";
     }
 
    protected:
-    Bounce* _obj;
+    Bounce _obj;
 };

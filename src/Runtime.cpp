@@ -8,6 +8,10 @@ Runtime runtime;
 
 Runtime::Runtime() : ParamFile(DEVICE_RUNTIME_FILE){};
 
+void Runtime::property(const String& name, const String value) {
+    KeyValueStore::write(name.c_str(), value.c_str(), VT_STRING, KT_PROPERTY);
+}
+
 void Runtime::onAdd(KeyValue* item) {
     //
 }

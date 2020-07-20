@@ -171,7 +171,7 @@ const String removeComments(const String buf) {
         int endIndex = buf.indexOf("\n", startIndex);
         String line = buf.substring(startIndex, endIndex);
         startIndex = endIndex + 1;
-        if (line.startsWith("//") || line.isEmpty()) {
+        if (line.startsWith("//")) {
             continue;
         }
         res += line + "\n";

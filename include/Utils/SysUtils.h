@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-const String getChipId();
+const String getDeviceId();
 
 const String getUniqueId(const String& name);
 

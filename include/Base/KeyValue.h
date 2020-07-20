@@ -13,7 +13,7 @@ class KeyValue {
     KeyType_t _key_type;
 
    public:
-    KeyValue(const char* key, const char* value, const ValueType_t type, const KeyType_t key_type = MT_MQTT_EVENT);
+    KeyValue(const char* key, const char* value, const ValueType_t type, const KeyType_t key_type = KT_STATE_OBJECT);
 
     ~KeyValue();
 

@@ -21,7 +21,7 @@ class KeyValueStore {
 
    protected:
     KeyValue* find(const char* key) const;
-    bool write(const char* key, const char* value, ValueType_t valueType = VT_STRING, KeyType_t keyType = MT_MQTT_EVENT);
+    bool write(const char* key, const char* value, ValueType_t valueType = VT_STRING, KeyType_t keyType = KT_STATE_OBJECT);
     bool erase(const char* key);
     void clear();
 

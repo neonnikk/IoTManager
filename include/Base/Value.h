@@ -12,8 +12,8 @@ enum ValueType_t {
 };
 
 enum KeyType_t {
-    MT_MQTT_EVENT,
-    KT_MQTT,
+    KT_STATE_OBJECT,
+    KT_PROPERTY,
     KT_EVENT,
     KT_PRIVATE
 };

@@ -176,10 +176,10 @@ void flag_actions() {
 void clock_task() {
     ts.add(
         TIME, ONE_SECOND_ms, [&](void*) {
-            //runtime.write(TAG_UPTIME, now.getUptime().c_str(), VT_STRING, KT_MQTT);
+            runtime.property(TAG_UPTIME, now.getUptime().c_str());
 
             if (now.hasSynced()) {
-                //runtime.write(TAG_TIME, now.getTime().c_str(), VT_STRING, KT_EVENT);
+                runtime.property(TAG_TIME, now.getTime().c_str());
             }
         },
         nullptr, false);
@@ -201,8 +201,8 @@ void config_restore() {
 
 void load_runtime() {
     runtime.load();
-    runtime.write("chipID", getChipId());
-    runtime.write("firmware", FIRMWARE_VERSION);
+    runtime.property(TAG_DEVICEID, getDeviceId());
+    runtime.property(TAG_FIRMWARE, FIRMWARE_VERSION);
 }
 
 void telemetry_task() {
@@ -236,7 +236,7 @@ void announce_task() {
         ANNOUNCE, random(0.9 * config.general()->getBroadcastInterval() * ONE_SECOND_ms, config.general()->getBroadcastInterval()), [&](void*) {
             if (config.general()->isBroadcastEnabled()) {
                 String data;
-                data += getChipId();
+                data += getDeviceId();
                 data += ";";
                 data += config.general()->getBroadcastName();
                 data += ";";

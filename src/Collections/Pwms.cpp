@@ -1,15 +1,10 @@
 #include "Collection/Pwms.h"
 
-#include "PrintMessage.h"
-
-static const char *MODULE = "Pwms";
-
 Pwms pwms;
 
 Pwms::Pwms(){};
 
 Pwm *Pwms::add(String name, String assign) {
-    pm.info("name:\"" + name + "\", assign:" + assign);
     Pwm *item = new Pwm{name, assign};
     _items.push_back(item);
     return last();
@@ -21,7 +16,7 @@ Pwm *Pwms::last() {
 
 Pwm *Pwms::get(const String name) {
     for (auto *item : _items) {
-        if (name.equalsIgnoreCase(item->getName())) {
+        if (name.equals(item->getName())) {
             return item;
         }
     }

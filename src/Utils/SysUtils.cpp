@@ -6,7 +6,7 @@ const String getUniqueId(const char* name) {
     return String(name) + getMacAddress();
 }
 
-const String getChipId() {
+const String getDeviceId() {
     String res;
 #ifdef ESP32
     char buf[32] = {0};

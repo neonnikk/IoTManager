@@ -61,7 +61,7 @@ void init() {
     _pass = config.mqtt()->getPass();
     _prefix = config.mqtt()->getPrefix();
 
-    _uuid = getChipId();
+    _uuid = getDeviceId();
     _deviceRoot = _prefix + "/" + _uuid;
 }
 
