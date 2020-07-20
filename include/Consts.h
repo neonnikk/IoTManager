@@ -52,6 +52,9 @@ enum LoopItems {
     NUM_LOOP_ITEMS
 };
 
+#define FILE_READ "r"
+#define FILE_WRITE "w"
+#define FILE_APPEND "a"
 #define ONE_SECOND_ms 1000
 #define ONE_SECOND_mu ONE_SECOND_ms * 1000
 #define ONE_MINUTE_s 60

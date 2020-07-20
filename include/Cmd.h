@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Global.h"
-
+#include "Runtime.h"
+#include "StringConsts.h"
+#include "Base/ParamStore.h"
 #include "Utils/TimeUtils.h"
 
 extern StringCommand sCmd;
@@ -10,8 +12,18 @@ unsigned long parsePeriod(const String &str, unsigned long default_multiplier = 
 const String getObjectName(const char *type, const char *id);
 
 void cmd_init();
-void addOrder(const String &str);
-void stringExecute(String cmdStr);
+/*
+* Добавить комманду из строки в очередь
+*/
+void addCommand(const String &);
+/*
+* Добавить комманды из строки в очередь
+*/
+void addCommands(const String &);
+/*
+* Выполнить комманду
+*/
+void executeCommand(const String &);
 
 void cmd_analog();
 

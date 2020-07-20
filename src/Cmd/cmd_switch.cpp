@@ -20,5 +20,5 @@ void cmd_switch() {
 
     String objName = "switch" + name;
 
-    runtime.write(objName, item->getValue(), VT_INT);
+    runtime.writeAsInt(objName, item->getValue());
 }

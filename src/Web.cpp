@@ -1,7 +1,8 @@
 #include "Web.h"
 
-#include "HttpServer.h"
 #include "Global.h"
+#include "Runtime.h"
+#include "HttpServer.h"
 
 static const char* MODULE = "Web";
 
@@ -32,12 +33,12 @@ void init() {
     server.on(
         "/set", HTTP_GET, [](AsyncWebServerRequest* request) {
             if (request->hasArg("preset")) {
-                setPreset(request->getParam("preset")->value().toInt());
+                load_device_preset(request->getParam("preset")->value().toInt());
                 request->redirect(PAGE_SETUP);
                 return;
             }
             if (request->hasArg("devinit")) {
-                device_init();
+                load_device_config();
                 request->send(200);
                 return;
             }

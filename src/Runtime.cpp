@@ -4,7 +4,9 @@
 #include "Scenario.h"
 #include "StringConsts.h"
 
-Runtime runtime(DEVICE_RUNTIME_FILE);
+Runtime runtime;
+
+Runtime::Runtime() : ParamFile(DEVICE_RUNTIME_FILE){};
 
 void Runtime::onAdd(KeyValue* item) {
     //
@@ -16,9 +18,9 @@ void Runtime::onUpdate(KeyValue* item) {
 }
 
 void Runtime::publish() {
-    for (auto item : _items) {
+    forEach([this](KeyValue* item) {
         publishMqtt(item);
-    }
+    });
 }
 
 void Runtime::publishMqtt(KeyValue* item) {

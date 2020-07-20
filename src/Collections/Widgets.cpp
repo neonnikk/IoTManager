@@ -1,28 +1,32 @@
 #include "Collection/Widgets.h"
 
-#include "Runtime.h"
-#include "Base/KeyValueStore.h"
-
-// static const char* MODULE = "Widgets";
+#include "Config.h"
+#include "Objects/Widget.h"
+#include "Utils/SysUtils.h"
 
 namespace Widgets {
 
-std::vector<KeyValueFile*> _list;
+std::vector<Widget*> _list;
 
-const String getFilename(const String& name) {
-    String res;
-    res = "/widgets/";
-    res += name;
-    res += ".json";
+const String getWidgetTopic(const String& objName) {
+    String res = config.mqtt()->getPrefix();
+    res += "/";
+    res += getChipId();
+    res += "/";
+    res += objName;
     return res;
-};
+}
 
-void createWidget(String& descr, String& page, const String& order, const String& templateName, const String& name) {
-    KeyValueFile* widget = new KeyValueFile(getFilename(templateName).c_str());
+void createWidget(String& descr, String& page, const String& order, const String& templateName, const String& objName, const String templateOverride) {
+    auto* widget = new Widget(templateName.c_str());
     if (!widget->load()) {
         delete widget;
         return;
     }
+    if (!templateOverride.isEmpty()) {
+        widget->fromJson(templateOverride);
+    }
+
     descr.replace("#", " ");
     widget->write("descr", descr);
 
@@ -31,14 +35,13 @@ void createWidget(String& descr, String& page, const String& order, const String
 
     widget->writeAsInt("order", order);
 
-    String prefix = runtime.read("mqtt_prefix");
-    widget->write("topic", prefix + "/" + name);
+    widget->write("topic", getWidgetTopic(objName));
 
     _list.push_back(widget);
 };
 
-void createChart(String series, String page, String order, String templateName, String topic, size_t maxCount) {
-    KeyValueFile* widget = new KeyValueFile(getFilename(templateName).c_str());
+void createChart(String series, String page, String order, String templateName, String objName, int maxCount) {
+    auto* widget = new Widget(templateName.c_str());
     if (!widget->load()) {
         delete widget;
         return;
@@ -51,13 +54,15 @@ void createChart(String series, String page, String order, String templateName, 
     widget->write("series", series);
     widget->write("maxCount", maxCount);
 
-    String prefix = runtime.read("mqtt_prefix");
-    widget->write("topic", prefix + "/" + topic);
+    widget->write("topic", getWidgetTopic(objName));
 
     _list.push_back(widget);
 }
 
 void clear() {
+    for (auto item : _list) {
+        delete item;
+    }
     _list.clear();
 }
 

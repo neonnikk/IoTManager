@@ -24,7 +24,6 @@
 #include "MqttClient.h"
 #include "NetworkManager.h"
 #include "PrintMessage.h"
-#include "Runtime.h"
 
 #include "Utils/FileUtils.h"
 #include "Utils/JsonUtils.h"
@@ -63,24 +62,20 @@ extern void broadcast_mqtt_settings();
 * Запуск комманд из файла
 */
 extern void fileExecute(const String filename);
-/*
-* Запуск комманд из строки
-*/
-extern void stringExecute(String cmdStr);
-extern void ExecuteCommand(const String& cmdStr);
+
 
 extern void load_config();
 
 extern void statistics_init();
-extern void device_init();
+extern void load_device_config();
 
-extern void publishWidgets();
-extern void publishCharts();
+extern void pubish_widget_collection();
+extern void publish_widget_chart();
 
 extern void config_add(const String&);
 extern void config_save();
 
-extern void setPreset(size_t num);
+extern void load_device_preset(size_t num);
 
 extern void loop_cmd();
 extern void loop_items();

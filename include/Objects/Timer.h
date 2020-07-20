@@ -4,11 +4,11 @@
 
 class Timer {
    public:
-    Timer(const char* name, unsigned long time);
+    Timer(const String& name, unsigned long time);
     ~Timer();
 
     void setTime(unsigned long time);
-    const char* name() const;
+    const String name() const;
     bool tick();
     void stop();
 
@@ -17,6 +17,6 @@ class Timer {
 
    private:
     bool _enabled;
+    String _name;
     unsigned long _time;
-    char* _name;
 };

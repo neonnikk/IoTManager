@@ -11,8 +11,8 @@
 #include "Cmd.h"
 
 AsyncWebServer server{80};
-AsyncWebSocket ws{"/ws"};
-AsyncEventSource events{"/events"};
+// AsyncWebSocket ws{"/ws"};
+// AsyncEventSource events{"/events"};
 
 namespace HttpServer {
 
@@ -49,6 +49,7 @@ void init() {
     });
 
     server.on("/runtime.json", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String buf;
         request->send(200, "application/json", runtime.asJson());
     });
 
@@ -66,19 +67,19 @@ void init() {
 
     server.on("/cmd", HTTP_GET, [](AsyncWebServerRequest *request) {
         String cmdStr = request->getParam("command")->value();
-        addOrder(cmdStr);
+        addCommand(cmdStr);
         request->send(200);
     });
 
     server.on("/add", HTTP_GET, [](AsyncWebServerRequest *request) {
         String cmdStr = request->getParam("command")->value();
-        addOrder(cmdStr);
+        addCommand(cmdStr);
         request->redirect(PAGE_SETUP);
     });
 
     server.begin();
 
-    initOta();
+    initOTA();
     initMDNS();
     initWS();
 }
@@ -152,44 +153,44 @@ void initMDNS() {
 }
 
 void initWS() {
-    ws.onEvent(onWsEvent);
-    server.addHandler(&ws);
-    events.onConnect([](AsyncEventSourceClient *client) {
-        client->send("", NULL, millis(), 1000);
-    });
-    server.addHandler(&events);
+    // ws.onEvent(onWsEvent);
+    // server.addHandler(&ws);
+    // events.onConnect([](AsyncEventSourceClient *client) {
+    //     client->send("", NULL, millis(), 1000);
+    // });
+    // server.addHandler(&events);
 }
 
-void initOta() {
-    ArduinoOTA.onStart([]() {
-        events.send("Update Start", "ota");
-    });
-
-    ArduinoOTA.onEnd([]() {
-        events.send("Update End", "ota");
-    });
-
-    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-        char p[32];
-        sprintf(p, "Progress: %u%%\n", (progress / (total / 100)));
-        events.send(p, "ota");
-    });
-
-    ArduinoOTA.onError([](ota_error_t error) {
-        if (error == OTA_AUTH_ERROR)
-            events.send("Auth Failed", "ota");
-        else if (error == OTA_BEGIN_ERROR)
-            events.send("Begin Failed", "ota");
-        else if (error == OTA_CONNECT_ERROR)
-            events.send("Connect Failed", "ota");
-        else if (error == OTA_RECEIVE_ERROR)
-            events.send("Recieve Failed", "ota");
-        else if (error == OTA_END_ERROR)
-            events.send("End Failed", "ota");
-    });
-
+void initOTA() {
     ArduinoOTA.setHostname(config.network()->getHostname());
     ArduinoOTA.begin();
+
+    // ArduinoOTA.onStart([]() {
+    //     events.send("Update Start", "ota");
+    // });
+
+    // ArduinoOTA.onEnd([]() {
+    //     events.send("Update End", "ota");
+    // });
+
+    // ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    //     char p[32];
+    //     sprintf(p, "Progress: %u%%\n", (progress / (total / 100)));
+    //     events.send(p, "ota");
+    // });
+
+    // ArduinoOTA.onError([](ota_error_t error) {
+    //     if (error == OTA_AUTH_ERROR)
+    //         events.send("Auth Failed", "ota");
+    //     else if (error == OTA_BEGIN_ERROR)
+    //         events.send("Begin Failed", "ota");
+    //     else if (error == OTA_CONNECT_ERROR)
+    //         events.send("Connect Failed", "ota");
+    //     else if (error == OTA_RECEIVE_ERROR)
+    //         events.send("Recieve Failed", "ota");
+    //     else if (error == OTA_END_ERROR)
+    //         events.send("End Failed", "ota");
+    // });
 }
 
 }  // namespace HttpServer

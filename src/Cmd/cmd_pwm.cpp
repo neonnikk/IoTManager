@@ -8,25 +8,26 @@
 * pwm {id:1,descr:"Зеленый",pin:12,state:100%,page:"Лампа",order:4}
 */
 void cmd_pwm() {
-    KeyValueStore* params = new KeyValueStore(sCmd.next());
+    ParamStore params{sCmd.next()};
 
-    String name = getObjectName(TAG_PWM, params->read("id").c_str());
-    String assign = params->read("pin");
-    String descr = params->read("name");
-    String page = params->read("page");
-    String state = params->read("state");
-    String order = params->read("order");
-    String widget = params->read("widget", "range");
-    delete params;
+    String name = getObjectName(TAG_PWM, params.read("id").c_str());
+    String assign = params.read("pin");
+    String descr = params.read("name");
+    String page = params.read("page");
+    String state = params.read("state");
+    String order = params.read("order");
+    String widget = params.read("widget", "range");
 
-    Pwm* item = (Pwm*)pwms.add(name, assign);
+    auto item = (Pwm*)pwms.add(name, assign);
 
     item->setMap(1, 100, 0, 1023);
     item->setValue(state);
 
-    runtime.write(name, state, VT_INT);
+    runtime.writeAsInt(name, state);
 
-    Widgets::createWidget(descr, page, order, widget, name);
+    String templateOverride = sCmd.next();
+
+    Widgets::createWidget(descr, page, order, widget, name, templateOverride);
 }
 
 void cmd_pwmSet() {
@@ -37,5 +38,5 @@ void cmd_pwmSet() {
     if (item) {
         item->setValue(value);
     }
-    runtime.write(name, value, VT_INT);
+    runtime.writeAsInt(name, value);
 }

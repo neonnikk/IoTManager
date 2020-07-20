@@ -1,6 +1,7 @@
 #include "NetworkManager.h"
 
 #include "Global.h"
+#include "Runtime.h"
 #include "StatusLed.h"
 #include "Config.h"
 #include "HttpServer.h"
@@ -26,40 +27,30 @@ static WiFiEventHandler staGotIpEvent, staDisconnectedEvent;
 
 void onConnect(IPAddress ip) {
     _connected = true;
-
     pm.info("http://" + ip.toString());
+
     if (!_intitialized) {
         pm.info("HttpServer");
         HttpServer::init();
         pm.info("WebAdmin");
         Web::init();
         perform_updates_check();
-        _intitialized = true;
-    }
-
-    ts.add(
-        NETWORK_CONNECTION, ONE_SECOND_ms * 5, [&](void*) {
-            if (isNetworkActive()) {
-                if (config.mqtt()->isEnabled()) {
-                    if (MqttClient::isConnected()) {
-                        led.set(LedStatus::OFF);
-                        _lastStatus = Connection::OK;
-                        return;
-                    } else {
+        ts.add(
+            NETWORK_CONNECTION, ONE_SECOND_ms * 5, [&](void*) {
+                if (isNetworkActive()) {
+                    led.set(LedStatus::OFF);
+                    _lastStatus = Connection::OK;
+                } else {
+                    if (_lastStatus == Connection::OK) {
+                        pm.error("connection lost");
                         led.set(LedStatus::FAST);
                     }
-                } else {
-                    led.set(LedStatus::OFF);
+                    _lastStatus = Connection::ERROR;
                 }
-            } else {
-                if (_lastStatus == Connection::OK) {
-                    pm.error("connection lost");
-                    led.set(LedStatus::FAST);
-                }
-                _lastStatus = Connection::ERROR;
-            }
-        },
-        nullptr, false);
+            },
+            nullptr, false);
+        _intitialized = true;
+    }
 }
 
 void onDisconnect(uint8_t reason) {
@@ -139,7 +130,8 @@ bool startAPMode() {
 
     String hostIpStr = WiFi.softAPIP().toString();
     pm.info("http://" + hostIpStr);
-    runtime.write("ip", hostIpStr.c_str());
+
+    runtime.write("ip", WiFi.softAPIP());
 
     ts.add(
         WIFI_SCAN, 10 * ONE_SECOND_ms,

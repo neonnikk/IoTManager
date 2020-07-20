@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 #include "Sensors/OneWireBus.h"
 #include "Sensors/AnalogSensor.h"
 #include "Sensors/DallasSensor.h"

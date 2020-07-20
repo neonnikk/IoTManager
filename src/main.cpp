@@ -11,6 +11,8 @@
 #include "Collection/Logger.h"
 #include "Collection/Devices.h"
 #include "Collection/Timers.h"
+#include "Collection/Widgets.h"
+#include "Runtime.h"
 #include "MqttClient.h"
 #include "HttpServer.h"
 #include "WebClient.h"
@@ -174,9 +176,10 @@ void flag_actions() {
 void clock_task() {
     ts.add(
         TIME, ONE_SECOND_ms, [&](void*) {
-            runtime.write(TAG_UPTIME, now.getUptime(), VT_STRING, KT_MQTT);
+            //runtime.write(TAG_UPTIME, now.getUptime().c_str(), VT_STRING, KT_MQTT);
+
             if (now.hasSynced()) {
-                runtime.write(TAG_TIME, now.getTime(), VT_STRING, KT_EVENT);
+                //runtime.write(TAG_TIME, now.getTime().c_str(), VT_STRING, KT_EVENT);
             }
         },
         nullptr, false);
@@ -199,8 +202,7 @@ void config_restore() {
 void load_runtime() {
     runtime.load();
     runtime.write("chipID", getChipId());
-    runtime.write("firmware_version", FIRMWARE_VERSION);
-    runtime.write("mqtt_prefix", config.mqtt()->getPrefix() + "/" + getChipId());
+    runtime.write("firmware", FIRMWARE_VERSION);
 }
 
 void telemetry_task() {
@@ -292,7 +294,7 @@ void setup() {
 
     if (hasLastBootSucess()) {
         onStartCriticalBootSection();
-        device_init();
+        load_device_config();
     } else {
         replaceFileContent(DEVICE_COMMAND_FILE, "");
         replaceFileContent(DEVICE_SCENARIO_FILE, "");
@@ -300,4 +302,61 @@ void setup() {
     onEndCriticalBootSection();
 
     initialized = true;
+}
+
+void load_device_config() {
+    auto file = LittleFS.open(DEVICE_COMMAND_FILE, FILE_READ);
+    if (!file) {
+        pm.error("open config");
+        return;
+    }
+    Widgets::clear();
+    while (file.available()) {
+        String line = file.readStringUntil('\n');
+        if (!line.startsWith("//") && !line.isEmpty()) {
+            executeCommand(line);
+        }
+    }
+}
+
+void load_device_preset(size_t num) {
+    copyFile(getConfigFile(num, CT_CONFIG), DEVICE_COMMAND_FILE);
+    copyFile(getConfigFile(num, CT_SCENARIO), DEVICE_SCENARIO_FILE);
+    load_device_config();
+}
+
+void config_save() {
+    String buf;
+    config.save(buf);
+    writeFile(DEVICE_CONFIG_FILE, buf);
+    config.setSynced();
+}
+
+void load_config() {
+    String buf;
+    if (readFile(DEVICE_CONFIG_FILE, buf)) {
+        config.load(buf);
+    }
+}
+
+void pubish_widget_collection() {
+    Widgets::forEach([](String json) {
+        return MqttClient::publistWidget(json);
+    });
+}
+
+void publish_widget_chart() {
+    Logger::forEach([](LoggerTask* task) {
+        task->readEntries([](LogMetadata* meta, uint8_t* data) {
+            String buf = "{\"status\":[";
+            buf += LogEntry(data).asChartEntry();
+            buf += "]}";
+            return MqttClient::publishChart(meta->getName(), buf);
+        });
+        return true;
+    });
+}
+
+void config_add(const String& str) {
+    addFile(DEVICE_COMMAND_FILE, str);
 }

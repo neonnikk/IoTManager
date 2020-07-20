@@ -1,9 +1,6 @@
 #include "Collection/Sensors.h"
 
-#include "Global.h"
-#include "PrintMessage.h"
-
-const static char* MODULE = "Sensors";
+#include "Runtime.h"
 
 namespace Sensors {
 
@@ -32,12 +29,20 @@ BaseSensor* add(SensorType_t type, const String& name, const String& assign) {
 
 void update() {
     for (BaseSensor* item : _items) {
-        String name = item->getName();
-
         if (item->hasValue()) {
-            String value = item->getValue();
-            runtime.write(name, value, item->getValueType());
+            switch (item->getValueType()) {
+                case VT_INT:
+                    runtime.writeAsInt(item->getName(), item->getValue());
+                    break;
+                case VT_FLOAT:
+                    runtime.writeAsFloat(item->getName(), item->getValue());
+                    break;
+                case VT_STRING:
+                    runtime.write(item->getName(), item->getValue());
+                    break;
+            }
         }
     }
 }
+
 }  // namespace Sensors

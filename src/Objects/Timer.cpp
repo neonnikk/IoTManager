@@ -2,16 +2,9 @@
 
 #include "Global.h"
 
-Timer::Timer(const char* name, unsigned long time) {
-    _name = strdup(name);
-    _time = time;
-    runtime.write(name, true);
-}
+Timer::Timer(const String& name, unsigned long time) : _name{name}, _time{time} {}
 
-Timer::~Timer() {
-    runtime.erase(_name);
-    free(_name);
-}
+Timer::~Timer() {}
 
 bool Timer::tick() {
     if (!_enabled) {
@@ -24,12 +17,11 @@ bool Timer::tick() {
     return false;
 }
 
-const char* Timer::name() const {
+const String Timer::name() const {
     return _name;
 }
 
 void Timer::onTimer() {
-    runtime.write(_name, false);
 }
 
 void Timer::setTime(unsigned long value) {

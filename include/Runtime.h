@@ -1,14 +1,10 @@
 #pragma once
 
-#include "Base/KeyValueStore.h"
+#include "Base/ParamFile.h"
 
-class Runtime;
-
-extern Runtime runtime;
-
-class Runtime : public KeyValueFile {
+class Runtime : public ParamFile {
    public:
-    Runtime(const char* filename) : KeyValueFile(filename){};
+    Runtime();
 
     void publish();
 
@@ -20,3 +16,5 @@ class Runtime : public KeyValueFile {
     void fireEvent(KeyValue* item);
     void publishMqtt(KeyValue* item);
 };
+
+extern Runtime runtime;

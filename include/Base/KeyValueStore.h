@@ -4,64 +4,36 @@
 #include <ArduinoJson.h>
 #include <functional>
 
-#include "PrintMessage.h"
-#include "Base/KeyValue.h"
-#include "Utils/FileUtils.h"
+#include "KeyValue.h"
 
 class KeyValueStore {
    protected:
     std::vector<KeyValue*> _items;
 
+   public:
+    KeyValueStore();
+    KeyValueStore(const String& jsonStr);
+    virtual ~KeyValueStore();
+
+    void forEach(KeyValueHandler func);
+    void fromJson(const String& jsonStr);
+    String& toJson(String& jsonStr) const;
+
+   protected:
+    KeyValue* find(const char* key) const;
+    bool write(const char* key, const char* value, ValueType_t valueType = VT_STRING, KeyType_t keyType = MT_MQTT_EVENT);
+    bool erase(const char* key);
+    void clear();
+
+    bool read(const char* key, String& value) const;
+    bool read(const char* key, String& value, ValueType_t& type) const;
+
+    void load(JsonObject& obj);
+
+    void save(JsonObject& obj) const;
+
    protected:
     virtual void onUpdate(KeyValue*){};
     virtual void onAdd(KeyValue*){};
-
-   public:
-    KeyValueStore();
-
-    KeyValueStore(const char* content);
-
-    virtual ~KeyValueStore();
-
-    void erase(const String key);
-
-    void clear();
-
-    KeyValue* find(const String key) const;
-
-    bool get(const String& key, String& value, ValueType_t& type) const;
-
-    void writeAsInt(const String& key, const String& value);
-
-    void writeAsFloat(const String& key, const String& value);
-
-    void write(const String& key, int value);
-
-    void write(const String& key, const String& value, ValueType_t type = VT_STRING, KeyType_t key_type = MT_MQTT_EVENT);
-
-    const String read(const String& key) const;
-
-    const String read(const String& key, const char* default_value) const;
-
-    int readInt(const String& key) const;
-
-    float readFloat(const String& key) const;
-
-    void loadString(const char* content);
-
-    void forEach(KeyValueHandler func);
-
-    const String asJson();
-};
-
-class KeyValueFile : public KeyValueStore {
-   private:
-    char* _filename;
-
-   public:
-    KeyValueFile(const char* filename);
-    ~KeyValueFile();
-    const char* getFilename();
-    bool save();
-    bool load();
+    virtual void onErase(KeyValue*){};
 };

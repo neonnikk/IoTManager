@@ -1,10 +1,9 @@
 #include "Objects/LoggerTask.h"
 
-#include "Global.h"
-
-#include "MqttClient.h"
+#include "Clock.h"
+#include "Runtime.h"
 #include "PrintMessage.h"
-
+#include "Utils/FileUtils.h"
 #include "Utils/TimeUtils.h"
 
 static const char* MODULE = "LoggerTask";
@@ -55,17 +54,15 @@ void LoggerTask::update() {
     }
 
     if ((millis_since(_lastUpdated) >= _interval) || !_lastUpdated) {
-        auto* item = runtime.find(_meta.getName());
-        if (!item) {
+        String value = runtime.read(_meta.getName());
+        if (value.isEmpty()) {
             return;
         }
-        String value = item->getValue();
         pm.info("buf: " + String(_buffer.size(), DEC) + "/" + String(_limit, DEC));
         if (now.hasSynced()) {
             LogEntry entry = LogEntry(now.getEpoch(), value.toFloat());
             _buffer.push(entry);
         }
-        MqttClient::publishState(item->getKey(), item->asJson());
     }
     _lastUpdated = millis();
 

@@ -189,8 +189,8 @@ void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
     }
     if (payloadStr.equalsIgnoreCase("hello")) {
         runtime.publish();
-        publishWidgets();
-        publishCharts();
+        pubish_widget_collection();
+        publish_widget_chart();
     } else if (topicStr.indexOf("control")) {
         // название топика -  команда,
         // значение - параметр
@@ -199,17 +199,17 @@ void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
         topic = parseControl(topic);
         String number = selectToMarkerLast(topic, "Set");
         topic.replace(number, "");
-        addOrder(topic + " " + number + " " + payloadStr);
+        addCommand(topic + " " + number + " " + payloadStr);
     } else if (topicStr.indexOf("order")) {
         payloadStr.replace("_", " ");
-        addOrder(payloadStr);
+        addCommand(payloadStr);
     } else if (topicStr.indexOf("update")) {
         if (payloadStr == "1") {
             perform_upgrade();
         }
     } else if (topicStr.indexOf("devc")) {
         writeFile(DEVICE_COMMAND_FILE, payloadStr);
-        device_init();
+        load_device_config();
     } else if (topicStr.indexOf("devs")) {
         writeFile(DEVICE_SCENARIO_FILE, payloadStr);
         Scenario::reinit();

@@ -1,34 +1,118 @@
 #include "Base/KeyValueStore.h"
 
-#include <PrintMessage.h>
-
-#include <Utils/FileUtils.h>
-
-static const char* MODULE = "KeyValueStore";
-
-KeyValueStore::KeyValueStore(){};
-
-KeyValueStore::KeyValueStore(const char* content) {
+KeyValueStore::KeyValueStore() {
     _items.reserve(8);
-    loadString(content);
+};
+
+KeyValueStore::KeyValueStore(const String& jsonStr) {
+    fromJson(jsonStr);
 }
 
 KeyValueStore::~KeyValueStore() {
+    clear();
+}
+
+KeyValue* KeyValueStore::find(const char* key) const {
+    KeyValue* res{NULL};
+    for (auto* item : _items) {
+        if (strcmp(key, item->getKey()) == 0) {
+            res = item;
+            break;
+        }
+    }
+    return res;
+}
+
+bool KeyValueStore::write(const char* key, const char* value, ValueType_t valueType, KeyType_t keyType) {
+    auto* item = find(key);
+    if (!item) {
+        item = new KeyValue{key, value, valueType, keyType};
+        _items.push_back(item);
+        onAdd(item);
+        return true;
+    } else {
+        item->setValue(value, valueType);
+        onUpdate(item);
+        return false;
+    }
+}
+
+bool KeyValueStore::read(const char* key, String& value) const {
+    bool res = false;
+    auto item = find(key);
+    if (item) {
+        value = item->getValue();
+        res = true;
+    }
+    return res;
+}
+
+bool KeyValueStore::read(const char* key, String& value, ValueType_t& type) const {
+    bool res = false;
+    auto item = find(key);
+    if (item) {
+        value = item->getValue();
+        type = item->getType();
+        res = true;
+    }
+    return res;
+}
+
+bool KeyValueStore::erase(const char* key) {
+    for (size_t i = 0; i < _items.size(); i++) {
+        if (strcmp(key, _items.at(i)->getKey()) == 0) {
+            onErase(_items.at(i));
+            _items.erase(_items.begin() + i);
+            return true;
+        }
+    }
+    return false;
+}
+
+void KeyValueStore::clear() {
+    for (auto* item : _items) {
+        delete item;
+    }
     _items.clear();
 }
 
-void KeyValueStore::loadString(const char* jsonStr) {
-    DynamicJsonBuffer buf;
-    JsonObject& root = buf.parse(jsonStr);
-    for (JsonPair& p : root) {
+void KeyValueStore::save(JsonObject& obj) const {
+    for (auto item : _items) {
+        switch (item->getType()) {
+            case VT_STRING:
+                obj[item->getKey()] = item->getValue();
+                break;
+            case VT_FLOAT:
+                obj[item->getKey()] = atof(item->getValue());
+                break;
+            case VT_INT:
+                obj[item->getKey()] = atoi(item->getValue());
+            default:
+                break;
+        }
+    }
+}
+
+void KeyValueStore::load(JsonObject& obj) {
+    for (JsonPair& p : obj) {
         String key = p.key;
         String value{p.value.as<String>()};
         _items.push_back(new KeyValue{key.c_str(), value.c_str(), VT_STRING});
     }
 }
 
-void KeyValueStore::clear() {
-    _items.clear();
+void KeyValueStore::fromJson(const String& jsonStr) {
+    DynamicJsonBuffer buf;
+    JsonObject& obj = buf.parse(jsonStr.c_str());
+    load(obj);
+}
+
+String& KeyValueStore::toJson(String& jsonStr) const {
+    DynamicJsonBuffer json;
+    JsonObject& obj = json.createObject();
+    save(obj);
+    obj.printTo(jsonStr);
+    return jsonStr;
 }
 
 void KeyValueStore::forEach(KeyValueHandler func) {
@@ -36,146 +120,3 @@ void KeyValueStore::forEach(KeyValueHandler func) {
         func(item);
     }
 }
-
-const String KeyValueStore::asJson() {
-    DynamicJsonBuffer json;
-    JsonObject& root = json.createObject();
-    for (auto item : _items) {
-        switch (item->getType()) {
-            case VT_STRING:
-                root[item->getKey()] = item->getValue();
-                break;
-            case VT_FLOAT:
-                root[item->getKey()] = atof(item->getValue());
-                break;
-            case VT_INT:
-                root[item->getKey()] = atoi(item->getValue());
-            default:
-                break;
-        }
-    }
-    String buf;
-    root.printTo(buf);
-    return buf;
-}
-
-void KeyValueStore::erase(const String key) {
-    for (size_t i = 0; i < _items.size(); i++) {
-        if (key.equals(_items.at(i)->getKey())) {
-            _items.erase(_items.begin() + i);
-            break;
-        }
-    }
-}
-
-KeyValue* KeyValueStore::find(const String key) const {
-    for (size_t i = 0; i < _items.size(); i++) {
-        if (key.equals(_items.at(i)->getKey())) {
-            return _items.at(i);
-        }
-    }
-    return NULL;
-}
-
-void KeyValueStore::write(const String& key, const String& value, ValueType_t type, KeyType_t key_type) {
-    bool new_flag = false;
-    auto item = find(key);
-    if (!item) {
-        new_flag = true;
-        item = new KeyValue(key.c_str(), value.c_str(), type, key_type);
-        _items.push_back(item);
-    };
-    item->setValue(value.c_str(), type);
-    if (new_flag) {
-        onAdd(item);
-    } else {
-        onUpdate(item);
-    }
-}
-
-void KeyValueStore::write(const String& key, int value) {
-    write(key, String(value, DEC), VT_INT);
-}
-
-void KeyValueStore::writeAsInt(const String& key, const String& value) {
-    write(key, value, VT_INT);
-}
-
-void KeyValueStore::writeAsFloat(const String& key, const String& value) {
-    write(key, value, VT_FLOAT);
-}
-
-const String KeyValueStore::read(const String& key) const {
-    return read(key, "");
-}
-
-const String KeyValueStore::read(const String& key, const char* default_value) const {
-    auto item = find(key);
-    String value;
-    if (item) {
-        value = item->getValue();
-    } else {
-        pm.error("not found: " + key + ", default: " + default_value);
-        value = default_value;
-    }
-    return value;
-}
-
-int KeyValueStore::readInt(const String& key) const {
-    return read(key).toInt();
-}
-
-float KeyValueStore::readFloat(const String& key) const {
-    return read(key).toFloat();
-}
-
-bool KeyValueStore::get(const String& key, String& value, ValueType_t& type) const {
-    auto item = find(key);
-    if (!item) {
-        return false;
-    }
-    value = item->getValue();
-    type = item->getType();
-    return true;
-}
-
-KeyValueFile::KeyValueFile(const char* filename) {
-    _filename = strdup(filename);
-}
-
-KeyValueFile::~KeyValueFile() {
-    free(_filename);
-}
-
-const char* KeyValueFile::getFilename() {
-    return _filename;
-}
-
-bool KeyValueFile::save() {
-    bool res = false;
-    String buf = asJson();
-    auto file = LittleFS.open(_filename, "w");
-    if (file) {
-        file.print(buf);
-        res = true;
-    }
-    file.close();
-    return res;
-}
-
-bool KeyValueFile::load() {
-    bool res = false;
-    DynamicJsonBuffer buf;
-    auto file = LittleFS.open(_filename, "r");
-    if (file) {
-        JsonObject& root = buf.parse(file);
-        for (JsonPair& p : root) {
-            String key = p.key;
-            String value{p.value.as<String>()};
-            _items.push_back(new KeyValue{key.c_str(), value.c_str(), VT_STRING});
-        }
-        res = true;
-    }
-    file.close();
-    return res;
-};

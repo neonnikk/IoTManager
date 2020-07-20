@@ -1,6 +1,5 @@
 #include "Cmd.h"
 
-#include "StringConsts.h"
 #include "PrintMessage.h"
 
 #include "Collection/Buttons.h"
@@ -31,18 +30,16 @@ static bool getButtonType(const String &assign, ButtonType_t &type) {
 }
 
 void cmd_button() {
-    KeyValueStore *params = new KeyValueStore(sCmd.next());
+    ParamStore params{sCmd.next()};
 
-    String name = getObjectName(TAG_BUTTON, params->read("id").c_str());
-    String descr = params->read("name");
-    String assign = params->read("pin");
-    String inverted = params->read("inverted", "false");
-    String state = params->read("state", "0");
-    String widget = params->read("widget", "toggle");
-    String page = params->read("page");
-    String order = params->read("order");
-
-    delete params;
+    String name = getObjectName(TAG_BUTTON, params.read("id").c_str());
+    String descr = params.read("name");
+    String assign = params.read("pin");
+    String inverted = params.read("inverted", "false");
+    String state = params.read("state", "0");
+    String widget = params.read("widget", "toggle");
+    String page = params.read("page");
+    String order = params.read("order");
 
     ButtonType_t type;
     if (!getButtonType(assign, type)) {
@@ -52,7 +49,7 @@ void cmd_button() {
 
     buttons.add(type, name, assign, state, inverted);
 
-    runtime.write(name, state, VT_INT);
+    runtime.writeAsInt(name, state);
 
     Widgets::createWidget(descr, page, order, widget, name);
 }
@@ -65,7 +62,7 @@ void cmd_buttonChange() {
     }
     String state = item->toggleState();
 
-    runtime.write(name, state, VT_INT);
+    runtime.writeAsInt(name, state);
 }
 
 void cmd_buttonSet() {
@@ -78,5 +75,5 @@ void cmd_buttonSet() {
 
     item->setValue(state);
 
-    runtime.write(name, state, VT_INT);
+    runtime.writeAsInt(name, state);
 }

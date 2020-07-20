@@ -10,8 +10,9 @@ namespace WebClient {
 
 const String get(const String& url) {
     String res = "";
+    WiFiClient client;
     HTTPClient http;
-    http.begin(url);
+    http.begin(client, url);
     if (http.GET() == HTTP_CODE_OK) {
         res = http.getString();
     } else {

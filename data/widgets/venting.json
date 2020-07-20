@@ -1,0 +1,7 @@
+{
+    "widget": "btn",
+    "color": "orange",
+    "descrColor": "blue",
+    "icon": "switch",
+    "fill": "outline"
+}

@@ -225,7 +225,7 @@ void loop() {
     for (auto item : _items) {
         if (item->isEnabled()) {
             if (item->checkCondition(event, value)) {
-                stringExecute(item->getCommands());
+                addCommands(item->getCommands());
             }
         }
     }

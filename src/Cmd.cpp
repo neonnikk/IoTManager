@@ -18,7 +18,7 @@
 #include "Objects/Telnet.h"
 
 #include "PrintMessage.h"
-
+#include "Runtime.h"
 #include "StringConsts.h"
 #include "MqttClient.h"
 #include "WebClient.h"
@@ -66,7 +66,7 @@ const String getObjectName(const char *type, const char *id) {
 void cmd_init() {
     switches.setOnChangeState([](Switch *obj) {
         String name = String("switch") + obj->getName();
-        runtime.write(name, obj->getValue(), VT_INT);
+        runtime.writeAsInt(name, obj->getValue());
     });
 
     sCmd.addCommand("button", cmd_button);
@@ -143,42 +143,22 @@ void cmd_init() {
     sCmd.addCommand("oneWire", cmd_oneWire);
 }
 
-void cmd_pinSet() {
-    String pin_number = sCmd.next();
-    String pin_state = sCmd.next();
-    pinMode(pin_number.toInt(), OUTPUT);
-    digitalWrite(pin_number.toInt(), pin_state.toInt());
-}
-
-void cmd_pinChange() {
-    String pin_number = sCmd.next();
-    pinMode(pin_number.toInt(), OUTPUT);
-    digitalWrite(pin_number.toInt(), !digitalRead(pin_number.toInt()));
-}
-
-void loop_items() {
-    if (term) {
-        term->loop();
-    }
-    if (telnet) {
-        telnet->loop();
-    }
-
-    switches.loop();
-}
 
 void cmd_inputDigit() {
     String name = sCmd.next();
     String number = name.substring(5);
-    String widget_name = sCmd.next();
-    widget_name.replace("#", " ");
+    String descr = sCmd.next();
+    descr.replace("#", " ");
     String page_name = sCmd.next();
     page_name.replace("#", " ");
-    String start_state = sCmd.next();
+    String value = sCmd.next();
     String order = sCmd.next();
 
-    runtime.write("digit" + number, start_state, VT_STRING);
-    Widgets::createWidget(widget_name, page_name, order, "inputNum", "digit" + number);
+    String objName = "digit" + number;
+
+    runtime.writeAsInt(objName, value);
+
+    Widgets::createWidget(descr, page_name, order, "inputNum", objName);
 }
 
 void cmd_digitSet() {
@@ -186,7 +166,8 @@ void cmd_digitSet() {
     String value = sCmd.next();
 
     String objName = "digit" + name;
-    runtime.write(objName, value);
+
+    runtime.writeAsInt(objName, value);
 }
 
 void cmd_inputTime() {
@@ -200,7 +181,9 @@ void cmd_inputTime() {
     String order = sCmd.next();
 
     String objName = "time" + name;
+
     runtime.write(objName, state);
+
     Widgets::createWidget(widget_name, page_name, order, "inputTime", "time" + number);
 }
 
@@ -210,97 +193,6 @@ void cmd_timeSet() {
 
     String objName = "time" + name;
     runtime.write(objName, value);
-}
-
-void cmd_stepper() {
-    String name = sCmd.next();
-    String pin_step = sCmd.next();
-    String pin_dir = sCmd.next();
-
-    // String objName = "stepper" + name;
-    // liveData.write(objName, pin_step + " " + pin_dir);
-
-    // pinMode(pin_step.toInt(), OUTPUT);
-    // pinMode(pin_dir.toInt(), OUTPUT);
-}
-
-void cmd_stepperSet() {
-    String stepper_number = sCmd.next();
-    String steps = sCmd.next();
-    // options.write("steps" + stepper_number, steps);
-    // String stepper_speed = sCmd.next();
-    // String pin_step = selectToMarker(options.read("stepper" + stepper_number), " ");
-    // String pin_dir = deleteBeforeDelimiter(options.read("stepper" + stepper_number), " ");
-    // Serial.println(pin_step);
-    // Serial.println(pin_dir);
-    // if (steps.toInt() > 0) digitalWrite(pin_dir.toInt(), HIGH);
-    // if (steps.toInt() < 0) digitalWrite(pin_dir.toInt(), LOW);
-    // if (stepper_number == "1") {
-    //     ts.add(
-    //         STEPPER1, stepper_speed.toInt(), [&](void *) {
-    //             int steps_int = abs(options.readInt("steps1") * 2);
-    //             static int count;
-    //             count++;
-    //             String pin_step = selectToMarker(options.read("stepper1"), " ");
-    //             digitalWrite(pin_step.toInt(), !digitalRead(pin_step.toInt()));
-    //             yield();
-    //             if (count > steps_int) {
-    //                 digitalWrite(pin_step.toInt(), LOW);
-    //                 ts.remove(STEPPER1);
-    //                 count = 0;
-    //             }
-    //         },
-    //         nullptr, true);
-    // }
-
-    // if (stepper_number == "2") {
-    //     ts.add(
-    //         STEPPER2, stepper_speed.toInt(), [&](void *) {
-    //             int steps_int = abs(options.readInt("steps2") * 2);
-    //             static int count;
-    //             count++;
-    //             String pin_step = selectToMarker(options.read("stepper2"), " ");
-    //             digitalWrite(pin_step.toInt(), !digitalRead(pin_step.toInt()));
-    //             yield();
-    //             if (count > steps_int) {
-    //                 digitalWrite(pin_step.toInt(), LOW);
-    //                 ts.remove(STEPPER2);
-    //                 count = 0;
-    //             }
-    //         },
-    //         nullptr, true);
-    // }
-}
-
-void cmd_servo() {
-    //servo 1 13 50 Cервопривод Сервоприводы 0 100 0 180 2
-    String name = sCmd.next();
-    String pin = sCmd.next();
-    String value = sCmd.next();
-
-    String descr = sCmd.next();
-    String page = sCmd.next();
-
-    String min_value = sCmd.next();
-    String max_value = sCmd.next();
-    String min_deg = sCmd.next();
-    String max_deg = sCmd.next();
-
-    String order = sCmd.next();
-
-    servos.add(name, pin, value, min_value, max_value, min_deg, max_deg);
-
-    // options.write("servo_pin" + name, pin);
-    // value = map(value, min_value, max_value, min_deg, max_deg);
-    // servo->write(value);
-    // options.writeInt("s_min_val" + name, min_value);
-    // options.writeInt("s_max_val" + name, max_value);
-    // options.writeInt("s_min_deg" + name, min_deg);
-    // options.writeInt("s_max_deg" + name, max_deg);
-    // liveData.writeInt("servo" + name, value);
-
-    Widgets::createWidget(descr, page, order, "range", "servo" + name);
-    // , "min", String(min_value), "max", String(max_value), "k", "1");
 }
 
 void cmd_serialBegin() {
@@ -318,7 +210,7 @@ void cmd_serialBegin() {
 #endif
     term = new Terminal(mySerial);
     term->setOnReadLine([](const char *str) {
-        addOrder(str);
+        addCommand(str);
     });
 }
 
@@ -358,9 +250,14 @@ void cmd_get() {
     String obj = sCmd.next();
     String param = sCmd.next();
     String res = "";
+
     if (!obj.isEmpty()) {
         if (obj.equalsIgnoreCase("state")) {
-            res = param.isEmpty() ? runtime.asJson() : runtime.read(param);
+            if (param.isEmpty()) {
+                res = runtime.asJson();
+            } else {
+                res = runtime.read(param);
+            }
         } else if (obj.equalsIgnoreCase("devices")) {
             Devices::get(res, param.toInt());
         } else {
@@ -618,38 +515,56 @@ void cmd_firmwareVersion() {
     String page = sCmd.next();
     String order = sCmd.next();
 
-    runtime.write("firmver", FIRMWARE_VERSION, VT_STRING);
-    Widgets::createWidget(widget, page, order, "anydata", "firmver");
+    Widgets::createWidget(widget, page, order, "anydata", "firmware");
 }
 
-void stringExecute(String str) {
-    str += "\r\n";
-    str.replace("\r\n", "\n");
-    str.replace("\r", "\n");
-    while (!str.isEmpty()) {
-        String buf = selectToMarker(str, "\n");
-        // Comments
-        if (!buf.startsWith("//") && !buf.isEmpty()) {
-            addOrder(buf);
+bool extractCommand(const String &buf, size_t &startIndex, String &block) {
+    int endIndex = buf.indexOf("\n", startIndex);
+    if (endIndex < 0) {
+        return false;
+    }
+    block = buf.substring(startIndex, endIndex);
+    startIndex = endIndex + 1;
+    return true;
+}
+
+void addCommands(const String &str) {
+    size_t pos = 0;
+    while (pos < str.length()) {
+        String buf;
+        if (!extractCommand(str, pos, buf)) {
+            break;
         }
-        str = deleteBeforeDelimiter(str, "\n");
+        addCommand(buf);
     }
 }
 
-void ExecuteCommand(const String &str) {
-    pm.info("Execute: " + str);
-    sCmd.readStr(str);
+void addCommand(const String &str) {
+    if (!str.startsWith("//") && !str.isEmpty()) {
+        _orders.push(str);
+    }
 }
 
-void addOrder(const String &str) {
-    _orders.push(str);
+void executeCommand(const String &str) {
+    pm.info("Execute: " + str);
+    sCmd.readStr(str);
 }
 
 void loop_cmd() {
     if (_orders.available()) {
         String cmd;
         _orders.pop(cmd);
-        pm.info("execute: " + cmd);
-        sCmd.readStr(cmd);
+        executeCommand(cmd);
     }
+}
+
+void loop_items() {
+    if (term) {
+        term->loop();
+    }
+    if (telnet) {
+        telnet->loop();
+    }
+
+    switches.loop();
 }

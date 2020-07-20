@@ -16,7 +16,7 @@ extern AsyncEventSource events;
 
 namespace HttpServer {
 void init();
-void initOta();
+void initOTA();
 void initMDNS();
 void initWS();
 }  // namespace HttpServer

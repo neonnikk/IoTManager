@@ -81,7 +81,7 @@
     },
     {
       "type": "h4",
-      "title": "{{firmware_version}}",
+      "title": "{{firmware}}",
       "style": "float:right"
     }
   ]
