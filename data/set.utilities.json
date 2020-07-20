@@ -61,19 +61,23 @@
       "title": "{{LS_sensor_logs}}"
     },
     {
-      "type": "table",
-      "state": "logs.json",
-      "style": "margin:0% 10% 0% 10%;width:80%;text-align:center",
-      "title": {
-        "name": "{{LS_name}}",
-        "entries": "{{LS_entries}}",
-        "size": "{{LS_size}}"
-      }
+      "type": "csv",
+      "title": [
+        "checkbox",
+        "html",
+        "html",
+        "html",
+        "html",
+        "html"
+      ],
+      "state": "logs.csv",
+      "style": "width:100%;",
+      "class": "btn btn-block btn-success"
     },
     {
       "type": "link",
-      "title": "{{LS_clear}}",
-      "action": "/set?clear_log",
+      "title": "{{LS_refresh}}",
+      "action": "/set?refreshLogs",
       "class": "btn btn-block btn-center"
     },
     {

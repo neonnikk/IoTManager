@@ -9,7 +9,7 @@
 extern StringCommand sCmd;
 
 unsigned long parsePeriod(const String &str, unsigned long default_multiplier = ONE_MINUTE_ms);
-const String getObjectName(const char *type, const char *id);
+const String getObjectName(const String &objType, const String &objId);
 
 void cmd_init();
 /*
@@ -25,7 +25,7 @@ void addCommands(const String &);
 */
 void executeCommand(const String &);
 
-void cmd_analog();
+void cmd_sensor();
 
 void cmd_oneWire();
 

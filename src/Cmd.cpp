@@ -29,13 +29,13 @@ StringQueue _orders;
 
 StringCommand sCmd;
 
-Terminal *term = nullptr;
-Telnet *telnet = nullptr;
+Terminal *term = NULL;
+Telnet *telnet = NULL;
 
 #ifdef ESP8266
-SoftwareSerial *mySerial = nullptr;
+SoftwareSerial *mySerial = NULL;
 #else
-HardwareSerial *mySerial = nullptr;
+HardwareSerial *mySerial = NULL;
 #endif
 
 unsigned long parsePeriod(const String &str, unsigned long default_time_syfix) {
@@ -58,8 +58,8 @@ unsigned long parsePeriod(const String &str, unsigned long default_time_syfix) {
     return res;
 }
 
-const String getObjectName(const char *type, const char *id) {
-    return String(type) + id;
+const String getObjectName(const String &objType, const String &objId) {
+    return objType + objId;
 }
 
 void cmd_init() {
@@ -80,7 +80,7 @@ void cmd_init() {
     sCmd.addCommand("pwm", cmd_pwm);
     sCmd.addCommand("pwmSet", cmd_pwmSet);
 
-    sCmd.addCommand("analog", cmd_analog);
+    sCmd.addCommand("sensor", cmd_sensor);
 
     sCmd.addCommand("levelPr", cmd_levelPr);
     sCmd.addCommand("ultrasonicCm", cmd_ultrasonicCm);
@@ -141,7 +141,6 @@ void cmd_init() {
 
     sCmd.addCommand("oneWire", cmd_oneWire);
 }
-
 
 void cmd_serialBegin() {
     uint32_t baud = atoi(sCmd.next());

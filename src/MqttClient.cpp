@@ -125,7 +125,7 @@ bool isConnected() {
 bool hasAttempts() {
     return !RECONNECT_ATTEMPTS_MAX || (_connectionAttempts < RECONNECT_ATTEMPTS_MAX);
 }
-
+bool publishStarted = false;
 void loop() {
     if (!NetworkManager::isNetworkActive()) {
         return;
@@ -157,16 +157,15 @@ void loop() {
         return;
     }
 
+    _mqtt.loop();
+
     _connectionAttempts = 0;
     if (!_queue.empty()) {
-        pm.info(String(_queue.size(), DEC));
+        pm.info("#" + String(_queue.size(), DEC) + " " + _queue.front().getTopic());
         _mqtt_publish(_queue.front().getTopic().c_str(), _queue.front().getData().c_str());
         _queue.pop_front();
     }
-
-    _mqtt.loop();
 }
-
 const String parseControl(const String& str) {
     String res;
     String num1 = str.substring(str.length() - 1);

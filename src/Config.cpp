@@ -39,7 +39,9 @@ void Config::setSynced() {
 
 bool Config::hasChanged() {
     for (size_t i = 0; i < NUM_CONFIGS; i++) {
-        if (_timestamp < _items[i]->getTimestamp()) return true;
+        if (_timestamp < _items[i]->getTimestamp()) {
+            return true;
+        }
     }
     return false;
 }

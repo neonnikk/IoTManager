@@ -20,6 +20,7 @@ class LoggerTask {
 
    public:
     const String asJson();
+    const String asCVS();
 
    private:
     void publishFile();
@@ -27,11 +28,11 @@ class LoggerTask {
    private:
     LogMetadata _meta;
     LogBuffer _buffer;
-
     size_t _id;
     unsigned long _interval;
     size_t _limit;
     unsigned long _lastUpdated;
+    unsigned long _bufferFlushed;
     LogReader* _reader;
     LogWriter* _writer;
 };

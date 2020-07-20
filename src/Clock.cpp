@@ -1,5 +1,6 @@
 #include "Clock.h"
 
+#include "NetworkManager.h"
 #include "Utils/TimeUtils.h"
 #include "PrintMessage.h"
 
@@ -47,6 +48,10 @@ void Clock::loop() {
 }
 
 void Clock::startSync() {
+    if (!NetworkManager::isNetworkActive()) {
+        return;
+    }
+
     if (!_configured) {
         pm.info("ntp:" + _config->getNtp() + ", timezone:" + String(_config->getTimezone()));
         setupSntp();
@@ -95,11 +100,21 @@ const String Clock::getDateDotFormated() {
 }
 
 /*
-    * Локальное дата время "дд.ММ.гг чч.мм.cc"
-    */
+* Локальное дата время "дд.ММ.гг чч.мм.cc"
+*/
 const String Clock::getDateTimeDotFormated() {
+    return getDateTimeDotFormated(_time_local);
+}
+
+const String Clock::getDateTimeDotFormated(unsigned long unix_time) {
+    Time_t time;
+    breakEpochToTime(unix_time, time);
+    return getDateTimeDotFormated(time);
+}
+
+const String Clock::getDateTimeDotFormated(Time_t tm) {
     char buf[32];
-    sprintf(buf, "%02d.%02d.%02d %02d:%02d:%02d", _time_local.day_of_month, _time_local.month, _time_local.year, _time_local.hour, _time_local.minute, _time_local.second);
+    sprintf(buf, "%02d.%02d.%02d %02d:%02d:%02d", tm.day_of_month, tm.month, tm.year, tm.hour, tm.minute, tm.second);
     return String(buf);
 }
 

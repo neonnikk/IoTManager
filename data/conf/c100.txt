@@ -3,7 +3,7 @@ button {id:2,pin:13,name:"Прихожая",page:"Реле",order:2}
 button {id:3,pin:14,name:"Кухня",page:"Реле",order:3}
 pwm {id:1,pin:3,name:"Яркость#коридор",pin:3,state:100,page:"Реле",order:4}
 pwm {id:2,pin:4,name:"Яркость#ванная",pin:4,state:50,page:"Реле",order:5}
-analog adc 0 Аналоговый#вход Датчики fillgauge 1 1023 1 1023 6
+sensor {id:1,type:"adc",pin:17,refresh:"5s",name:"Аналоговый#вход,#%",map:"1-1023/1-100",page:"Датчики",order:6,widget:"fillgauge"}
 logging adc 1 100 Аналоговый#вход Датчики 7
 
 //Это демо конфигурация. В ней показано как связать кнопки c помощью сценариев

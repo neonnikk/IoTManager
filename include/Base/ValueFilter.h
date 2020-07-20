@@ -12,19 +12,19 @@ class ValueFilter {
         }
     }
 
+    bool filterValue(const float value) {
+        return _filter ? _filter->process(value) : false;
+    }
+
+    float getFilteredValue() {
+        return _filter ? _filter->get() : 0;
+    }
+
     void setFilter(Filter* filter) {
         if (_filter) {
             delete _filter;
         }
         _filter = filter;
-    }
-
-    float filterValue(const float value) {
-        if (_filter) {
-            return _filter->process(value);
-        } else {
-            return value;
-        }
     }
 
    private:

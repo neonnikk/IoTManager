@@ -20,10 +20,22 @@ class Sensor : public Item,
                                                                                ValueFilter{this} {}
     virtual ~Sensor() = default;
 
-    virtual const String onReadSensor() = 0;
+    virtual bool sensorReady() = 0;
+
+    virtual float readSensor() = 0;
+
+    const bool hasValue() override {
+        if (sensorReady()) {
+            auto readed = readSensor();
+            return filterValue(readed);
+        }
+        return false;
+    }
 
    protected:
     const String onGetValue() override {
-        return onReadSensor();
+        auto filtered = getFilteredValue();
+        auto mapped = mapValue(filtered);
+        return String(mapped, 2);
     }
 };

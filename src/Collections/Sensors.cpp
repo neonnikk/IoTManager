@@ -3,7 +3,6 @@
 #include "Runtime.h"
 
 namespace Sensors {
-
 std::vector<Sensor*> _items;
 
 Sensor* last() {
@@ -11,7 +10,7 @@ Sensor* last() {
 }
 
 Sensor* add(SensorType_t type, const String& name, const String& assign) {
-    Sensor* item;
+    Sensor* item = NULL;
     switch (type) {
         case SensorType_t::ADC:
             item = new ADCSensor{name, assign};
@@ -22,9 +21,11 @@ Sensor* add(SensorType_t type, const String& name, const String& assign) {
         default:
             break;
     }
-
-    _items.push_back(item);
-    return last();
+    if (item) {
+        _items.push_back(item);
+        return last();
+    }
+    return NULL;
 }
 
 void update() {

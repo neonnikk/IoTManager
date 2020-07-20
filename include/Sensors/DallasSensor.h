@@ -24,7 +24,7 @@ class DallasSensor : public Sensor,
         delete _obj;
     }
 
-    const bool hasValue() override {
+    bool sensorReady() override {
         bool res = false;
         switch (_state) {
             case DallasSensorState::IDLE:
@@ -48,9 +48,9 @@ class DallasSensor : public Sensor,
         };
         return res;
     }
-    
-    const String onReadSensor() override {
-        return String(_value, 2);
+
+    float readSensor() override {
+        return _value;
     }
 
    private:

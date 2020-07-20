@@ -12,5 +12,6 @@ void add(const char* name, unsigned long period, size_t count);
 void update();
 void clear();
 const String asJson();
+void asCSV(const String& filename);
 void forEach(LoggerTaskHandler func);
 };  // namespace Logger

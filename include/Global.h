@@ -43,6 +43,10 @@ extern void perform_updates_check();
 */
 extern void perform_upgrade();
 /*
+* Запрос обновления файла с данными по логам
+*/
+extern void perform_logger_refresh();
+/*
 * Запрос на очистук логов
 */
 extern void perform_logger_clear();
@@ -62,7 +66,6 @@ extern void broadcast_mqtt_settings();
 * Запуск комманд из файла
 */
 extern void fileExecute(const String filename);
-
 
 extern void load_config();
 

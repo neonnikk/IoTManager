@@ -70,6 +70,7 @@ void loop() {
             String buf;
             Messages::outcome(buf);
             if (!buf.isEmpty()) {
+                pm.info(buf);
                 udp.broadcast(buf.c_str());
             }
         }

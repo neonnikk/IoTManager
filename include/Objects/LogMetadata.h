@@ -2,13 +2,14 @@
 
 #include <Arduino.h>
 
-#include <Objects/LogEntry.h>
+#include "Clock.h"
+#include "Objects/LogEntry.h"
 
 #define FILE_READ "r"
 #define FILE_WRITE "w"
 #define FILE_APPEND "a"
 
-class LogMetadata : public Printable {
+class LogMetadata {
    private:
     struct LogHeader {
         char name[32];
@@ -87,17 +88,11 @@ class LogMetadata : public Printable {
         return (sizeof(Entry)) * _header.entry_count;
     }
 
-    size_t printTo(Print& p) const {
-        size_t n = p.print(F("entries: "));
-        n += p.print(getCount(), DEC);
-        n += p.print(F(" bytes: "));
-        n += p.print(getSize(), DEC);
-        n += p.print(F(" start: "));
-        n += p.print(_header.start_time, DEC);
-        n += p.print(F(" finish: "));
-        n += p.print(_header.finish_time, DEC);
-        n += p.print(F(" entry_size: "));
-        n += p.println(sizeof(Entry));
-        return n;
+    const String getStartDateTimeStr() {
+        return now.getDateTimeDotFormated(_header.start_time);
+    }
+
+    const String getFinishDateTimeStr() {
+        return now.getDateTimeDotFormated(_header.finish_time);
     }
 };

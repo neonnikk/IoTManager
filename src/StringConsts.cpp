@@ -28,6 +28,10 @@ const char* TAG_SHARE_MQTT = "share_mqtt";
 const char* TAG_CHECK_MQTT = "check_mqtt";
 
 const char* TAG_BUTTON = "button";
+const char* TAG_SENSOR = "sensor";
+const char* TAG_TYPE = "type";
+const char* TAG_ID = "id";
+const char* TAG_PIN = "pin";
 const char* TAG_TIMER = "timer";
 const char* TAG_TEXT = "text";
 const char* TAG_PWM = "pwm";

@@ -2,6 +2,7 @@
 
 #include "Global.h"
 #include "Runtime.h"
+#include "Collection/Logger.h"
 #include "HttpServer.h"
 
 static const char* MODULE = "Web";
@@ -47,8 +48,9 @@ void init() {
                 request->send(200);
                 return;
             }
-            if (request->hasArg("clear_log")) {
-                perform_logger_clear();
+            if (request->hasArg("refreshLogs")) {
+                // perform_logger_clear();
+                perform_logger_refresh();
                 request->redirect(PAGE_UTILITIES);
                 return;
             }

@@ -1,6 +1,7 @@
 #include "Utils/FileUtils.h"
 
 #include "PrintMessage.h"
+
 #include "Utils/StringUtils.h"
 
 static const char* MODULE = "FS";
@@ -19,7 +20,7 @@ bool fs_init() {
     return true;
 }
 
-bool removeFile(const String filename, bool fail_not_exists) {
+bool removeFile(const String& filename, bool fail_not_exists) {
     String path = filepath(filename.c_str());
     if (LittleFS.exists(path)) {
         if (!LittleFS.remove(path)) {
@@ -31,17 +32,6 @@ bool removeFile(const String filename, bool fail_not_exists) {
         return !fail_not_exists;
     }
     return true;
-}
-
-File seekFile(const String filename, size_t position) {
-    String path = filepath(filename.c_str());
-    auto file = LittleFS.open(path, "r");
-    if (!file) {
-        pm.error("open " + path);
-    }
-    // поставим курсор в начало файла
-    file.seek(position, SeekSet);
-    return file;
 }
 
 const String readFileString(const String filename, const String to_find) {
@@ -58,15 +48,15 @@ const String readFileString(const String filename, const String to_find) {
     return res;
 }
 
-const String addFile(const String filename, const String str) {
+bool addFile(const String& filename, const String& str) {
     String path = filepath(filename.c_str());
     auto file = LittleFS.open(path, "a");
     if (!file) {
-        return "failed";
+        return false;
     }
     file.println(str);
     file.close();
-    return "sucсess";
+    return true;
 }
 
 bool copyFile(const String src, const String dst, bool overwrite) {
@@ -97,15 +87,15 @@ bool copyFile(const String src, const String dst, bool overwrite) {
     return true;
 }
 
-const String writeFile(const String filename, const String str) {
+bool writeFile(const String& filename, const String& str) {
     String path = filepath(filename.c_str());
-    auto file = LittleFS.open(path, "w");
+    auto file = LittleFS.open(path, FILE_WRITE);
     if (!file) {
-        return "failed";
+        return false;
     }
     file.print(str);
     file.close();
-    return "sucсess";
+    return true;
 }
 
 bool fileExists(const char* filename) {
@@ -132,7 +122,7 @@ bool readFile(const char* filename, String& str, size_t max_size) {
     return true;
 }
 
-const String getFileSize(const String filename) {
+const String getFileSize(const String& filename) {
     String filepath(filename);
     auto file = LittleFS.open(filepath, "r");
     if (!file) {

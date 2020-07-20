@@ -49,7 +49,6 @@ class LogWriter {
             } else {
                 _file.close();
                 _meta->store();
-                _meta->printTo(Serial);
                 _active = false;
             }
         }

@@ -27,7 +27,6 @@ class Clock {
     void loop();
 
     bool hasSynced() const;
-
     time_t getSystemTime() const;
     const unsigned long getEpoch();
     const String getTimeUnix();
@@ -35,11 +34,12 @@ class Clock {
     * Локальное время "дд.ММ.гг"
     */
     const String getDateDotFormated();
-
     /*
     * Локальное дата время "дд.ММ.гг чч.мм.cc"
     */
     const String getDateTimeDotFormated();
+    const String getDateTimeDotFormated(unsigned long);
+    const String getDateTimeDotFormated(Time_t tm);
     /*
     * Локальное время "чч:мм:cc" , seconds = false то "чч:мм"
     */
@@ -58,12 +58,9 @@ class Clock {
     void setupSntp();
 
    private:
-    Time_t _time_local;
-    Time_t _time_utc;
-    unsigned long _uptime;
-    unsigned long _unixtime;
-    bool _hasSynced;
-    bool _configured;
+    Time_t _time_local, _time_utc;
+    unsigned long _uptime, _unixtime;
+    bool _hasSynced, _configured;
     ClockConfig* _config;
     const uint8_t DAYS_IN_MONTH[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 };

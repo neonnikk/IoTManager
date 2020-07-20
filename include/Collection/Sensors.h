@@ -8,10 +8,12 @@
 #include "Sensors/BME280Sensor.h"
 #include "Sensors/UltrasonicSensor.h"
 
-enum class SensorType_t {
+enum SensorType_t {
     ADC,
-    DALLAS
+    DALLAS,
+    NUM_SENSOR_TYPES
 };
+#define WRONG_SENSOR_TYPE NUM_SENSOR_TYPES
 
 namespace Sensors {
 

@@ -1,5 +1,5 @@
 // приведение диапазона 0-1023 к диапазону 1-100
 // варианты отображения: anydata, progress-round, progress-line, fillgauge
-analog adc 0 Аналоговый#вход,#% Датчики progress-round 0 1023 1 100 1
+sensor {id:1,type:"adc",pin:0,name:"Аналоговый#вход,#%",map:"0-1023/1-100",page:"Датчики",order:1,widget:" progress-round"}
 // сохранение в журнал каждые 5 секунд
 logging adc 5s 10 Аналоговый#вход Датчики 2

@@ -35,7 +35,7 @@ class Switch : public Item,
     }
 
     const String onGetValue() override {
-        return _obj.read() ? "1" : "0";
+        return String(_obj.read(), DEC);
     }
 
    protected:

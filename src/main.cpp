@@ -63,6 +63,10 @@ void perform_system_restart() {
     perform_system_restart_flag = true;
 }
 
+bool perform_logger_refresh_flag = false;
+void perform_logger_refresh() {
+    perform_logger_refresh_flag = true;
+}
 bool perform_logger_clear_flag = false;
 void perform_logger_clear() {
     perform_logger_clear_flag = true;
@@ -76,14 +80,9 @@ void loop() {
 
     now.loop();
 
-    ArduinoOTA.handle();
-    // ws.cleanupClients();
-
     loop_cmd();
 
     loop_items();
-
-    MqttClient::loop();
 
     if (config.general()->isScenarioEnabled()) {
         Scenario::loop();
@@ -104,10 +103,21 @@ void loop() {
 
     flag_actions();
 
+    MqttClient::loop();
+
+    ArduinoOTA.handle();
+
+    // ws.cleanupClients();
+
     metric.finish();
 }
 
 void flag_actions() {
+    if (perform_logger_refresh_flag) {
+        Logger::asCSV("/logs.csv");
+        perform_logger_refresh_flag = false;
+    }
+
     if (perform_mqtt_restart_flag) {
         MqttClient::reconnect();
         perform_mqtt_restart_flag = false;

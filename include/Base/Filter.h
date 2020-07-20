@@ -11,24 +11,38 @@
 class Filter {
    public:
     virtual ~Filter() = default;
-    virtual float process(float) = 0;
+    virtual bool process(float) = 0;
+    virtual float get() = 0;
 };
 
 class Passthrough : public Filter {
    public:
-    Passthrough() : Filter(), _min_value(MAX_SENSOR_VALUE), _max_value(MIN_SENSOR_VALUE){};
+    Passthrough() : Filter(), _value{0}, _min_value(MAX_SENSOR_VALUE), _max_value(MIN_SENSOR_VALUE){};
 
-    float process(float) override;
+    bool process(float value) override {
+        if (_min_value > value) {
+            _min_value = value;
+        }
+        if (_max_value < value) {
+            _max_value = value;
+        }
+        return true;
+    }
+
+    float get() override {
+        return _value;
+    }
 
    private:
-    float _min_value, _max_value;
+    float _value, _min_value, _max_value;
 };
 
 class MovingAverage : public Filter {
    public:
     MovingAverage(size_t size);
     ~MovingAverage();
-    float process(float) override;
+    bool process(float) override;
+    float get() override;
 
    private:
     float *_buffer;
@@ -44,7 +58,8 @@ class Smoothing : public Filter {
     Smoothing() {
         memset(&_buffer, 0, sizeof(_buffer[0]) * 4);
     };
-    float process(float) override;
+    bool process(float) override;
+    float get() override;
 };
 
 class MedianFilter : public Filter {
@@ -52,7 +67,8 @@ class MedianFilter : public Filter {
     MedianFilter() : successor{NULL}, scan{NULL}, scanold{NULL}, median{NULL} {
         memset(&_buffer, 0, sizeof(pair) * MEDIAN_FILTER_SIZE);
     };
-    float process(float) override;
+    bool process(float) override;
+    float get() override;
 
    private:
     struct pair {

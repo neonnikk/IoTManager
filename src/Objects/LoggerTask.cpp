@@ -13,9 +13,9 @@ LoggerTask::LoggerTask(const size_t id, const char* name, unsigned long interval
                                                                                                   _interval{interval},
                                                                                                   _limit{limit},
                                                                                                   _lastUpdated{0},
+                                                                                                  _bufferFlushed{millis()},
                                                                                                   _reader{NULL},
-                                                                                                  _writer{NULL} {
-}
+                                                                                                  _writer{NULL} {}
 
 LoggerTask::~LoggerTask() {
     if (_writer) delete _writer;
@@ -53,23 +53,41 @@ void LoggerTask::update() {
         return;
     }
 
-    if ((millis_since(_lastUpdated) >= _interval) || !_lastUpdated) {
+    if (!_lastUpdated || (millis_since(_lastUpdated) >= _interval)) {
         String value = runtime.read(_meta.getName());
         if (value.isEmpty()) {
             return;
         }
-        pm.info("buf: " + String(_buffer.size(), DEC) + "/" + String(_limit, DEC));
         if (now.hasSynced()) {
             LogEntry entry = LogEntry(now.getEpoch(), value.toFloat());
             _buffer.push(entry);
         }
+        _lastUpdated = millis();
     }
-    _lastUpdated = millis();
 
-    if (_buffer.size() >= _limit) {
-        _writer = new LogWriter(_meta, _buffer);
-        _writer->setActive();
+    if (millis_since(_bufferFlushed) > ONE_MINUTE_ms) {
+        if (_buffer.size()) {
+            _writer = new LogWriter(_meta, _buffer);
+            _writer->setActive();
+        }
+        _bufferFlushed = millis();
     }
+}
+
+const String LoggerTask::asCVS() {
+    String res;
+    res += String(_id, DEC);
+    res += ";";
+    res += getMetadata()->getName();
+    res += ";";
+    res += String(getMetadata()->getCount(), DEC);
+    res += ";";
+    res += prettyBytes(getMetadata()->getSize());
+    res += ";";
+    res += getMetadata()->getStartDateTimeStr();
+    res += ";";
+    res += getMetadata()->getFinishDateTimeStr();
+    return res;
 }
 
 const String LoggerTask::asJson() {

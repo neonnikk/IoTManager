@@ -5,7 +5,6 @@
 #include "Base/Writer.h"
 #include "MqttClient.h"
 
-
 #include "Utils/StringUtils.h"
 
 #include <LITTLEFS.h>
@@ -21,6 +20,15 @@ const String asJson() {
     }
     res += "]}";
     return res;
+}
+
+void asCSV(const String& filename) {
+    auto file = LittleFS.open(filename.c_str(), FILE_WRITE);
+    file.println(F("№ п/п;Наименование;Записей;Размер;C;По"));
+    for (auto item : _list) {
+        file.println(item->asCVS());
+    }
+    file.close();
 }
 
 void forEach(LoggerTaskHandler func) {
