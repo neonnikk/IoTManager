@@ -1,6 +1,6 @@
-#include "Sensors/OneWireScanner.h"
+#include "Objects/OneWireScanner.h"
 
-#include "Sensors/OneWireBus.h"
+#include "Objects/OneWireBus.h"
 
 #include "StringConsts.h"
 #include "PrintMessage.h"

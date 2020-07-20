@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-#include "OneWireBus.h"
+#include "Objects/OneWireBus.h"
 
 // Model IDs
 #define DS18S20MODEL 0x10  // also DS1820
@@ -73,7 +73,6 @@ class Dallas {
     bool isValid();
     bool isZeros(uint8_t* data, const size_t len = 9);
     bool readRawData();
-
 
    private:
     OneWire* _wire;

@@ -16,8 +16,8 @@
 #include "MqttClient.h"
 #include "HttpServer.h"
 #include "WebClient.h"
-#include "Sensors/I2CScanner.h"
-#include "Sensors/OneWireScanner.h"
+#include "Objects/I2CScanner.h"
+#include "Objects/OneWireScanner.h"
 #include "TickerScheduler.h"
 #include "Metric.h"
 

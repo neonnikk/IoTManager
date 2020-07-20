@@ -1,4 +1,4 @@
-#include "Sensors/I2CScanner.h"
+#include "Objects/I2CScanner.h"
 
 #include <Wire.h>
 

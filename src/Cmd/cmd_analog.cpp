@@ -18,7 +18,7 @@ void cmd_analog() {
 
     String order = sCmd.next();
 
-    AnalogSensor *item = (AnalogSensor *)Sensors::add(SENSOR_ADC, name, pin);
+    auto *item = (ADCSensor *)Sensors::add(SensorType_t::ADC, name, pin);
     item->setMap(in_min.toInt(), in_max.toInt(), out_min.toInt(), out_max.toInt());
 
     Widgets::createWidget(descr, page, order, templat, name);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Sensors/BusScanner.h"
+#include "Base/BusScanner.h"
 
 class I2CScanner : public BusScanner {
    public:

@@ -2,15 +2,15 @@
 
 #include <Arduino.h>
 
-#include "Base/BaseSensor.h"
+#include "Base/Sensor.h"
 
-class AnalogSensor : public BaseSensor,
-                     public PinAssigned,
-                     public ValueMap {
+class ADCSensor : public Sensor,
+                  public PinAssigned,
+                  public ValueMap {
    public:
-    AnalogSensor(const String& name, const String& assign) : BaseSensor{name, assign, VT_INT},
-                                                             PinAssigned{this},
-                                                             ValueMap{this} {
+    ADCSensor(const String& name, const String& assign) : Sensor{name, assign, VT_INT},
+                                                          PinAssigned{this},
+                                                          ValueMap{this} {
         pinMode(getPin(), INPUT);
     }
 

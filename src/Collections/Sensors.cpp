@@ -4,19 +4,19 @@
 
 namespace Sensors {
 
-std::vector<BaseSensor*> _items;
+std::vector<Sensor*> _items;
 
-BaseSensor* last() {
+Sensor* last() {
     return _items.at(_items.size() - 1);
 }
 
-BaseSensor* add(SensorType_t type, const String& name, const String& assign) {
-    BaseSensor* item;
+Sensor* add(SensorType_t type, const String& name, const String& assign) {
+    Sensor* item;
     switch (type) {
-        case SENSOR_ADC:
-            item = new AnalogSensor{name, assign};
+        case SensorType_t::ADC:
+            item = new ADCSensor{name, assign};
             break;
-        case SENSOR_DALLAS:
+        case SensorType_t::DALLAS:
             item = new DallasSensor{name, assign};
             break;
         default:
@@ -28,7 +28,7 @@ BaseSensor* add(SensorType_t type, const String& name, const String& assign) {
 }
 
 void update() {
-    for (BaseSensor* item : _items) {
+    for (Sensor* item : _items) {
         if (item->hasValue()) {
             switch (item->getValueType()) {
                 case VT_INT:

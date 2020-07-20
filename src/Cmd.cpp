@@ -9,8 +9,7 @@
 #include "Collection/Timers.h"
 #include "Collection/Widgets.h"
 
-#include "Sensors/AnalogSensor.h"
-#include "Sensors/OneWireBus.h"
+#include "Objects/OneWireBus.h"
 
 #include "Objects/Pwm.h"
 
@@ -306,25 +305,6 @@ void cmd_oneWire() {
     onewire.attach(assign.toInt());
 }
 
-// dallas temp1 0x14 Температура Датчики anydata 1
-// dallas temp2 0x15 Температура Датчики anydata 2
-void cmd_dallas() {
-    if (!onewire.attached()) {
-        pm.error("attach bus first");
-        return;
-    }
-
-    String name = sCmd.next();
-    String address = sCmd.next();
-    String descr = sCmd.next();
-    String page = sCmd.next();
-    String widget = sCmd.next();
-    String order = sCmd.next();
-
-    Sensors::add(SENSOR_DALLAS, name, address);
-
-    Widgets::createWidget(descr, page, order, widget, name);
-}
 
 //levelPr p 14 12 Вода#в#баке,#% Датчики fillgauge 125 20 1
 void cmd_levelPr() {

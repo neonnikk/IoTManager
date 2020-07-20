@@ -4,7 +4,7 @@
 
 #include "Collection/Logger.h"
 #include "Collection/Devices.h"
-#include "Sensors/OnewireBus.h"
+#include "Objects/OneWireBus.h"
 #include "Utils/FileUtils.h"
 #include "Utils/WebUtils.h"
 #include "FSEditor.h"

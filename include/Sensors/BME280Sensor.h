@@ -2,9 +2,9 @@
 
 #include <Adafruit_BME280.h>
 
-class BME280Sensor : public BaseSensor {
+class BME280Sensor : public Sensor {
    public:
-    BME280Sensor(const String& name, const String& assign) : BaseSensor(name, assign, VT_FLOAT) {
+    BME280Sensor(const String& name, const String& assign) : Sensor(name, assign, VT_FLOAT) {
         if (assign == "temperature") {
             obj = bme.getTemperatureSensor();
         } else if (assign == "humidity") {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BusScanner.h"
+#include "Base/BusScanner.h"
 
 class OneWireScanner : public BusScanner {
    public:

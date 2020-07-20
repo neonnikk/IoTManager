@@ -2,18 +2,17 @@
 
 #include <Arduino.h>
 
+#include "Base/Sensor.h"
 #include "Dallas.h"
-
-#include "Base/BaseSensor.h"
 #include "Utils/TimeUtils.h"
 #include "PrintMessage.h"
 
-class DallasSensor : public BaseSensor,
+class DallasSensor : public Sensor,
                      public OneWireAddressAssigned {
    public:
-    DallasSensor(const String& name, const String& assign) : BaseSensor(name, assign, VT_FLOAT),
+    DallasSensor(const String& name, const String& assign) : Sensor(name, assign, VT_FLOAT),
                                                              OneWireAddressAssigned{this} {
-        _state = DALLAS_IDLE;
+        _state = DallasSensorState::IDLE;
         _obj = new Dallas(getAddress());
         if (!_obj->isConnected()) {
             Serial.print("not found: ");
@@ -24,18 +23,18 @@ class DallasSensor : public BaseSensor,
     const bool hasValue() override {
         bool res = false;
         switch (_state) {
-            case DALLAS_IDLE:
+            case DallasSensorState::IDLE:
                 if (_obj->requestTemperature()) {
-                    _state = DALLAS_CONVERSATION;
+                    _state = DallasSensorState::CONVERSATION;
                     _requestConversationTime = millis();
                     res = false;
                 }
                 break;
-            case DALLAS_CONVERSATION:
+            case DallasSensorState::CONVERSATION:
                 if (millis_since(_requestConversationTime) >= _obj->getWaitTimeForConversion()) {
                     if (_obj->isConversionComplete()) {
                         _value = _obj->getTempC();
-                        _state = DALLAS_IDLE;
+                        _state = DallasSensorState::IDLE;
                         res = true;
                     }
                 };
@@ -50,9 +49,9 @@ class DallasSensor : public BaseSensor,
     }
 
    private:
-    enum DallasSensorState {
-        DALLAS_IDLE,
-        DALLAS_CONVERSATION
+    enum class DallasSensorState {
+        IDLE,
+        CONVERSATION
     };
     float _value;
     unsigned long _requestConversationTime;
