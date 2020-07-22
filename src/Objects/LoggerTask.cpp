@@ -1,5 +1,6 @@
 #include "Objects/LoggerTask.h"
 
+#include "MqttClient.h"
 #include "Clock.h"
 #include "Runtime.h"
 #include "PrintMessage.h"
@@ -21,10 +22,6 @@ LoggerTask::LoggerTask(size_t id, const String& name, unsigned long interval, un
 LoggerTask::~LoggerTask() {
     if (_writer) delete _writer;
     if (_reader) delete _reader;
-}
-
-LogMetadata* LoggerTask::getMetadata() {
-    return &_meta;
 }
 
 void LoggerTask::clear() {
@@ -55,13 +52,15 @@ void LoggerTask::update() {
     }
 
     if (!_lastUpdated || (millis_since(_lastUpdated) >= _interval)) {
-        String value = runtime.read(_meta.getName());
+        String objId = _meta.getName();
+        String value = runtime.read(objId);
         if (value.isEmpty()) {
             return;
         }
         if (now.hasSynced()) {
             LogEntry entry = LogEntry(now.getEpoch(), value.toFloat());
             _buffer.push(entry);
+            MqttClient::publishChart(objId, entry.asChartEntry());
         }
         _lastUpdated = millis();
     }
@@ -109,58 +108,12 @@ const String LoggerTask::asJson() {
     return res;
 }
 
-void LoggerTask::readEntries(LogEntryHandler h) {
-    _reader = new LogReader(&_meta, h);
-    _reader->setActive(true);
+LogMetadata* LoggerTask::getMetadata() {
+    return &_meta;
 }
 
-// pm.info("task: " + _name);
-// String buf;
-// if (readFile(_filename, buf, 5120)) {
-//     size_t lines_cnt = itemsCount(buf, "\r\n");
-//     if ((lines_cnt > _limit + 1) || !lines_cnt) {
-//         removeFile(_filename);
-//         lines_cnt = 0;
-//     }
-//     if (lines_cnt > _limit) {
-//         buf = deleteBeforeDelimiter(buf, "\r\n");
-//         if (timeNow->hasSynced()) {
-//             buf += timeNow->getTimeUnix() + " " + value + "\r\n";
-//             writeFile(_filename, buf);
-//         }
-//     }
-// }
-// if (timeNow->hasSynced()) {
-//     addFile(_filename, timeNow->getTimeUnix() + " " + value);
-// }
-
-// String data;
-// if (!LittleFS.open(_ma,e, "r") {
-//     pm.error("open file");
-//     return;
-// }
-// String buf = "{}";
-// String json_array;
-// String unix_time;
-// String value;
-// while (!data.isEmpty()) {
-//     String tmp = selectToMarker(data, "\n");
-//     data = deleteBeforeDelimiter(data, "\n");
-//     unix_time = selectToMarker(tmp, " ");
-//     jsonWriteInt(buf, "x", unix_time.toInt());
-//     value = deleteBeforeDelimiter(tmp, " ");
-//     jsonWriteFloat(buf, "y1", value.toFloat());
-//     if (data.length() < 3) {
-//         json_array += buf;
-//     } else {
-//         json_array += buf + ",";
-//     }
-//     buf = "{}";
-// }
-// unix_time = "";
-// value = "";
-// data = "";
-// json_array = "{\"status\":[" + json_array + "]}";
-// pm.info(json_array);
-
-// MqttClient::publishChart(getTopic().c_str(), json_array);
+void LoggerTask::readEntries(LogEntryHandler h) {
+    unsigned long start = now.getEpoch() - (_period / 1000);
+    _reader = new LogReader(&_meta, start, h);
+    _reader->setActive(true);
+}

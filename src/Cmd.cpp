@@ -362,6 +362,37 @@ bool extractCommand(const String &buf, size_t &startIndex, String &block) {
     return true;
 }
 
+// 1-100
+bool parseRange(const String &str, Range &r) {
+    int split = str.indexOf("-");
+    if (split < 0) {
+        pm.error("wrong range");
+        return false;
+    }
+    r.min = str.substring(0, split).toInt();
+    r.max = str.substring(split + 1).toInt();
+}
+
+// 1-1023/1-100
+bool parseMapParams(const String &str, MapParams &p) {
+    int split = str.indexOf("/");
+    if (split < 0) {
+        pm.error("wrong map");
+        return false;
+    }
+    return parseRange(str.substring(0, split), p.in) && parseRange(str.substring(split + 1), p.out);
+}
+
+Mapper *createMapper(const String &str) {
+    if (!str.isEmpty()) {
+        MapParams p;
+        if (parseMapParams(str, p)) {
+            return new Mapper{p};
+        }
+    }
+    return NULL;
+}
+
 void addCommands(const String &str) {
     size_t pos = 0;
     while (pos < str.length()) {

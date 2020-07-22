@@ -9,8 +9,7 @@ class Servos {
    public:
     Servos();
 
-    BasicServo* add(const String& name, const String& pin, const String& value,
-                    const String& min_value, const String& max_value, const String& min_deg, const String& max_deg);
+    BasicServo* add(const String& name, const String& pin);
 
     BasicServo* get(const String& name);
 
@@ -19,5 +18,5 @@ class Servos {
     BasicServo* last();
 
    private:
-    std::vector<BasicServo> _items;
+    std::vector<BasicServo*> _items;
 };

@@ -6,20 +6,14 @@
 
 static const char* MODULE = "ScenBlock";
 
-ParamItem::ParamItem(const String& value) {
-    _value = strdup(value.c_str());
-}
+ParamItem::ParamItem(const String& value) : _value{value} {};
 
-ParamItem::~ParamItem() {
-    free(_value);
-}
-
-const char* ParamItem::value() {
+const String ParamItem::value() {
     return _value;
 }
 
-const char* LiveParam::value() {
-    return runtime.read(_value).c_str();
+const String LiveParam::value() {
+    return runtime.read(_value);
 }
 
 ScenBlock::ScenBlock(const String& str) {

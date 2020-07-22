@@ -13,11 +13,11 @@ class ValueMap {
         }
     }
 
-    void setMap(long in_min, long in_max, long out_min, long out_max) {
+    void setMap(Mapper* mapper) {
         if (_mapper) {
             delete _mapper;
-        }
-        _mapper = new Mapper{in_min, in_max, out_min, out_max};
+        };
+        _mapper = mapper;
     }
 
     String mapValue(const String& value) {
@@ -25,11 +25,11 @@ class ValueMap {
     }
 
     int mapValue(const int value) {
+        int res = value;
         if (_mapper) {
-            return _mapper->mapValue(value);
-        } else {
-            return value;
+            res = _mapper->mapValue(value);
         }
+        return res;
     }
 
    private:

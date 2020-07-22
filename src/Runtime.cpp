@@ -17,24 +17,21 @@ void Runtime::onAdd(KeyValue* item) {
 }
 
 void Runtime::onUpdate(KeyValue* item) {
-    publishMqtt(item);
-    fireEvent(item);
+    if (item->isPublished()) {
+        MqttClient::publishState(item->getKey(), item->asJson());
+    }
+
+    if (item->isEvent()) {
+        Scenario::process(item);
+    }
 }
 
 void Runtime::publish() {
     forEach([this](KeyValue* item) {
-        publishMqtt(item);
+        if (item->isPublished()) {
+            if (!MqttClient::publishState(item->getKey(), item->asJson())) {
+                return;
+            }
+        }
     });
-}
-
-void Runtime::publishMqtt(KeyValue* item) {
-    if (item->isPublished()) {
-        MqttClient::publishState(item->getKey(), item->asJson());
-    }
-}
-
-void Runtime::fireEvent(KeyValue* item) {
-    if (item->isEvent()) {
-        Scenario::process(item);
-    }
 }

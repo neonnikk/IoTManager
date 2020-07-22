@@ -63,7 +63,7 @@ static unsigned long RECONNECT_INTERVAL = 5000;
 static size_t RECONNECT_ATTEMPTS_MAX = 10;
 unsigned long _lastConnetionAttempt = 0;
 size_t _connectionAttempts = 0;
-
+size_t _lastSize = 0;
 String _deviceRoot;
 String _addr;
 int _port;
@@ -137,8 +137,13 @@ boolean _mqtt_publish(const char* topic, const char* data) {
     return false;
 }
 
-void pushToQueue(const String& topic, const String& data) {
+bool pushToQueue(const String& topic, const String& data) {
+    if (_queue.size() > 32) {
+        pm.error("queue full");
+        return false;
+    }
     _queue.push_back(MqttMessage{topic.c_str(), data.c_str()});
+    return true;
 }
 
 bool isConnected() {
@@ -186,12 +191,23 @@ void loop() {
     _connectionAttempts = 0;
 
     if (!_queue.empty()) {
-        auto message = _queue.front();
-        if (message.isValid()) {
-            _mqtt.publish(message.getTopic(), message.getData());
+        size_t grow = _queue.size() > _lastSize ? _queue.size() - _lastSize : 0;
+        if (grow) {
+            grow = grow > 8 ? 8 : grow;
+        } else {
+            grow = 1;
         }
-        _queue.pop_front();
+
+        while (grow) {
+            auto message = _queue.front();
+            if (message.isValid()) {
+                _mqtt.publish(message.getTopic(), message.getData());
+            }
+            _queue.pop_front();
+            grow--;
+        }
     }
+    _lastSize = _queue.size();
 }
 
 bool extractObj(const String& str, String& objType, int& objId) {
@@ -251,11 +267,14 @@ void publistWidget(const String& data) {
     pushToQueue(path, data);
 }
 
-void publishChart(const String& name, const String& data) {
+bool publishChart(const String& name, const String& data) {
     String path = _deviceRoot;
     path += name;
     path += "_ch";
-    pushToQueue(path, data);
+    path += "/status";
+
+    String buf = "{\"status\":[" + data + "]}";
+    return pushToQueue(path, data);
 }
 
 void publishControl(const String& deviceId, const String& objName, const String& data) {
@@ -265,11 +284,11 @@ void publishControl(const String& deviceId, const String& objName, const String&
     pushToQueue(path, data);
 }
 
-void publishState(const String& objName, const String& data) {
+bool publishState(const String& objName, const String& data) {
     String path = _deviceRoot;
     path += objName;
     path += "/status";
-    pushToQueue(path, data);
+    return pushToQueue(path, data);
 }
 
 void publishOrder(const String& deviceId, const String& data) {

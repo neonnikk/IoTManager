@@ -16,7 +16,7 @@ class LogMetadata {
         size_t entry_count;
         unsigned long start_time;
         unsigned long finish_time;
-        ValueType_t type;
+        ValueType_t type;        
 
         LogHeader() : entry_count{0}, start_time{0}, finish_time{0}, type{VT_INT} {};
         void reset() {
@@ -44,7 +44,20 @@ class LogMetadata {
     }
 
     const String getDataFile() const {
-        return "/log_" + String(_header.name) + ".txt";
+        const Time_t* t = now.getLocal();
+        return getDataFile(t);
+    }
+
+    const String getDataFile(unsigned long epoch) const {
+        Time_t t;
+        now.breakEpochToTime(epoch, t);
+        return getDataFile(&t);
+    }
+
+    const String getDataFile(const Time_t* t) const {
+        char buf[32];
+        sprintf(buf, "%02d%02d%02d", t->year, t->month, t->day_of_month);
+        return "/log_" + String(_header.name) + "_" + buf;
     }
 
     const String getMetaFile() const {
@@ -90,6 +103,14 @@ class LogMetadata {
 
     const String getStartDateTimeStr() {
         return now.getDateTimeDotFormated(_header.start_time);
+    }
+
+    unsigned long getStartTime() {
+        return _header.start_time;
+    }
+
+    unsigned long getFinishTime() {
+        return _header.finish_time;
     }
 
     const String getFinishDateTimeStr() {

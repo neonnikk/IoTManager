@@ -137,6 +137,10 @@ const String Clock::getUptime() {
     return prettyMillis(_uptime);
 }
 
+const Time_t* Clock::getLocal() {
+    return &_time_local;
+}
+
 /*
 * Разбивает время на составляющие
 */

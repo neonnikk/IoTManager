@@ -14,17 +14,17 @@ enum class EquationSign : uint8_t {
 class ParamItem {
    public:
     ParamItem(const String&);
-    virtual ~ParamItem();
-    virtual const char* value();
+    virtual ~ParamItem() = default;
+    virtual const String value();
 
    protected:
-    char* _value;
+    String _value;
 };
 
 class LiveParam : public ParamItem {
    public:
     LiveParam(const String& value) : ParamItem(value){};
-    const char* value() override;
+    const String value() override;
 };
 
 class ScenBlock {

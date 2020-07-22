@@ -41,7 +41,7 @@ struct LogEntry {
     LogEntry(const String& str) {
         size_t split = str.indexOf(" ");
         unsigned long time = str.substring(0, split).toInt();
-        float value = str.substring(split).toFloat();
+        float value = str.substring(split + 1).toFloat();
         data = Entry(time, value);
     }
 

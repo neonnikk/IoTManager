@@ -3,48 +3,46 @@
 #include "Collection/Servos.h"
 #include "Collection/Widgets.h"
 
+static const char* MODULE = TAG_SERVO;
+
+// servo {id:1,pin:13,state:50,map:"0-100/0-180",descr:"Cервопривод",page:"Сервоприводы",order:2}
+void cmd_servo() {
+    ParamStore params{sCmd.next()};
+    String temlateOverride{sCmd.next()};
+
+    String objId = getObjectName(TAG_SERVO, params.read(TAG_ID));
+    String assign = params.read(TAG_PIN);
+    int state = params.readInt(TAG_STATE, 0);
+
+    auto item = servos.add(objId, assign);
+    if (!item) {
+        pm.error("on add: " + objId);
+        return;
+    }
+    auto mapper = createMapper(params.read("map"));
+    if (mapper) {
+        item->setMap(mapper);
+    }
+    item->setValue(state);
+
+    runtime.write(objId, state);
+    params.write("min", mapper->getParams().out.min);
+    params.write("max", mapper->getParams().out.max);
+    params.write("k", 1);
+
+    Widgets::createWidget(objId, params, "range", temlateOverride);
+}
+
 void cmd_servoSet() {
-    String name = sCmd.next();
-    String value = sCmd.next();
+    String id = sCmd.next();
+    int value = String(sCmd.next()).toInt();
 
-    String objName = "servo" + name;
+    String objId = TAG_SERVO + id;
 
-    auto* item = servos.get(objName);
+    auto* item = servos.get(objId);
     if (!item) {
         return;
     }
     item->setValue(value);
-
-    runtime.writeAsInt(objName, value);
-}
-
-void cmd_servo() {
-    //servo 1 13 50 Cервопривод Сервоприводы 0 100 0 180 2
-    String name = sCmd.next();
-    String pin = sCmd.next();
-    String value = sCmd.next();
-
-    String descr = sCmd.next();
-    String page = sCmd.next();
-
-    String min_value = sCmd.next();
-    String max_value = sCmd.next();
-    String min_deg = sCmd.next();
-    String max_deg = sCmd.next();
-
-    int order = String(sCmd.next()).toInt();
-
-    servos.add(name, pin, value, min_value, max_value, min_deg, max_deg);
-
-    // options.write("servo_pin" + name, pin);
-    // value = map(value, min_value, max_value, min_deg, max_deg);
-    // servo->write(value);
-    // options.writeInt("s_min_val" + name, min_value);
-    // options.writeInt("s_max_val" + name, max_value);
-    // options.writeInt("s_min_deg" + name, min_deg);
-    // options.writeInt("s_max_deg" + name, max_deg);
-    // liveData.writeInt("servo" + name, value);
-
-    // Widgets::createWidget(descr, page, order, "range", "servo" + name);
-    // , "min", String(min_value), "max", String(max_value), "k", "1");
+    runtime.write(objId, value);
 }

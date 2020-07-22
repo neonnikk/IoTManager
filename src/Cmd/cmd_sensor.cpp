@@ -5,18 +5,6 @@
 
 static const char *MODULE = TAG_SENSOR;
 
-struct MapParams {
-    long in_min, in_max, out_min, out_max;
-};
-
-bool parseMapParams(const String &str, MapParams &p) {
-    p.in_min = 0;
-    p.in_max = 1023;
-    p.out_min = 0;
-    p.out_max = 100;
-    return true;
-}
-
 static const char *sensorTypeStr[NUM_SENSOR_TYPES] = {"adc", "dallas"};
 SensorType_t getSensorType(const String &typeStr) {
     size_t i = 0;
@@ -43,12 +31,9 @@ void cmd_sensor() {
         pm.error("on add: " + name);
         return;
     }
-    String mapStr = params.read("map");
-    if (!mapStr.isEmpty()) {
-        MapParams p;
-        if (parseMapParams(mapStr, p)) {
-            item->setMap(p.in_min, p.in_max, p.out_min, p.out_max);
-        }
+    auto mapper = createMapper(params.read("map"));
+    if (mapper) {
+        item->setMap(mapper);
     }
     // TODO
     int refresh = parsePeriod(params.read("refresh", "5s"));

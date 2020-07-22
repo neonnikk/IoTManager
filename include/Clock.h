@@ -30,6 +30,7 @@ class Clock {
     time_t getSystemTime() const;
     const unsigned long getEpoch();
     const String getTimeUnix();
+    const Time_t* getLocal();
     /*
     * Локальное время "дд.ММ.гг"
     */

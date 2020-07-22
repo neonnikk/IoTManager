@@ -21,7 +21,10 @@ void cmd_pwm() {
         pm.error("on add: " + name);
         return;
     }
-    item->setMap(1, 100, 0, 1023);
+    auto mapper = createMapper(params.read("map"));
+    if (mapper) {
+        item->setMap(mapper);
+    }
     item->setValue(state);
 
     runtime.write(name, state);

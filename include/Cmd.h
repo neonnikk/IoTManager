@@ -22,6 +22,12 @@ extern Telnet *telnet;
 
 extern StringCommand sCmd;
 
+bool parseRange(const String &str, Range &r);
+
+bool parseMapParams(const String &str, MapParams &p);
+
+Mapper* createMapper(const String& str);
+
 unsigned long parsePeriod(const String &str, unsigned long default_multiplier = ONE_MINUTE_ms);
 
 const String getObjectName(const String &objType, const String &objId);

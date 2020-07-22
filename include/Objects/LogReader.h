@@ -7,7 +7,6 @@
 
 #include "Objects/LogMetadata.h"
 
-
 typedef std::function<void(LogMetadata *, uint8_t *)> LogEntryHandler;
 
 class LogReader {
@@ -15,19 +14,23 @@ class LogReader {
     uint8_t buf[sizeof(Entry)];
     File _file;
     LogMetadata *_meta;
+    unsigned long _start;
     LogEntryHandler _handler;
     size_t _pos;
     bool _active;
 
    public:
-    LogReader(LogMetadata *meta, LogEntryHandler handler) : _meta{meta},
-                                                            _handler{handler},
-                                                            _pos{0},
-                                                            _active{false} {
+    LogReader(LogMetadata *meta, unsigned long start, LogEntryHandler handler) : _meta{meta},
+                                                                                 _start{start},
+                                                                                 _handler{handler},
+                                                                                 _pos{0},
+                                                                                 _active{false} {
     }
 
     void setActive(bool value) {
-        _file = LittleFS.open(_meta->getDataFile().c_str(), FILE_READ);
+        String filename = _meta->getStartTime() < _start ? _meta->getDataFile() : _meta->getDataFile(_start);
+        _file = LittleFS.open(filename.c_str(), FILE_READ);
+        
         if (_file) {
             _active = true;
         }

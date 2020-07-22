@@ -11,27 +11,24 @@ Servos servos;
 
 Servos::Servos(){};
 
-BasicServo* Servos::add(const String& name, const String& pin, const String& value,
-                       const String& in_min, const String& in_max, const String& out_min, const String& out_max) {
-    BasicServo item{name, pin};
-    item.setMap(in_min.toInt(), in_max.toInt(), out_min.toInt(), out_max.toInt());
-    item.setValue(value);
+BasicServo* Servos::add(const String& name, const String& assign) {
+    _items.push_back(new BasicServo{name, assign});
 
     return last();
 }
 
 BasicServo* Servos::last() {
-    return &_items.at(_items.size() - 1);
+    return _items.at(_items.size() - 1);
 }
 
 BasicServo* Servos::get(const String& name) {
     for (size_t i = 0; i < _items.size(); i++) {
-        auto* item = &_items.at(i);
+        auto item = _items.at(i);
         if (name.equals(name)) {
             return item;
         }
     }
-    return nullptr;
+    return NULL;
 }
 
 size_t Servos::count() {

@@ -33,6 +33,7 @@ const char* TAG_SENSOR = "sensor";
 const char* TAG_STORE = "store";
 const char* TAG_TYPE = "type";
 const char* TAG_ID = "id";
+const char* TAG_SERVO = "servo";
 const char* TAG_DATA = "data";
 const char* TAG_PERIOD = "period";
 const char* TAG_INTERVAL = "interval";

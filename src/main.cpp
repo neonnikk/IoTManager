@@ -363,10 +363,7 @@ void pubish_widget_collection() {
 void publish_widget_chart() {
     Logger::forEach([](LoggerTask* task) {
         task->readEntries([](LogMetadata* meta, uint8_t* data) {
-            String buf = "{\"status\":[";
-            buf += LogEntry(data).asChartEntry();
-            buf += "]}";
-            return MqttClient::publishChart(meta->getName(), buf);
+            return MqttClient::publishChart(meta->getName(), LogEntry(data).asChartEntry());
         });
         return true;
     });
