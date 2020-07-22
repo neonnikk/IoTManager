@@ -1,10 +1,9 @@
 #include "Value.h"
 #include "Filter.h"
 
-class ValueFilter {
+class ValueFilter : public Value {
    public:
-    ValueFilter(Value* obj) : _obj{obj},
-                              _filter{NULL} {};
+    ValueFilter(ValueType_t type) : Value(type), _filter{NULL} {};
 
     ~ValueFilter() {
         if (_filter) {
@@ -12,22 +11,20 @@ class ValueFilter {
         }
     }
 
-    bool filterValue(const float value) {
-        return _filter ? _filter->process(value) : false;
-    }
-
-    float getFilteredValue() {
-        return _filter ? _filter->get() : 0;
-    }
-
     void setFilter(Filter* filter) {
-        if (_filter) {
-            delete _filter;
-        }
         _filter = filter;
     }
 
+   protected:
+    virtual const String onGetValue() override {
+        String value = Value::onGetValue();
+        if (_filter) {
+            _filter->process(value.toFloat());
+            return String(_filter->get(), 2);
+        }
+        return value;
+    }
+
    private:
-    Value* _obj;
     Filter* _filter;
 };

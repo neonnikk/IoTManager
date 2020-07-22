@@ -37,15 +37,17 @@ Sensor* add(SensorType_t type, const String& name, const String& assign) {
 void update() {
     for (Sensor* item : _items) {
         if (item->hasValue()) {
+            String name = item->getName();
+            String value = item->getValue();
             switch (item->getValueType()) {
                 case VT_INT:
-                    runtime.writeAsInt(item->getName(), item->getValue());
+                    runtime.writeAsInt(name, value);
                     break;
                 case VT_FLOAT:
-                    runtime.writeAsFloat(item->getName(), item->getValue());
+                    runtime.writeAsFloat(name, value);
                     break;
                 case VT_STRING:
-                    runtime.write(item->getName(), item->getValue());
+                    runtime.write(name, value);
                     break;
             }
         }

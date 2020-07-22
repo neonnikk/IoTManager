@@ -10,8 +10,11 @@ struct MapParams {
 };
 
 bool parseMapParams(const String &str, MapParams &p) {
-    // TODO
-    return false;
+    p.in_min = 0;
+    p.in_max = 1023;
+    p.out_min = 0;
+    p.out_max = 100;
+    return true;
 }
 
 static const char *sensorTypeStr[NUM_SENSOR_TYPES] = {"adc", "dallas"};
@@ -35,7 +38,7 @@ void cmd_sensor() {
     String name = getObjectName(params.read(TAG_NAME), params.read(TAG_ID));
     String assign = params.read(TAG_PIN);
 
-    auto *item = Sensors::add(type, name, assign);
+    auto item = Sensors::add(type, name, assign);
     if (!item) {
         pm.error("on add: " + name);
         return;

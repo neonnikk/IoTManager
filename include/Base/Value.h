@@ -21,6 +21,10 @@ class Value {
         setValue(String{value, DEC});
     }
 
+    void setValue(float value) {
+        setValue(String{value, 2});
+    }
+
     void setValue(const String value) {
         if (!value.equals(_lastValue)) {
             onValueChange(_lastValue, value);
@@ -51,7 +55,7 @@ class Value {
         return _lastValue;
     }
 
-   private:
+   protected:
     ValueType_t _type;
     String _lastValue;
     unsigned long _lastTime;

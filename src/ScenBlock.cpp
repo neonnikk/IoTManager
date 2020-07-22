@@ -51,16 +51,16 @@ bool ScenBlock::checkCondition(const String& key, const String& value) {
             res = !value.equals(_param->value());
             break;
         case EquationSign::OP_LESS:
-            res = value.toFloat() < atof(_param->value());
+            res = value.toFloat() < String(_param->value()).toFloat();
             break;
         case EquationSign::OP_LESS_OR_EQAL:
-            res = value.toFloat() <= atof(_param->value());
+            res = value.toFloat() <= String(_param->value()).toFloat();
             break;
         case EquationSign::OP_GREATER:
-            res = value.toFloat() > atof(_param->value());
+            res = value.toFloat() > String(_param->value()).toFloat();
             break;
         case EquationSign::OP_GREATER_OR_EQAL:
-            res = value.toFloat() >= atof(_param->value());
+            res = value.toFloat() >= String(_param->value()).toFloat();
             break;
         default:
             break;

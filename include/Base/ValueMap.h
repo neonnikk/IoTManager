@@ -20,6 +20,10 @@ class ValueMap {
         _mapper = new Mapper{in_min, in_max, out_min, out_max};
     }
 
+    String mapValue(const String& value) {
+        return String(mapValue(value.toInt()), DEC);
+    }
+
     int mapValue(const int value) {
         if (_mapper) {
             return _mapper->mapValue(value);

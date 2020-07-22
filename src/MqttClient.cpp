@@ -194,19 +194,14 @@ void loop() {
     }
 }
 
-const String parseControl(const String& str) {
-    String res;
-    size_t len = str.length();
-    String num1 = str.substring(len - 1);
-    String num2 = str.substring(len - 2, len - 1);
-    if (isDigitStr(num1) && isDigitStr(num2)) {
-        res = str.substring(0, len - 2) + "Set" + num2 + num1;
-    } else {
-        if (isDigitStr(num1)) {
-            res = str.substring(0, len - 1) + "Set" + num1;
-        }
+bool extractObj(const String& str, String& objType, int& objId) {
+    size_t i;
+    for (i = str.length() - 1; i > 0; i--) {
+        if (!isDigit(str[i])) break;
     }
-    return res;
+    objType = str.substring(0, i + 1);
+    objId = str.substring(i + 1).toInt();
+    return !objType.isEmpty() && objId > 0;
 }
 
 void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
@@ -220,15 +215,14 @@ void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
         runtime.publish();
         pubish_widget_collection();
         publish_widget_chart();
-    } else if (topicStr.indexOf("control")) {
-        // название топика -  команда,
-        // значение - параметр
-        //IoTmanager/800324-1458415/button99/control 1
-        String topic = selectFromMarkerToMarker(topicStr, "/", 3);
-        topic = parseControl(topic);
-        String number = selectToMarkerLast(topic, "Set");
-        topic.replace(number, "");
-        addCommand(topic + " " + number + " " + payloadStr);
+    } else if (topicStr.endsWith("control")) {
+        String objType;
+        int objId;
+        if (extractObj(topicStr.substring(_deviceRoot.length(), topicStr.lastIndexOf("/")), objType, objId)) {
+            addCommand(objType + "Set " + objId + " " + payloadStr);
+        } else {
+            pm.error("wrong control");
+        }
     } else if (topicStr.indexOf("order")) {
         payloadStr.replace("_", " ");
         addCommand(payloadStr);
