@@ -21,10 +21,17 @@ extern const char* TAG_I2C;
 extern const char* TAG_SHARE_MQTT;
 extern const char* TAG_CHECK_MQTT;
 
+extern const char* TAG_LOG;
 extern const char* TAG_BUTTON;
 extern const char* TAG_SENSOR;
+extern const char* TAG_STATE;
+extern const char* TAG_STORE;
 extern const char* TAG_TYPE;
 extern const char* TAG_ID;
+extern const char* TAG_NAME;
+extern const char* TAG_DATA;
+extern const char* TAG_PERIOD;
+extern const char* TAG_INTERVAL;
 extern const char* TAG_PIN;
 extern const char* TAG_TIMER;
 extern const char* TAG_PWM;

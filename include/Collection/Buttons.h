@@ -4,7 +4,7 @@
 
 class Buttons {
    public:
-    Button* add(const ButtonType_t type, const String& name, const String& assign, const String& value, const String& inverted);
+    Button* add(const ButtonType_t type, const String& name, const String& assign);
     Button* last();
     Button* at(size_t index);
     Button* get(const String name);

@@ -1,5 +1,9 @@
 #include "Cmd.h"
 
+#include <SoftwareSerial.h>
+
+#include "Base/StringQueue.h"
+
 #include "Collection/Buttons.h"
 #include "Collection/Devices.h"
 #include "Collection/Logger.h"
@@ -10,14 +14,10 @@
 #include "Collection/Widgets.h"
 
 #include "Objects/OneWireBus.h"
-
 #include "Objects/Pwm.h"
-
 #include "Objects/Terminal.h"
 #include "Objects/Telnet.h"
 
-#include "PrintMessage.h"
-#include "Runtime.h"
 #include "StringConsts.h"
 #include "MqttClient.h"
 #include "WebClient.h"
@@ -25,18 +25,18 @@
 
 static const char *MODULE = "Cmd";
 
-StringQueue _orders;
+StringQueue _commands;
 
 StringCommand sCmd;
-
-Terminal *term = NULL;
-Telnet *telnet = NULL;
 
 #ifdef ESP8266
 SoftwareSerial *mySerial = NULL;
 #else
 HardwareSerial *mySerial = NULL;
 #endif
+
+Terminal *term = NULL;
+Telnet *telnet = NULL;
 
 unsigned long parsePeriod(const String &str, unsigned long default_time_syfix) {
     unsigned long res = 0;
@@ -68,6 +68,10 @@ void cmd_init() {
         runtime.writeAsInt(name, obj->getValue());
     });
 
+    sCmd.setDefaultHandler([](const char *str) {
+        pm.error("unknown: " + String(str));
+    });
+
     sCmd.addCommand("button", cmd_button);
     sCmd.addCommand("buttonSet", cmd_buttonSet);
     sCmd.addCommand("buttonChange", cmd_buttonChange);
@@ -84,7 +88,6 @@ void cmd_init() {
 
     sCmd.addCommand("levelPr", cmd_levelPr);
     sCmd.addCommand("ultrasonicCm", cmd_ultrasonicCm);
-    sCmd.addCommand("dallas", cmd_dallas);
     sCmd.addCommand("dhtT", cmd_dhtT);
     sCmd.addCommand("dhtH", cmd_dhtH);
     sCmd.addCommand("dhtPerception", cmd_dhtPerception);
@@ -113,7 +116,7 @@ void cmd_init() {
 
     sCmd.addCommand("telnet", cmd_telnet);
 
-    sCmd.addCommand("logging", cmd_logging);
+    sCmd.addCommand("log", cmd_log);
 
     sCmd.addCommand("inputDigit", cmd_inputDigit);
     sCmd.addCommand("digitSet", cmd_digitSet);
@@ -142,90 +145,6 @@ void cmd_init() {
     sCmd.addCommand("oneWire", cmd_oneWire);
 }
 
-void cmd_serialBegin() {
-    uint32_t baud = atoi(sCmd.next());
-    int8_t rx = atoi(sCmd.next());
-    int8_t tx = atoi(sCmd.next());
-
-    cmd_serialEnd();
-#ifdef ESP8266
-    mySerial = new SoftwareSerial(rx, tx);
-    mySerial->begin(baud);
-#else
-    mySerial = new HardwareSerial(2);
-    mySerial->begin(rx, tx);
-#endif
-    term = new Terminal(mySerial);
-    term->setOnReadLine([](const char *str) {
-        addCommand(str);
-    });
-}
-
-void cmd_serialEnd() {
-    if (mySerial) {
-        mySerial->end();
-        delete mySerial;
-    }
-}
-
-void cmd_serialWrite() {
-    String payload = sCmd.next();
-    if (term) {
-        term->println(payload.c_str());
-    }
-}
-
-void cmd_telnet() {
-    bool enabled = atoi(sCmd.next());
-    uint16_t port = atoi(sCmd.next());
-
-    if (enabled) {
-        pm.info("telnet: enabled");
-        if (!telnet) {
-            telnet = new Telnet(port);
-        }
-        telnet->setOutput(pm.getOutput());
-        telnet->start();
-    } else {
-        pm.info("telnet: disabled");
-        telnet->stop();
-        telnet->end();
-    }
-}
-
-void cmd_get() {
-    String obj = sCmd.next();
-    String param = sCmd.next();
-    String res = "";
-
-    if (!obj.isEmpty()) {
-        if (obj.equalsIgnoreCase("state")) {
-            if (param.isEmpty()) {
-                res = runtime.asJson();
-            } else {
-                res = runtime.read(param);
-            }
-        } else if (obj.equalsIgnoreCase("devices")) {
-            Devices::get(res, param.toInt());
-        } else {
-            res = F("unknown param");
-        }
-    } else {
-        res = F("unknown obj");
-    }
-    pm.info(res);
-    if (term) {
-        term->println(res.c_str());
-    }
-}
-
-void cmd_mqtt() {
-    String topic = sCmd.next();
-    String data = sCmd.next();
-
-    MqttClient::publishOrder(topic, data);
-}
-
 // ultrasonicCm cm 14 12 Дистанция,#см Датчики fillgauge 1
 void cmd_ultrasonicCm() {
     String measure_unit = sCmd.next();
@@ -237,7 +156,7 @@ void cmd_ultrasonicCm() {
     String type = sCmd.next();
     String empty_level = sCmd.next();
     String full_level = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
 
     Ultrasonic::ultrasonicCm_value_name = measure_unit;
 
@@ -246,12 +165,7 @@ void cmd_ultrasonicCm() {
     // pinMode(trig.toInt(), OUTPUT);
     // pinMode(echo.toInt(), INPUT);
 
-    Widgets::createWidget(widget, page, order, type, measure_unit);
-}
-
-void cmd_oneWire() {
-    String assign = sCmd.next();
-    onewire.attach(assign.toInt());
+    // Widgets::createWidget(widget, page, order, type, measure_unit);
 }
 
 //levelPr p 14 12 Вода#в#баке,#% Датчики fillgauge 125 20 1
@@ -264,7 +178,7 @@ void cmd_levelPr() {
     String type = sCmd.next();
     String empty_level = sCmd.next();
     String full_level = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
 
     Ultrasonic::levelPr_value_name = name;
 
@@ -274,7 +188,7 @@ void cmd_levelPr() {
     // options.write("echo", echo);
     // pinMode(trig.toInt(), OUTPUT);
     // pinMode(echo.toInt(), INPUT);
-    Widgets::createWidget(widget_name, page_name, order, type, name);
+    // Widgets::createWidget(widget_name, page_name, order, type, name);
 }
 
 //dhtH h 2 dht11 Влажность#DHT,#t°C Датчики any-data 1
@@ -285,7 +199,7 @@ void cmd_dhtH() {
     String widget_name = sCmd.next();
     String page_name = sCmd.next();
     String type = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
     DHTSensor::dhtH_value_name = name;
     if (sensor_type == "dht11") {
         DHTSensor::dht.setup(pin.toInt(), DHTesp::DHT11);
@@ -293,7 +207,7 @@ void cmd_dhtH() {
     if (sensor_type == "dht22") {
         DHTSensor::dht.setup(pin.toInt(), DHTesp::DHT22);
     }
-    Widgets::createWidget(widget_name, page_name, order, type, name);
+    // Widgets::createWidget(widget_name, page_name, order, type, name);
 }
 
 // dhtT t 2 dht11 Температура#DHT,#t°C Датчики any-data 1
@@ -304,7 +218,7 @@ void cmd_dhtT() {
     String widget_name = sCmd.next();
     String page_name = sCmd.next();
     String type = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
     DHTSensor::dhtT_value_name = name;
     if (sensor_type == "dht11") {
         DHTSensor::dht.setup(pin.toInt(), DHTesp::DHT11);
@@ -313,34 +227,34 @@ void cmd_dhtT() {
         DHTSensor::dht.setup(pin.toInt(), DHTesp::DHT22);
     }
 
-    Widgets::createWidget(widget_name, page_name, order, type, name);
+    // Widgets::createWidget(widget_name, page_name, order, type, name);
 }
 
 //dhtDewpoint Точка#росы: Датчики 5
 void cmd_dhtDewpoint() {
     String widget_name = sCmd.next();
     String page_name = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
 
-    Widgets::createWidget(widget_name, page_name, order, "anydata", "dhtDewpoint");
+    // Widgets::createWidget(widget_name, page_name, order, "anydata", "dhtDewpoint");
 }
 
 // dhtPerception Восприятие: Датчики 4
 void cmd_dhtPerception() {
     String widget_name = sCmd.next();
     String page_name = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
 
-    Widgets::createWidget(widget_name, page_name, order, "any-data", "dhtPerception");
+    // Widgets::createWidget(widget_name, page_name, order, "any-data", "dhtPerception");
 }
 
 // dhtComfort Степень#комфорта: Датчики 3
 void cmd_dhtComfort() {
     String widget_name = sCmd.next();
     String page_name = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
 
-    Widgets::createWidget(widget_name, page_name, order, "anydata", "dhtComfort");
+    // Widgets::createWidget(widget_name, page_name, order, "anydata", "dhtComfort");
 }
 
 // bmp280T temp1 0x76 Температура#bmp280 Датчики any-data 1
@@ -350,7 +264,7 @@ void cmd_bmp280T() {
     String widget_name = sCmd.next();
     String page_name = sCmd.next();
     String type = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
     BMP280Sensor::bmp280T_value_name = name;
 
     BMP280Sensor::bmp.begin(hexStringToUint8(address));
@@ -360,7 +274,7 @@ void cmd_bmp280T() {
                                   Adafruit_BMP280::FILTER_X16,      /* Filtering. */
                                   Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
 
-    Widgets::createWidget(widget_name, page_name, order, type, name);
+    // Widgets::createWidget(widget_name, page_name, order, type, name);
 }
 
 //bmp280P press1 0x76 Давление#bmp280 Датчики any-data 2
@@ -370,7 +284,7 @@ void cmd_bmp280P() {
     String widget_name = sCmd.next();
     String page_name = sCmd.next();
     String type = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
     BMP280Sensor::bmp280P_value_name = name;
 
     BMP280Sensor::bmp.begin(hexStringToUint8(address));
@@ -380,7 +294,7 @@ void cmd_bmp280P() {
                                   Adafruit_BMP280::FILTER_X16,      /* Filtering. */
                                   Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
 
-    Widgets::createWidget(widget_name, page_name, order, type, name);
+    // Widgets::createWidget(widget_name, page_name, order, type, name);
 }
 
 //=========================================================================================================================================
@@ -392,9 +306,9 @@ void cmd_bme280T() {
     String descr = sCmd.next();
     String page = sCmd.next();
     String type = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
 
-    Widgets::createWidget(descr, page, order, type, name);
+    // Widgets::createWidget(descr, page, order, type, name);
 }
 
 //bme280P pres1 0x76 Давление#bmp280 Датчики any-data 1
@@ -404,9 +318,9 @@ void cmd_bme280P() {
     String widget_name = sCmd.next();
     String page_name = sCmd.next();
     String type = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
 
-    Widgets::createWidget(widget_name, page_name, order, type, name);
+    // Widgets::createWidget(widget_name, page_name, order, type, name);
 }
 
 //bme280H hum1 0x76 Влажность#bmp280 Датчики any-data 1
@@ -416,9 +330,9 @@ void cmd_bme280H() {
     String widget_name = sCmd.next();
     String page_name = sCmd.next();
     String type = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
 
-    Widgets::createWidget(widget_name, page_name, order, type, name);
+    //    Widgets::createWidget(widget_name, page_name, order, type, name);
 }
 
 //bme280A altit1 0x76 Высота#bmp280 Датчики any-data 1
@@ -428,21 +342,9 @@ void cmd_bme280A() {
     String descr = sCmd.next();
     String page = sCmd.next();
     String templateMame = sCmd.next();
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
 
-    Widgets::createWidget(descr, page, order, templateMame, name);
-}
-
-void cmd_firmwareUpdate() {
-    perform_upgrade();
-}
-
-void cmd_firmwareVersion() {
-    String widget = sCmd.next();
-    String page = sCmd.next();
-    String order = sCmd.next();
-
-    Widgets::createWidget(widget, page, order, "anydata", TAG_FIRMWARE);
+    // Widgets::createWidget(descr, page, order, templateMame, name);
 }
 
 bool extractCommand(const String &buf, size_t &startIndex, String &block) {
@@ -474,7 +376,7 @@ void addCommands(const String &str) {
 }
 
 void addCommand(const String &str) {
-    _orders.push(str);
+    _commands.push(str);
 }
 
 void executeCommand(const String &str) {
@@ -483,9 +385,9 @@ void executeCommand(const String &str) {
 }
 
 void loop_cmd() {
-    if (_orders.available()) {
+    if (_commands.available()) {
         String cmd;
-        _orders.pop(cmd);
+        _commands.pop(cmd);
         executeCommand(cmd);
     }
 }

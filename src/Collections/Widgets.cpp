@@ -1,60 +1,55 @@
 #include "Collection/Widgets.h"
 
 #include "Config.h"
+#include "PrintMessage.h"
 #include "Objects/Widget.h"
 #include "Utils/SysUtils.h"
+
+static const char* MODULE = "Widgets";
 
 namespace Widgets {
 
 std::vector<Widget*> _list;
 
-const String getWidgetTopic(const String& objName) {
+const String getWidgetTopic(const String& objectName) {
     String res = config.mqtt()->getPrefix();
     res += "/";
     res += getDeviceId();
     res += "/";
-    res += objName;
+    res += objectName;
     return res;
 }
 
-void createWidget(String& descr, String& page, const String& order, const String& templateName, const String& objName, const String templateOverride) {
-    auto* widget = new Widget(templateName.c_str());
+void createWidget(const String& objectName, const ParamStore& params, const char* defaultTemplate, const String& templateOverride) {
+    String widgetTemplate = params.read("widget", defaultTemplate);
+    auto* widget = new Widget(widgetTemplate);
     if (!widget->load()) {
+        pm.error("on load: " + widgetTemplate);
         delete widget;
         return;
     }
-    if (!templateOverride.isEmpty()) {
-        widget->fromJson(templateOverride);
+
+    widget->write("topic", getWidgetTopic(objectName));
+
+    String descr = params.read("descr");
+    descr.replace("#", " ");
+    if (widgetTemplate.equals("chart")) {
+        widget->write("series", descr);
+        widget->write("maxCount", params.readInt("maxCount"));
+    } else {
+        widget->write("descr", descr);
     }
 
-    descr.replace("#", " ");
-    widget->write("descr", descr);
-
+    String page = params.read("page");
     page.replace("#", " ");
     widget->write("page", page);
 
-    widget->writeAsInt("order", order);
+    int order = params.readInt("order");
+    widget->write("order", order);
 
-    widget->write("topic", getWidgetTopic(objName));
-
-    _list.push_back(widget);
-};
-
-void createChart(String series, String page, String order, String templateName, String objName, int maxCount) {
-    auto* widget = new Widget(templateName.c_str());
-    if (!widget->load()) {
-        delete widget;
-        return;
+    if (!templateOverride.isEmpty()) {
+        widget->fromJson(templateOverride);
     }
-
-    widget->write("page", page);
-    widget->writeAsInt("order", order);
-
-    series.replace("#", " ");
-    widget->write("series", series);
-    widget->write("maxCount", maxCount);
-
-    widget->write("topic", getWidgetTopic(objName));
 
     _list.push_back(widget);
 }
@@ -66,9 +61,9 @@ void clear() {
     _list.clear();
 }
 
-void forEach(JsonHandler func) {
+void forEach(WidgetHandler func) {
     for (auto item : _list) {
-        func(item->asJson());
+        func(item);
     }
 }
 }  // namespace Widgets

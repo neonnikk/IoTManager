@@ -3,40 +3,41 @@
 #include "Collection/Pwms.h"
 #include "Collection/Widgets.h"
 
+static const char* MODULE = TAG_PWM;
+
 /*
-* pwm №1 подключен к pin 12 состояние 100%
 * pwm {id:1,descr:"Зеленый",pin:12,state:100%,page:"Лампа",order:4}
 */
 void cmd_pwm() {
     ParamStore params{sCmd.next()};
+    String temlateOverride{sCmd.next()};
 
-    String name = getObjectName(TAG_PWM, params.read("id").c_str());
-    String assign = params.read("pin");
-    String descr = params.read("name");
-    String page = params.read("page");
-    String state = params.read("state");
-    String order = params.read("order");
-    String widget = params.read("widget", "range");
+    String name = getObjectName(TAG_PWM, params.read(TAG_ID).c_str());
+    String assign = params.read(TAG_PIN);
+    int state = params.readInt(TAG_STATE, 0);
 
-    auto item = (Pwm*)pwms.add(name, assign);
-
+    auto item = pwms.add(name, assign);
+    if (!item) {
+        pm.error("on add: " + name);
+        return;
+    }
     item->setMap(1, 100, 0, 1023);
     item->setValue(state);
 
-    runtime.writeAsInt(name, state);
-
-    String templateOverride = sCmd.next();
-
-    Widgets::createWidget(descr, page, order, widget, name, templateOverride);
+    runtime.write(name, state);
+    Widgets::createWidget(name, params, "range", temlateOverride);
 }
 
 void cmd_pwmSet() {
     String name = getObjectName(TAG_PWM, sCmd.next());
-    String value = sCmd.next();
+    int state = String(sCmd.next()).toInt();
 
-    auto* item = pwms.get(name);
-    if (item) {
-        item->setValue(value);
+    auto item = pwms.get(name);
+    if (!item) {
+        pm.error("not found: " + name);
+        return;
     }
-    runtime.writeAsInt(name, value);
+
+    item->setValue(state);
+    runtime.write(name, state);
 }

@@ -5,34 +5,57 @@
 #include <WiFiClient.h>
 #include <StreamString.h>
 
+#include "Global.h"
 #include "Cmd.h"
+#include "Config.h"
+#include "NetworkManager.h"
 #include "Runtime.h"
-#include "Config/MqttConfig.h"
+
 #include "Collection/Logger.h"
+
 #include "Utils/TimeUtils.h"
+#include "Utils/SysUtils.h"
 
 static const char* MODULE = "Mqtt";
 
 namespace MqttClient {
 
+WiFiClient espClient;
+PubSubClient _mqtt(espClient);
+
 struct MqttMessage {
    private:
-    String _topic;
-    String _data;
+    char* _topic;
+    char* _data;
 
    public:
-    MqttMessage(const String& topic, const String& data) : _topic{topic}, _data{data} {}
+    MqttMessage(const MqttMessage& b) : _topic{NULL}, _data{NULL} {
+        _topic = strdup(b._topic);
+        _data = strdup(b._data);
+    }
 
-    const String getTopic() {
+    MqttMessage(const char* topic, const char* data) : _topic{NULL}, _data{NULL} {
+        _topic = strdup(topic);
+        _data = strdup(data);
+    }
+
+    ~MqttMessage() {
+        if (_topic) free(_topic);
+        if (_data) free(_data);
+    }
+
+    bool isValid() const {
+        return _topic && _data;
+    }
+
+    const char* getTopic() const {
         return _topic;
     }
-    const String getData() {
+
+    const char* getData() const {
         return _data;
     }
 };
-
-WiFiClient espClient;
-PubSubClient _mqtt(espClient);
 
 std::list<MqttMessage> _queue;
 
@@ -115,7 +138,7 @@ boolean _mqtt_publish(const char* topic, const char* data) {
 }
 
 void pushToQueue(const String& topic, const String& data) {
-    _queue.push_back(MqttMessage(topic.c_str(), data.c_str()));
+    _queue.push_back(MqttMessage{topic.c_str(), data.c_str()});
 }
 
 bool isConnected() {
@@ -130,6 +153,9 @@ void loop() {
     if (!NetworkManager::isNetworkActive()) {
         return;
     }
+
+    _mqtt.loop();
+
     if (!config.mqtt()->isEnabled()) {
         if (isConnected()) {
             disconnect();
@@ -157,24 +183,27 @@ void loop() {
         return;
     }
 
-    _mqtt.loop();
-
     _connectionAttempts = 0;
+
     if (!_queue.empty()) {
-        pm.info("#" + String(_queue.size(), DEC) + " " + _queue.front().getTopic());
-        _mqtt_publish(_queue.front().getTopic().c_str(), _queue.front().getData().c_str());
+        auto message = _queue.front();
+        if (message.isValid()) {
+            _mqtt.publish(message.getTopic(), message.getData());
+        }
         _queue.pop_front();
     }
 }
+
 const String parseControl(const String& str) {
     String res;
-    String num1 = str.substring(str.length() - 1);
-    String num2 = str.substring(str.length() - 2, str.length() - 1);
+    size_t len = str.length();
+    String num1 = str.substring(len - 1);
+    String num2 = str.substring(len - 2, len - 1);
     if (isDigitStr(num1) && isDigitStr(num2)) {
-        res = str.substring(0, str.length() - 2) + "Set" + num2 + num1;
+        res = str.substring(0, len - 2) + "Set" + num2 + num1;
     } else {
         if (isDigitStr(num1)) {
-            res = str.substring(0, str.length() - 1) + "Set" + num1;
+            res = str.substring(0, len - 1) + "Set" + num1;
         }
     }
     return res;

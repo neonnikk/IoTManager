@@ -9,7 +9,7 @@
 
 class LoggerTask {
    public:
-    LoggerTask(size_t id, const char* name, unsigned long period, size_t limit);
+    LoggerTask(size_t id, const String& name, unsigned long interval, unsigned long period);
     ~LoggerTask();
 
     void readEntries(LogEntryHandler h);
@@ -30,6 +30,7 @@ class LoggerTask {
     LogBuffer _buffer;
     size_t _id;
     unsigned long _interval;
+    unsigned long _period;
     size_t _limit;
     unsigned long _lastUpdated;
     unsigned long _bufferFlushed;

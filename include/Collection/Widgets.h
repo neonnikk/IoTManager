@@ -3,11 +3,13 @@
 #include <Arduino.h>
 #include <functional>
 
-typedef std::function<void(String)> JsonHandler;
+#include "Objects/Widget.h"
+#include "Base/ParamStore.h"
+
+typedef std::function<void(Widget*)> WidgetHandler;
 
 namespace Widgets {
-void createWidget(String& descr, String& page, const String& order, const String& templateName, const String& objName, const String templateOveride = "");
-void createChart(String series, String page, String order, String templateName, String topic, int maxCount);
+void createWidget(const String& objectName, const ParamStore& params, const char* defaultTemplate, const String& templateOverride);
 void clear();
-void forEach(JsonHandler func);
+void forEach(WidgetHandler func);
 }  // namespace Widgets

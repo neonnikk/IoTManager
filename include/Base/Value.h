@@ -17,7 +17,11 @@ class Value {
                               _lastValue{"0"},
                               _lastTime{0} {}
 
-    void setValue(const String& value) {
+    void setValue(int value) {
+        setValue(String{value, DEC});
+    }
+
+    void setValue(const String value) {
         if (!value.equals(_lastValue)) {
             onValueChange(_lastValue, value);
             _lastValue = value;

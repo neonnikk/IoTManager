@@ -2,6 +2,8 @@
 
 #include "Runtime.h"
 
+static const char* MODULE = "Sensors";
+
 namespace Sensors {
 std::vector<Sensor*> _items;
 
@@ -16,6 +18,10 @@ Sensor* add(SensorType_t type, const String& name, const String& assign) {
             item = new ADCSensor{name, assign};
             break;
         case SensorType_t::DALLAS:
+            if (!onewire.attached()) {
+                pm.error("attach bus first");
+                break;
+            }
             item = new DallasSensor{name, assign};
             break;
         default:

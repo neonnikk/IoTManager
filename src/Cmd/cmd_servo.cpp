@@ -32,7 +32,7 @@ void cmd_servo() {
     String min_deg = sCmd.next();
     String max_deg = sCmd.next();
 
-    String order = sCmd.next();
+    int order = String(sCmd.next()).toInt();
 
     servos.add(name, pin, value, min_value, max_value, min_deg, max_deg);
 
@@ -45,6 +45,6 @@ void cmd_servo() {
     // options.writeInt("s_max_deg" + name, max_deg);
     // liveData.writeInt("servo" + name, value);
 
-    Widgets::createWidget(descr, page, order, "range", "servo" + name);
+    // Widgets::createWidget(descr, page, order, "range", "servo" + name);
     // , "min", String(min_value), "max", String(max_value), "k", "1");
 }

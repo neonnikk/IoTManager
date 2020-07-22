@@ -1,4 +1,4 @@
-button {id:1,pin:2,name:"Включить#реле",page:"Реле",order:1}
+button {id:1,pin:2,descr:"Включить#реле",page:"Реле",order:1}
 // управление состоянием GPIO 2 (кнопки) см.сценарий
 switch 1 0 10
 

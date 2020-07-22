@@ -1,4 +1,4 @@
-button {id:1,pin:5,name:"Прихожая",page:"Освещение",order:1}
+button {id:1,pin:5,descr:"Прихожая",page:"Освещение",order:1}
 inputDigit digit1 Задержка#выключения Освещение 30 2
 switch 1 0 10
 

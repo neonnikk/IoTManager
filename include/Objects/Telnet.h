@@ -2,11 +2,11 @@
 
 #include "Global.h"
 
+#include <functional>
+
 #include "Objects/Module.h"
 #include "Objects/Terminal.h"
 #include "Objects/CommandShell.h"
-
-#include <functional>
 
 enum TelnetEvent_t {
     TE_CONNECTED,

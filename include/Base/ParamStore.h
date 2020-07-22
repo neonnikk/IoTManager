@@ -11,7 +11,7 @@ class ParamStore : public KeyValueStore {
 
     const String read(const String& key) const;
     const String read(const String& key, const char* defValue) const;
-    int readInt(const String& key) const;
+    int readInt(const String& key, int defaults = 0) const;
     float readFloat(const String& key) const;
 
     void write(const String& key, const String& value);

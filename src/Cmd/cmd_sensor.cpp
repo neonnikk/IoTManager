@@ -25,17 +25,20 @@ SensorType_t getSensorType(const String &typeStr) {
     return SensorType_t(i);
 };
 
-// sensor {id:1,type:"adc",pin:0,refresh:"5s",name:"Аналоговый#вход,#%",map:"1-1023/1-100",page:"Датчики",order:1}
+// sensor {id:1,name:"adc",pin:0,refresh:"5s",descr:"Аналоговый#вход,#%",map:"1-1023/1-100",page:"Датчики",order:1}
+// sensor {id:1,name:"dallas",pin:"0x150x150x150x150x15",refresh:"5s",descr:"Температура",map:"1-1023/1-100",page:"Датчики",order:1}
 void cmd_sensor() {
     ParamStore params{sCmd.next()};
+    String temlateOverride{sCmd.next()};
 
-    SensorType_t type = getSensorType(params.read(TAG_TYPE));
-    String nameStr = getObjectName(TAG_SENSOR, params.read(TAG_ID));
-    String assignStr = params.read(TAG_PIN);
+    SensorType_t type = getSensorType(params.read(TAG_NAME));
+    String name = getObjectName(params.read(TAG_NAME), params.read(TAG_ID));
+    String assign = params.read(TAG_PIN);
 
-    auto *item = Sensors::add(type, nameStr, assignStr);
+    auto *item = Sensors::add(type, name, assign);
     if (!item) {
-        pm.error("on add");
+        pm.error("on add: " + name);
+        return;
     }
     String mapStr = params.read("map");
     if (!mapStr.isEmpty()) {
@@ -49,10 +52,5 @@ void cmd_sensor() {
     // TODO
     String filter = params.read("filter");
 
-    String descr = params.read("name");
-    String widget = params.read("widget", "any-data");
-    String page = params.read("page");
-    String order = params.read("order");
-
-    Widgets::createWidget(descr, page, order, widget, nameStr);
+    Widgets::createWidget(name, params, "anydata", temlateOverride);
 }

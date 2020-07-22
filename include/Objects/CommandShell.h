@@ -8,7 +8,7 @@
 
 class CommandShell {
    public:
-    CommandShell() : CommandShell{new CmdRunner()} {};
+    CommandShell() : CommandShell{NULL} {};
     CommandShell(Runner *runner) : _term(nullptr),
                                    _runner(runner),
                                    _path('\\'),

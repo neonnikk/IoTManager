@@ -1,2 +1,2 @@
-button {id:1,pin:2,state:0,name:"Таймер",page:"Таймеры",order:1}
+button {id:1,pin:2,state:0,descr:"Таймер",page:"Таймеры",order:1}
 inputDigit digit1 Интервал Параметры 5 1

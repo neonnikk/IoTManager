@@ -4,7 +4,7 @@
 
 class Widget : public ParamFile {
    public:
-    Widget(const char* name);
+    Widget(const String& name);
     ~Widget();
 
    protected:

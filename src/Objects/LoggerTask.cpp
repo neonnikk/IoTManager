@@ -6,16 +6,17 @@
 #include "Utils/FileUtils.h"
 #include "Utils/TimeUtils.h"
 
-static const char* MODULE = "LoggerTask";
+// static const char* MODULE = "LoggerTask";
 
-LoggerTask::LoggerTask(const size_t id, const char* name, unsigned long interval, size_t limit) : _meta{name},
-                                                                                                  _id{id},
-                                                                                                  _interval{interval},
-                                                                                                  _limit{limit},
-                                                                                                  _lastUpdated{0},
-                                                                                                  _bufferFlushed{millis()},
-                                                                                                  _reader{NULL},
-                                                                                                  _writer{NULL} {}
+LoggerTask::LoggerTask(size_t id, const String& name, unsigned long interval, unsigned long period) : _meta{name},
+                                                                                                      _id{id},
+                                                                                                      _interval{interval},
+                                                                                                      _period{period},
+                                                                                                      _limit{10},
+                                                                                                      _lastUpdated{0},
+                                                                                                      _bufferFlushed{millis()},
+                                                                                                      _reader{NULL},
+                                                                                                      _writer{NULL} {}
 
 LoggerTask::~LoggerTask() {
     if (_writer) delete _writer;

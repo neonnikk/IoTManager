@@ -43,10 +43,8 @@ void update() {
     }
 }
 
-void add(const char* name, unsigned long interval, size_t storeLimit) {
-    size_t id = _list.size() + 1;
-    LoggerTask* item = new LoggerTask{id, name, interval, storeLimit};
-    _list.push_back(item);
+void add(size_t id, const String& name, unsigned long interval, unsigned long period) {
+    _list.push_back(new LoggerTask{id, name, interval, period});
 }
 
 void init() {

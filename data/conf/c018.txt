@@ -1,7 +1,7 @@
 switch 1 0 20
 text 1 Вход: Охрана 1
 textSet 1 не#обнаружено-time
-button {id:1,name:"Сбросить",page:"Охрана",order:2}
+button {id:1,descr:"Сбросить",page:"Охрана",order:2}
 // button 2 line3, Включить#push Охрана 1 3
 
 //0 - номер пина датчика

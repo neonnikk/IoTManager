@@ -1,14 +1,29 @@
 #pragma once
 
-#include "Global.h"
-#include "Runtime.h"
+#include <SoftwareSerial.h>
+
+#include "StringCommand.h"
+
+#include "Consts.h"
 #include "StringConsts.h"
-#include "Base/ParamStore.h"
-#include "Utils/TimeUtils.h"
+#include "PrintMessage.h"
+#include "Runtime.h"
+
+#include "Objects/Terminal.h"
+#include "Objects/Telnet.h"
+
+#ifdef ESP8266
+extern SoftwareSerial *mySerial;
+#else
+extern HardwareSerial *mySerial;
+#endif
+extern Terminal *term;
+extern Telnet *telnet;
 
 extern StringCommand sCmd;
 
 unsigned long parsePeriod(const String &str, unsigned long default_multiplier = ONE_MINUTE_ms);
+
 const String getObjectName(const String &objType, const String &objId);
 
 void cmd_init();
@@ -28,8 +43,6 @@ void executeCommand(const String &);
 void cmd_sensor();
 
 void cmd_oneWire();
-
-void cmd_dallas();
 
 void cmd_pinSet();
 void cmd_pinChange();
@@ -56,7 +69,7 @@ void cmd_button();
 void cmd_buttonSet();
 void cmd_buttonChange();
 
-void cmd_logging();
+void cmd_log();
 
 void cmd_timeSet();
 void cmd_inputTime();

@@ -12,10 +12,6 @@
 #include "ESP8266.h"
 //
 
-#include "Base/StringQueue.h"
-
-#include "StringCommand.h"
-
 #include "Consts.h"
 #include "Config.h"
 #include "Updater.h"
@@ -32,6 +28,7 @@
 
 #include <ArduinoOTA.h>
 #include <time.h>
+
 
 void perform_mqtt_restart();
 /*
@@ -75,7 +72,7 @@ extern void load_device_config();
 extern void pubish_widget_collection();
 extern void publish_widget_chart();
 
-extern void config_add(const String&);
+extern void config_add(const String &);
 extern void config_save();
 
 extern void load_device_preset(size_t num);

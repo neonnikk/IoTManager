@@ -318,12 +318,13 @@ void setup() {
 void load_device_config() {
     auto file = LittleFS.open(DEVICE_COMMAND_FILE, FILE_READ);
     if (!file) {
-        pm.error("open config");
+        pm.error("open " + String(DEVICE_COMMAND_FILE));
         return;
     }
     Widgets::clear();
     while (file.available()) {
         String line = file.readStringUntil('\n');
+        line.replace("\r", "");
         if (!line.startsWith("//") && !line.isEmpty()) {
             executeCommand(line);
         }
@@ -352,8 +353,10 @@ void load_config() {
 }
 
 void pubish_widget_collection() {
-    Widgets::forEach([](String json) {
-        return MqttClient::publistWidget(json);
+    Widgets::forEach([](Widget* widget) {
+        String buf;
+        widget->toJson(buf);
+        return MqttClient::publistWidget(buf);
     });
 }
 

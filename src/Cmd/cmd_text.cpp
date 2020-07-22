@@ -1,16 +1,16 @@
 #include "Cmd.h"
 
+#include "Clock.h"
 #include "Collection/Widgets.h"
 
 void cmd_text() {
     String name = getObjectName(TAG_TEXT, sCmd.next());
     String value = sCmd.next();
     String page = sCmd.next();
-    String order = sCmd.next();
-
-    Widgets::createWidget(value, page, order, "anydata", name);
+    int order = String(sCmd.next()).toInt();
 
     runtime.write(name, value);
+    // Widgets::createWidget(value, page, order, "anydata", name);
 }
 
 void cmd_textSet() {

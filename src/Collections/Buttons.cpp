@@ -8,9 +8,8 @@ static const char* MODULE = TAG_BUTTON;
 
 Buttons buttons;
 
-Button* Buttons::add(const ButtonType_t type, const String& name, const String& assign, const String& value, const String& inverted) {
-    Button* item;
-
+Button* Buttons::add(const ButtonType_t type, const String& name, const String& assign) {
+    Button* item = NULL;
     switch (type) {
         case BUTTON_VIRTUAL:
             item = new VirtualButton(name, assign);
@@ -39,12 +38,11 @@ Button* Buttons::add(const ButtonType_t type, const String& name, const String& 
             // }
             break;
     }
-
-    item->setInverted(inverted.toInt());
-    item->setValue(value);
-
-    _list.push_back(item);
-    return last();
+    if (item) {
+        _list.push_back(item);
+        return last();
+    }
+    return NULL;
 }
 
 Button* Buttons::last() {

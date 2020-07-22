@@ -1,6 +1,6 @@
 #include "Objects/Widget.h"
 
-Widget::Widget(const char* name) : ParamFile(name){};
+Widget::Widget(const String& name) : ParamFile(name.c_str()){};
 
 Widget::~Widget(){};
 

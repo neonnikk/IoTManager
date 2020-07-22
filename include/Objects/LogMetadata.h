@@ -29,9 +29,9 @@ class LogMetadata {
     LogHeader _header;
 
    public:
-    LogMetadata(const char* name) {
+    LogMetadata(const String& name) {
         memset(&_header.name[0], 0, sizeof(name[0]) * 32);
-        strcpy(_header.name, name);
+        strcpy(_header.name, name.c_str());
         restore();
     };
 

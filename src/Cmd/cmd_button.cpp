@@ -31,27 +31,27 @@ static bool getButtonType(const String &assign, ButtonType_t &type) {
 
 void cmd_button() {
     ParamStore params{sCmd.next()};
+    String temlateOverride{sCmd.next()};
 
-    String name = getObjectName(TAG_BUTTON, params.read("id").c_str());
-    String descr = params.read("name");
-    String assign = params.read("pin");
-    String inverted = params.read("inverted", "false");
-    String state = params.read("state", "0");
-    String widget = params.read("widget", "toggle");
-    String page = params.read("page");
-    String order = params.read("order");
+    String name = getObjectName(TAG_BUTTON, params.read(TAG_ID));
+    String assign = params.read(TAG_PIN);
+    bool inverted = params.readInt("inverted", false);
+    bool state = params.readInt(TAG_STATE, LOW);
 
     ButtonType_t type;
     if (!getButtonType(assign, type)) {
-        pm.error("wrong type");
         return;
     }
+    auto item = buttons.add(type, name, assign);
+    if (!item) {
+        pm.error("on add: " + name);
+        return;
+    }
+    item->setInverted(inverted);
+    item->setValue(state);
 
-    buttons.add(type, name, assign, state, inverted);
-
-    runtime.writeAsInt(name, state);
-
-    Widgets::createWidget(descr, page, order, widget, name);
+    runtime.write(name, state);
+    Widgets::createWidget(name, params, "toggle", temlateOverride);
 }
 
 void cmd_buttonChange() {
@@ -60,20 +60,19 @@ void cmd_buttonChange() {
     if (!item) {
         return;
     }
-    String state = item->toggleState();
 
-    runtime.writeAsInt(name, state);
+    runtime.write(name, item->toggleState());
 }
 
 void cmd_buttonSet() {
     String name = getObjectName(TAG_BUTTON, sCmd.next());
-    String state = sCmd.next();
+    int state = String(sCmd.next()).toInt();
+
     auto *item = getObjectByName(name);
     if (!item) {
         return;
     }
 
     item->setValue(state);
-
-    runtime.writeAsInt(name, state);
+    runtime.write(name, state);
 }

@@ -2,23 +2,23 @@
 
 // Кнопка №1 управляет состоянием кнопок №2 и №3 (см.сценарий)
 // виджет по-умолчанию для кнопки "toggle", заменяется на "toggle_light"
-button {id:1,name:"Включить#все",page:"Свет",order:1,widget:"toggle_light"}
+button {id:1,descr:"Включить#все",page:"Свет",order:1,widget:"toggle_light"}
 // Кнопка №2 управляет pwm №1, №2, №3 (см.сценарий)
-button {id:2,name:"Лампа",page:"Свет",order:2}
+button {id:2,descr:"Лампа",page:"Свет",order:2}
 // Кнопка №3 управляет pin 2 (инвертировано)
-button {id:3,name:"Кухня",pin:2,inverted:true,page:"Свет",order:3}
+button {id:3,descr:"Кухня",pin:2,inverted:true,page:"Свет",order:3}
 
 // pwm №1 подключен к pin 12 начальное состояние 100%
-pwm {id:1,name:"Зеленый",pin:12,state:100,page:"Лампа",order:1} {descrColor:"green"}
+pwm {id:1,descr:"Зеленый",pin:12,state:100,page:"Лампа",order:1} {descrColor:"green"}
 // pwm канал №2 подключен к pin 13 начальное состояние 50%
-pwm {id:2,name:"Синий",pin:13,state:50,page:"Лампа",order:2} {descrColor:"blue"}
+pwm {id:2,descr:"Синий",pin:13,state:50,page:"Лампа",order:2} {descrColor:"blue"}
 // pwm канал №3 подключен к pin 15 начальное состояние 0%
-pwm {id:3,name:"Красный",pin:15,state:0,page:"Лампа",order:3}
+pwm {id:3,descr:"Красный",pin:15,state:0,page:"Лампа",order:3}
 
 // Показания adc на pin 17 диапазон измерений от 0 до 1023 привести к значениям от 1 до 100
-sensor {id:1,type:"adc",pin:17,refresh:"5s",name:"Аналоговый#вход,#%",map:"0-1023/1-100",page:"Датчики",order:1,widget:"fillgauge"}
+sensor {id:1,name:"adc",pin:17,refresh:"5s",descr:"Аналоговый#вход,#%",map:"0-1023/1-100",page:"Датчики",order:1,widget:"fillgauge"}
 
 // Ведение журнала показаний для adc
 // 1m интервал между записями (1 минута), 2h время хранения журнала (2 часа).
 // Для указания интервалов времени возможно использовать ms,s,m,h,d
-logging {name:"adc",interval:"5s",store:"2h",descr:"Аналоговый#вход",page:"Датчики",order:2}
+log {id:1,data:"adc1",interval:"5s",store:"2h",descr:"Аналоговый#вход",page:"Датчики",order:2}
