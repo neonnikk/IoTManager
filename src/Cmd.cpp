@@ -371,6 +371,7 @@ bool parseRange(const String &str, Range &r) {
     }
     r.min = str.substring(0, split).toInt();
     r.max = str.substring(split + 1).toInt();
+    return true;
 }
 
 // 1-1023/1-100
@@ -412,7 +413,8 @@ void addCommand(const String &str) {
 
 void executeCommand(const String &str) {
     pm.info("Execute: " + str);
-    sCmd.readStr(str);
+    String cmd = str + "\n";
+    sCmd.readStr(cmd);
 }
 
 void loop_cmd() {

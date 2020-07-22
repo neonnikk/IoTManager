@@ -8,6 +8,7 @@ extern const char* DEVICE_CONFIG_FILE;
 extern const char* DEVICE_COMMAND_FILE;
 extern const char* DEVICE_SCENARIO_FILE;
 extern const char* DEVICE_BOOT_FILE;
+extern const char* DEVICE_LAYOUT_FILE;
 
 extern const char* TAG_INIT;
 extern const char* TAG_OPTIONS;

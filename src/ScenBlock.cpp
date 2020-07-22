@@ -95,7 +95,6 @@ bool ScenBlock::parseCondition(const String& str) {
         pm.error("wrong param");
         return false;
     }
-
     return true;
 }
 

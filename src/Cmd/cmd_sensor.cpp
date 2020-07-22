@@ -23,12 +23,12 @@ void cmd_sensor() {
     String temlateOverride{sCmd.next()};
 
     SensorType_t type = getSensorType(params.read(TAG_NAME));
-    String name = getObjectName(params.read(TAG_NAME), params.read(TAG_ID));
+    String objName = getObjectName(params.read(TAG_NAME), params.read(TAG_ID));
     String assign = params.read(TAG_PIN);
 
-    auto item = Sensors::add(type, name, assign);
+    auto item = Sensors::add(type, objName, assign);
     if (!item) {
-        pm.error("on add: " + name);
+        pm.error("on add: " + objName);
         return;
     }
     auto mapper = createMapper(params.read("map"));
@@ -40,5 +40,5 @@ void cmd_sensor() {
     // TODO
     String filter = params.read("filter");
 
-    Widgets::createWidget(name, params, "anydata", temlateOverride);
+    Widgets::createWidget(objName, params, "anydata", temlateOverride);
 }

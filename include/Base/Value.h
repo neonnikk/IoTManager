@@ -25,7 +25,7 @@ class Value {
         setValue(String{value, 2});
     }
 
-    void setValue(const String value) {
+    void setValue(const String& value) {
         if (!value.equals(_lastValue)) {
             onValueChange(_lastValue, value);
             _lastValue = value;

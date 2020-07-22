@@ -353,11 +353,14 @@ void load_config() {
 }
 
 void pubish_widget_collection() {
-    Widgets::forEach([](Widget* widget) {
-        String buf;
-        widget->toJson(buf);
-        return MqttClient::publistWidget(buf);
-    });
+    auto file = LittleFS.open(DEVICE_LAYOUT_FILE, FILE_READ);
+    if (file && file.available()) {
+        while (file.available()) {
+            String line = file.readStringUntil('\n');
+            MqttClient::publistWidget(line);
+        }
+        file.close();
+    }
 }
 
 void publish_widget_chart() {
