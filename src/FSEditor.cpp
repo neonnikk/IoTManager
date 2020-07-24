@@ -1,5 +1,12 @@
 #include "FSEditor.h"
-#include <FS.h>
+
+#ifdef ESP32
+#include "LITTLEFS.h"
+#define LittleFS LITTLEFS
+#endif
+#ifdef ESP8266
+#include <LittleFS.h>
+#endif
 
 #define FS_MAXLENGTH_FILEPATH 32
 
@@ -166,20 +173,46 @@ void FSEditor::handleRequest(AsyncWebServerRequest *request) {
     if (request->method() == HTTP_GET) {
         if (request->hasParam("list")) {
             String path = request->getParam("list")->value();
+#if ESP32
+            auto dir = _fs.open(path);
+#else
             auto dir = _fs.openDir(path);
+#endif
             path = String();
             String output = "[";
+#if ESP32
+            while (dir.openNextFile()) {
+#else
             while (dir.next()) {
+#endif
+#if ESP32
+                if (isExcluded(_fs, dir.name())) {
+#else
                 if (isExcluded(_fs, dir.fileName().c_str())) {
+#endif
                     continue;
                 }
                 if (output != "[") output += ',';
                 output += "{\"type\":\"";
+#if ESP32
+                output += dir.isDirectory() ? "file" : "dir";
+#else
                 output += dir.isFile() ? "file" : "dir";
+#endif
+
                 output += "\",\"name\":\"";
+#if ESP32
+                output += dir.name();
+#else
                 output += dir.fileName();
+#endif
                 output += "\",\"size\":";
+#if ESP32
+                output += String(dir.size());
+#else
+
                 output += String(dir.fileSize());
+#endif
                 output += "}";
             }
 

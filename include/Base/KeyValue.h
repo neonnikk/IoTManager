@@ -2,6 +2,8 @@
 
 #include "Value.h"
 
+#include <functional>
+
 enum KeyType_t {
     KT_STATE,
     KT_PROPERTY,
@@ -10,6 +12,7 @@ enum KeyType_t {
 };
 
 class KeyValue;
+
 typedef std::function<void(KeyValue*)> KeyValueHandler;
 
 class KeyValue {

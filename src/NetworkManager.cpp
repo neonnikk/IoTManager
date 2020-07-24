@@ -11,6 +11,11 @@
 #include "TickerScheduler.h"
 #include "Web.h"
 
+#ifdef ESP32
+#include <WiFi.h>
+#include <WiFiClient.h>
+#endif
+
 namespace NetworkManager {
 
 static const char* MODULE = "Network";
@@ -23,8 +28,6 @@ enum class Connection : bool {
 Connection _lastStatus = Connection::ERROR;
 bool _connected = false;
 bool _intitialized = false;
-
-static WiFiEventHandler staGotIpEvent, staDisconnectedEvent;
 
 void onConnect(IPAddress ip) {
     _connected = true;
@@ -62,21 +65,41 @@ void onDisconnect(uint8_t reason) {
     _connected = false;
 }
 
+#ifdef ESP32
+void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info) {
+    if (WiFi.status() == WL_CONNECTED) {
+        onConnect(WiFi.localIP());
+    }
+}
+void WiFiDisconnect(WiFiEvent_t event, WiFiEventInfo_t info) {
+    onDisconnect(0);
+}
+#else
+static WiFiEventHandler staGotIpEvent, staDisconnectedEvent;
+#endif
+
 void init() {
     led.set(LedStatus::SLOW);
-
+#ifdef ESP32
+    WiFi.setHostname(config.network()->getHostname());
+#else
     WiFi.hostname(config.network()->getHostname());
+#endif
     WiFiMode_t mode = (WiFiMode_t)config.network()->getMode();
 
+#ifdef ESP32
+    WiFi.onEvent(WiFiGotIP, WiFiEvent_t::SYSTEM_EVENT_STA_GOT_IP);
+    WiFi.onEvent(WiFiDisconnect, WiFiEvent_t::SYSTEM_EVENT_STA_DISCONNECTED);
+#else
     staGotIpEvent = WiFi.onStationModeGotIP([](WiFiEventStationModeGotIP event) {
         if (WiFi.status() == WL_CONNECTED) {
             onConnect(event.ip);
         }
     });
-
     staDisconnectedEvent = WiFi.onStationModeDisconnected([](WiFiEventStationModeDisconnected event) {
         onDisconnect(event.reason);
     });
+#endif
 
     switch (mode) {
         case WIFI_AP:
@@ -148,6 +171,9 @@ bool startAPMode() {
 };
 
 void startScaninng() {
+#ifdef ESP32
+    WiFi.scanNetworks(true, true);
+#else
     WiFi.scanNetworksAsync([](int n) {
         if (!n) {
             pm.info(String("no networks found"));
@@ -165,5 +191,6 @@ void startScaninng() {
         if (res) startSTAMode();
     },
                            true);
+#endif
 };
 }  // namespace NetworkManager

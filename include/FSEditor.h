@@ -1,10 +1,7 @@
 #pragma once
 
 #include <ESPAsyncWebServer.h>
-
-#ifdef ESP8266
-#include <LittleFS.h>
-#endif
+#include <FS.h>
 
 class FSEditor : public AsyncWebHandler {
    private:

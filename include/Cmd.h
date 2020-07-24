@@ -1,6 +1,12 @@
 #pragma once
 
+#ifdef ESP8266
 #include <SoftwareSerial.h>
+extern SoftwareSerial *mySerial;
+#else
+#include <HardwareSerial.h>
+extern HardwareSerial *mySerial;
+#endif
 
 #include "StringCommand.h"
 
@@ -12,11 +18,6 @@
 #include "Objects/Terminal.h"
 #include "Objects/Telnet.h"
 
-#ifdef ESP8266
-extern SoftwareSerial *mySerial;
-#else
-extern HardwareSerial *mySerial;
-#endif
 extern Terminal *term;
 extern Telnet *telnet;
 

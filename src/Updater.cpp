@@ -6,6 +6,7 @@
 #include "ESP8266.h"
 #else
 #include "ESP32.h"
+
 #endif
 #include "PrintMessage.h"
 
@@ -42,33 +43,46 @@ const String check() {
 }
 
 bool upgrade_fs_image() {
-    BearSSL::WiFiClientSecure UpdateClient;
-    UpdateClient.setInsecure();
+#ifdef ESP8266
+    BearSSL::WiFiClientSecure updateClient;
+    updateClient.setInsecure();
+#else
+    WiFiClientSecure updateClient;
+#endif
+
 #ifdef ESP8266
     String url = buildUpdateUrl(TAG_FS_IMAGE);
     pm.info(url);
     ESPhttpUpdate.rebootOnUpdate(false);
     ESPhttpUpdate.setLedPin(LED_BUILTIN);
-    HTTPUpdateResult ret = ESPhttpUpdate.updateFS(UpdateClient, url);
+    HTTPUpdateResult ret = ESPhttpUpdate.updateFS(updateClient, url);
 #else
     httpUpdate.rebootOnUpdate(false);
-    HTTPUpdateResult ret = httpUpdate.updateSpiffs(wifiClient, buildUpdateUrl(TAG_FS_IMAGE));
+    HTTPUpdateResult ret = httpUpdate.updateSpiffs(updateClient, buildUpdateUrl(TAG_FS_IMAGE));
 #endif
     if (ret != HTTP_UPDATE_OK) {
+#ifdef ESP8266
         pm.error(ESPhttpUpdate.getLastErrorString());
+#endif
     }
     return ret == HTTP_UPDATE_OK;
 }  // namespace Updater
 
 bool upgrade_firmware() {
-    BearSSL::WiFiClientSecure UpdateClient;
-    UpdateClient.setInsecure();
-    ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
-    pm.info(TAG_FIRMWARE_BIN);
 #ifdef ESP8266
-    HTTPUpdateResult ret = ESPhttpUpdate.update(UpdateClient, buildUpdateUrl(TAG_FIRMWARE_BIN));
+    BearSSL::WiFiClientSecure updateClient;
+    updateClient.setInsecure();
+    ESPhttpUpdate.setLedPin(LED_BUILTIN, LOW);
 #else
-    HTTPUpdateResult ret = httpUpdate.update(wifiClient, buildUpdateUrl(TAG_FIRMWARE_BIN));
+    WiFiClientSecure updateClient;
+#endif
+
+    pm.info(TAG_FIRMWARE_BIN);
+
+#ifdef ESP8266
+    HTTPUpdateResult ret = ESPhttpUpdate.update(updateClient, buildUpdateUrl(TAG_FIRMWARE_BIN));
+#else
+    HTTPUpdateResult ret = httpUpdate.update(updateClient, buildUpdateUrl(TAG_FIRMWARE_BIN));
 #endif
     if (ret != HTTP_UPDATE_OK) {
         pm.error(TAG_FIRMWARE_BIN);

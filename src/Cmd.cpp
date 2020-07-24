@@ -1,7 +1,5 @@
 #include "Cmd.h"
 
-#include <SoftwareSerial.h>
-
 #include "Base/StringQueue.h"
 
 #include "Collection/Buttons.h"

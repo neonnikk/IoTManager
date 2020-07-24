@@ -5,6 +5,16 @@
 #include "Clock.h"
 #include "Objects/LogEntry.h"
 
+#include "FS.h"
+
+#ifdef ESP32
+#include "LITTLEFS.h"
+#define LittleFS LITTLEFS
+#endif
+#ifdef ESP8266
+#include <LittleFS.h>
+#endif
+
 #define FILE_READ "r"
 #define FILE_WRITE "w"
 #define FILE_APPEND "a"
@@ -16,7 +26,7 @@ class LogMetadata {
         size_t entry_count;
         unsigned long start_time;
         unsigned long finish_time;
-        ValueType_t type;        
+        ValueType_t type;
 
         LogHeader() : entry_count{0}, start_time{0}, finish_time{0}, type{VT_INT} {};
         void reset() {

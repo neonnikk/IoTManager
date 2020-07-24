@@ -4,8 +4,8 @@
 #include "Utils/TimeUtils.h"
 #include "PrintMessage.h"
 
-#ifdef ESP8266
-#include "sntp.h"
+#ifdef ESP32
+#include <sys/time.h>
 #endif
 
 static const char* MODULE = "Clock";

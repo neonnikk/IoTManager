@@ -1,6 +1,16 @@
 #include "Base/ParamFile.h"
 
-#include "LittleFS.h"
+#include <Arduino.h>
+
+#include "FS.h"
+
+#ifdef ESP32
+#include "LITTLEFS.h"
+#define LittleFS LITTLEFS
+#endif
+#ifdef ESP8266
+#include <LittleFS.h>
+#endif
 
 #define FILE_READ "r"
 #define FILE_WRITE "w"

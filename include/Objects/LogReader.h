@@ -3,7 +3,11 @@
 #include <Arduino.h>
 #include <functional>
 
-#include <LittleFS.h>
+#ifdef ESP32
+#include "LITTLEFS.h"
+#else
+#include "LittleFS.h"
+#endif
 
 #include "Objects/LogMetadata.h"
 
@@ -30,7 +34,7 @@ class LogReader {
     void setActive(bool value) {
         String filename = _meta->getStartTime() < _start ? _meta->getDataFile() : _meta->getDataFile(_start);
         _file = LittleFS.open(filename.c_str(), FILE_READ);
-        
+
         if (_file) {
             _active = true;
         }
