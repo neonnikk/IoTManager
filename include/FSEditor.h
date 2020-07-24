@@ -3,6 +3,10 @@
 #include <ESPAsyncWebServer.h>
 #include <FS.h>
 
+#ifdef ESP8266
+#include <LittleFS.h>
+#endif
+
 class FSEditor : public AsyncWebHandler {
    private:
     fs::FS _fs;
