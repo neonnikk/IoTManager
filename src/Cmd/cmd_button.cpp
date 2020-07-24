@@ -1,7 +1,7 @@
 #include "Cmd.h"
 
+#include "Pins.h"
 #include "PrintMessage.h"
-
 #include "Collection/Buttons.h"
 #include "Collection/Widgets.h"
 
@@ -15,20 +15,6 @@ static Button *getObjectByName(const String &name) {
     return obj;
 }
 
-static bool getButtonType(const String &assign, ButtonType_t &type) {
-    if (assign.isEmpty()) {
-        type = BUTTON_VIRTUAL;
-    } else if (isDigitStr(assign)) {
-        type = BUTTON_GPIO;
-    } else if ((assign == "scen") || assign.startsWith("line")) {
-        type = BUTTON_SCEN;
-    } else {
-        pm.error("bad assign: " + assign);
-        return false;
-    }
-    return true;
-}
-
 void cmd_button() {
     ParamStore params{sCmd.next()};
     String temlateOverride{sCmd.next()};
@@ -38,15 +24,12 @@ void cmd_button() {
     bool inverted = params.readInt("inverted", false);
     bool state = params.readInt(TAG_STATE, LOW);
 
-    ButtonType_t type;
-    if (!getButtonType(assign, type)) {
-        return;
-    }
-    auto item = buttons.add(type, name, assign);
+    auto item = buttons.add(name, assign);
     if (!item) {
         pm.error("on add: " + name);
         return;
     }
+
     item->setInverted(inverted);
     item->setValue(state);
 
@@ -56,7 +39,8 @@ void cmd_button() {
 
 void cmd_buttonChange() {
     String name = getObjectName(TAG_BUTTON, sCmd.next());
-    auto *item = getObjectByName(name);
+
+    auto item = getObjectByName(name);
     if (!item) {
         return;
     }
@@ -68,7 +52,7 @@ void cmd_buttonSet() {
     String name = getObjectName(TAG_BUTTON, sCmd.next());
     int state = String(sCmd.next()).toInt();
 
-    auto *item = getObjectByName(name);
+    auto item = getObjectByName(name);
     if (!item) {
         return;
     }

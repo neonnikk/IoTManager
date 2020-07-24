@@ -1,7 +1,7 @@
 #include "Cmd.h"
 
-#include "Global.h"
+#include "Actions.h"
 
 void cmd_reboot() {
-    perform_system_restart();
+    Actions::execute(ACT_SYSTEM_REBOOT);
 }

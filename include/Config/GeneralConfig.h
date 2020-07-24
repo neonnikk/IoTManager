@@ -7,10 +7,10 @@ class GeneralConfig : public ConfigItem {
     GeneralConfig();
 
     const String getUpdateUrl() const;
-    void setUpdateUrl(const String value);
+    void setUpdateUrl(const String& value);
 
     const String getBroadcastName() const;
-    void setBroadcastName(const String value);
+    void setBroadcastName(const String& value);
 
     const String getPushingboxId() const;
     void setPushingboxId(String value);
@@ -21,10 +21,10 @@ class GeneralConfig : public ConfigItem {
     unsigned long getBroadcastInterval() const;
     void setBroadcastInterval(int value);
 
-    void enableBroadcast(boolean value);
+    void enableBroadcast(bool value);
     boolean isBroadcastEnabled() const;
 
-    void enableScenario(boolean value);
+    void enableScenario(bool value);
     boolean isScenarioEnabled() const;
 
     bool setParamByName(const String& param, const String& value) override;

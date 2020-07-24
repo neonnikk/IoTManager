@@ -1,67 +1,26 @@
 #include "Collection/Buttons.h"
 
+#include "Pins.h"
 #include "StringConsts.h"
-
 #include "PrintMessage.h"
 
 static const char* MODULE = TAG_BUTTON;
 
-Buttons buttons;
+Collection<Button> buttons;
 
-Button* Buttons::add(const ButtonType_t type, const String& name, const String& assign) {
-    Button* item = NULL;
-    switch (type) {
-        case BUTTON_VIRTUAL:
-            item = new VirtualButton(name, assign);
-            break;
-        case BUTTON_GPIO:
-            item = new PinButton(name, assign);
-            break;
-        case BUTTON_SCEN:
-            item = new ScenButton(name, assign);
-            break;
-        case BUTTON_SCEN_LINE:
-            // String str = assign;
-            // while (str.length()) {
-            //     if (str == "") {
-            //         return;
-            //     }
-            //     //line1,
-            //     String tmp = selectToMarker(str, ",");
-            //     //1,
-            //     String number = deleteBeforeDelimiter(tmp, "e");
-            //     number.replace(",", "");
-            //     int number_int = number.toInt();
-
-            //     Scenario::enableBlock(number_int, state);
-            //     str = deleteBeforeDelimiter(str, ",");
-            // }
-            break;
+template <>
+Button* Collection<Button>::add(const String& name, const String& assign) {
+    Button* item;
+    if (assign.isEmpty()) {
+        item = new VirtualButton(name, assign);
+    } else if (Pins::isValid(assign)) {
+        item = new PinButton(name, assign);
+    } else {
+        pm.error("bad assign: " + assign);
     }
     if (item) {
         _list.push_back(item);
         return last();
     }
     return NULL;
-}
-
-Button* Buttons::last() {
-    return _list.at(_list.size() - 1);
-}
-
-Button* Buttons::get(const String name) {
-    for (auto item : _list) {
-        if (name.equals(item->getName())) {
-            return item;
-        }
-    }
-    return NULL;
-}
-
-Button* Buttons::at(size_t num) {
-    return _list.at(num);
-}
-
-size_t Buttons::count() {
-    return _list.size();
 }

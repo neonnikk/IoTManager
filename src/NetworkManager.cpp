@@ -1,5 +1,6 @@
 #include "NetworkManager.h"
 
+#include "Actions.h"
 #include "Global.h"
 #include "Runtime.h"
 #include "StatusLed.h"
@@ -35,7 +36,7 @@ void onConnect(IPAddress ip) {
         HttpServer::init();
         pm.info("WebAdmin");
         Web::init();
-        perform_updates_check();
+        Actions::execute(ACT_UPDATES_CHECK);
         _intitialized = true;
 
         ts.add(

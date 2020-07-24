@@ -1,11 +1,11 @@
 #include "Cmd.h"
 
-#include "Global.h"
+#include "Actions.h"
 
 #include "Collection/Widgets.h"
 
 void cmd_firmwareUpdate() {
-    perform_upgrade();
+    Actions::execute(ACT_UPGRADE);
 }
 
 void cmd_firmwareVersion() {

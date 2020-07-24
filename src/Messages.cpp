@@ -1,5 +1,6 @@
 #include "Messages.h"
 
+#include "Actions.h"
 #include "StringCommand.h"
 #include "Global.h"
 #include "Config.h"
@@ -40,7 +41,7 @@ void cmd_device() {
 
 void cmd_mqttSettings() {
     config.mqtt()->loadString(_cmd.next());
-    perform_mqtt_restart();
+    Actions::execute(ACT_MQTT_RESTART);
 }
 
 void onUnknownCommand(const char* str) {

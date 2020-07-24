@@ -25,7 +25,7 @@
 
 static const char *MODULE = "Cmd";
 
-StringQueue _commands;
+std::list<String> _commands;
 
 StringCommand sCmd;
 
@@ -408,20 +408,19 @@ void addCommands(const String &str) {
 }
 
 void addCommand(const String &str) {
-    _commands.push(str);
+    _commands.push_back(str);
 }
 
 void executeCommand(const String &str) {
     pm.info("Execute: " + str);
-    String cmd = str + "\n";
-    sCmd.readStr(cmd);
+    sCmd.readStr(str);
 }
 
 void loop_cmd() {
-    if (_commands.available()) {
-        String cmd;
-        _commands.pop(cmd);
+    if (!_commands.empty()) {
+        String cmd = _commands.front();
         executeCommand(cmd);
+        _commands.pop_front();
     }
 }
 

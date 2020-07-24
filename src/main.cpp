@@ -1,5 +1,6 @@
 #include "Global.h"
 
+#include "Actions.h"
 #include "Consts.h"
 #include "StringConsts.h"
 #include "Scenario.h"
@@ -20,16 +21,12 @@
 #include "Objects/OneWireScanner.h"
 #include "TickerScheduler.h"
 #include "Metric.h"
+#include "Pins.h"
 
 static const char* MODULE = "Main";
 
-void flag_actions();
-void config_backup();
-void config_restore();
-
 Metric m;
 boolean initialized = false;
-BusScanner* bus = NULL;
 
 bool perform_mqtt_restart_flag = false;
 void perform_mqtt_restart() {
@@ -44,11 +41,6 @@ void perform_updates_check() {
 bool perform_upgrade_flag = false;
 void perform_upgrade() {
     perform_upgrade_flag = true;
-}
-
-bool broadcast_mqtt_settings_flag = false;
-void broadcast_mqtt_settings() {
-    broadcast_mqtt_settings_flag = true;
 }
 
 boolean perform_bus_scanning_flag = false;
@@ -67,6 +59,7 @@ bool perform_logger_refresh_flag = false;
 void perform_logger_refresh() {
     perform_logger_refresh_flag = true;
 }
+
 bool perform_logger_clear_flag = false;
 void perform_logger_clear() {
     perform_logger_clear_flag = true;
@@ -98,90 +91,17 @@ void loop() {
     Logger::update();
 
     if (config.hasChanged()) {
-        config_save();
+        Actions::execute(ACT_CONFIG_SAVE);
     }
-
-    flag_actions();
 
     MqttClient::loop();
 
     ArduinoOTA.handle();
 
     // ws.cleanupClients();
+    Actions::loop();
 
     metric.finish();
-}
-
-void flag_actions() {
-    if (perform_logger_refresh_flag) {
-        Logger::asCSV("/logs.csv");
-        perform_logger_refresh_flag = false;
-    }
-
-    if (perform_mqtt_restart_flag) {
-        MqttClient::reconnect();
-        perform_mqtt_restart_flag = false;
-    }
-
-    if (perform_updates_check_flag) {
-        runtime.property(TAG_LAST_VERSION, Updater::check());
-        perform_updates_check_flag = false;
-    }
-
-    if (perform_upgrade_flag) {
-        config_backup();
-        bool res = Updater::upgrade_fs_image();
-        if (res) {
-            config_restore();
-            if (Updater::upgrade_firmware()) {
-                pm.info("done! restart...");
-            }
-        }
-        perform_upgrade_flag = false;
-    }
-
-    if (broadcast_mqtt_settings_flag) {
-        DynamicJsonBuffer jsonBuffer;
-        JsonObject& root = jsonBuffer.createObject();
-        config.mqtt()->save(root);
-        String buf;
-        root.printTo(buf);
-        Messages::post(BM_MQTT_SETTINGS, buf);
-        broadcast_mqtt_settings_flag = false;
-    }
-
-    if (perform_bus_scanning_flag) {
-        if (bus == NULL) {
-            switch (perform_bus_scanning_bus) {
-                case BS_I2C:
-                    bus = new I2CScanner();
-                    break;
-                case BS_ONE_WIRE:
-                    bus = new OneWireScanner();
-                    break;
-                default:
-                    pm.error("unknown bus: " + String(perform_bus_scanning_bus, DEC));
-            }
-        }
-        if (bus) {
-            if (bus->scan()) {
-                pm.info("scan done");
-                runtime.write(bus->tag(), bus->results());
-                perform_bus_scanning_flag = false;
-                delete bus;
-                bus = NULL;
-            }
-        }
-    }
-
-    if (perform_logger_clear_flag) {
-        Logger::clear();
-        perform_logger_clear_flag = false;
-    }
-
-    if (perform_system_restart_flag) {
-        ESP.restart();
-    }
 }
 
 void clock_task() {
@@ -194,20 +114,6 @@ void clock_task() {
             }
         },
         nullptr, false);
-}
-
-String scenarioBackup, commandBackup, configBackup;
-void config_backup() {
-    readFile(DEVICE_SCENARIO_FILE, scenarioBackup);
-    readFile(DEVICE_COMMAND_FILE, commandBackup);
-    readFile(DEVICE_CONFIG_FILE, configBackup);
-}
-
-void config_restore() {
-    writeFile(DEVICE_SCENARIO_FILE, scenarioBackup);
-    writeFile(DEVICE_COMMAND_FILE, commandBackup);
-    writeFile(DEVICE_CONFIG_FILE, configBackup);
-    load_config();
 }
 
 void load_runtime() {
@@ -283,7 +189,9 @@ void setup() {
 
     fs_init();
 
-    load_config();
+    Pins::init();
+
+    Actions::execute(ACT_CONFIG_LOAD, NULL, true);
 
     MqttClient::init();
 
@@ -316,12 +224,14 @@ void setup() {
 }
 
 void load_device_config() {
+    Widgets::clear();
+
     auto file = LittleFS.open(DEVICE_COMMAND_FILE, FILE_READ);
     if (!file) {
         pm.error("open " + String(DEVICE_COMMAND_FILE));
         return;
     }
-    Widgets::clear();
+
     while (file.available()) {
         String line = file.readStringUntil('\n');
         line.replace("\r", "");
@@ -336,20 +246,6 @@ void load_device_preset(size_t num) {
     copyFile(getConfigFile(num, CT_CONFIG), DEVICE_COMMAND_FILE);
     copyFile(getConfigFile(num, CT_SCENARIO), DEVICE_SCENARIO_FILE);
     load_device_config();
-}
-
-void config_save() {
-    String buf;
-    config.save(buf);
-    writeFile(DEVICE_CONFIG_FILE, buf);
-    config.setSynced();
-}
-
-void load_config() {
-    String buf;
-    if (readFile(DEVICE_CONFIG_FILE, buf)) {
-        config.load(buf);
-    }
 }
 
 void pubish_widget_collection() {
@@ -372,6 +268,6 @@ void publish_widget_chart() {
     });
 }
 
-void config_add(const String& str) {
+void add_to_config(const String& str) {
     addFile(DEVICE_COMMAND_FILE, str);
 }

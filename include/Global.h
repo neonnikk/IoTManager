@@ -29,42 +29,10 @@
 #include <ArduinoOTA.h>
 #include <time.h>
 
-
-void perform_mqtt_restart();
-/*
-* Запрос на проверку обновлений
-*/
-extern void perform_updates_check();
-/*
-* Запрос на аггрейд
-*/
-extern void perform_upgrade();
-/*
-* Запрос обновления файла с данными по логам
-*/
-extern void perform_logger_refresh();
-/*
-* Запрос на очистук логов
-*/
-extern void perform_logger_clear();
-/*
-* Запрос на сканирование шины
-*/
-extern void perform_bus_scanning(BusScanner_t bus);
-/*
-* Произвести перезагрузку
-*/
-extern void perform_system_restart();
-/*
-* Широковещательная расслыка настроек mqtt
-*/
-extern void broadcast_mqtt_settings();
 /*
 * Запуск комманд из файла
 */
 extern void fileExecute(const String filename);
-
-extern void load_config();
 
 extern void statistics_init();
 extern void load_device_config();
@@ -72,8 +40,7 @@ extern void load_device_config();
 extern void pubish_widget_collection();
 extern void publish_widget_chart();
 
-extern void config_add(const String &);
-extern void config_save();
+extern void add_to_config(const String &);
 
 extern void load_device_preset(size_t num);
 

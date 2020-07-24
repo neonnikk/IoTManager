@@ -26,7 +26,7 @@ bool parseRange(const String &str, Range &r);
 
 bool parseMapParams(const String &str, MapParams &p);
 
-Mapper* createMapper(const String& str);
+Mapper *createMapper(const String &str);
 
 unsigned long parsePeriod(const String &str, unsigned long default_multiplier = ONE_MINUTE_ms);
 

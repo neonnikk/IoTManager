@@ -10,7 +10,7 @@ static const char* TAG_UPDATE_URL = "updateurl";
 
 GeneralConfig::GeneralConfig() {}
 
-void GeneralConfig::setUpdateUrl(const String value) {
+void GeneralConfig::setUpdateUrl(const String& value) {
     if (!_updateUrl.equals(value)) {
         _updateUrl = value;
         setChanged();
@@ -21,7 +21,7 @@ const String GeneralConfig::getUpdateUrl() const {
     return _updateUrl;
 }
 
-void GeneralConfig::setBroadcastName(const String value) {
+void GeneralConfig::setBroadcastName(const String& value) {
     if (!_broadcastName.equals(value)) {
         _broadcastName = value;
         setChanged();
@@ -67,7 +67,7 @@ void GeneralConfig::setPushingboxId(String value) {
     }
 }
 
-boolean GeneralConfig::isLedEnabled() const {
+bool GeneralConfig::isLedEnabled() const {
     return _ledEnabled;
 }
 
@@ -79,7 +79,7 @@ void GeneralConfig::enableLed(bool value) {
     }
 }
 
-boolean GeneralConfig::isScenarioEnabled() const {
+bool GeneralConfig::isScenarioEnabled() const {
     return _scenarioEnabled;
 }
 

@@ -5,6 +5,8 @@
 
 #include "Config.h"
 
+#include "Pins.h"
+
 #include "Base/Item.h"
 #include "Base/Assigned.h"
 #include "Base/Value.h"
@@ -12,9 +14,10 @@
 enum ButtonType_t {
     BUTTON_VIRTUAL,
     BUTTON_GPIO,
-    BUTTON_SCEN,
-    BUTTON_SCEN_LINE
+    NUM_BUTTON_TYPES
 };
+
+#define WRONG_BUTTON_TYPE NUM_BUTTON_TYPES
 
 class Button : public Item,
                public Value {
@@ -39,6 +42,9 @@ class Button : public Item,
     }
 
    protected:
+    virtual void onValueUpdate(const String& value){};
+
+   protected:
     bool _inverted;
 };
 
@@ -49,25 +55,13 @@ class VirtualButton : public Button {
     ~VirtualButton(){};
 };
 
-class ScenButton : public Button {
-   public:
-    ScenButton(const String& name, const String& assign) : Button{name, assign} {};
-
-    ~ScenButton(){};
-
-   protected:
-    void onValueUpdate(const String& value) override {
-        bool state = value.toInt();
-        config.general()->enableScenario(state);
-    }
-};
-
 class PinButton : public Button,
                   public PinAssigned {
    public:
     PinButton(const String& name, const String& assign) : Button{name, assign},
                                                           PinAssigned{this} {
-        pinMode(getPin(), OUTPUT);
+
+        Pins::setPin(getPin(), OUTPUT);
     };
 
     ~PinButton(){};
@@ -76,7 +70,7 @@ class PinButton : public Button,
     void onValueUpdate(const String& value) override {
         uint8_t pin = getPin();
         uint8_t state = isInverted() ? value.toInt() : !value.toInt();
+
         digitalWrite(pin, state);
-        // Serial.printf("digitalWrite %d,%d\n", pin, state);
     }
 };

@@ -5,6 +5,7 @@
 #include <WiFiClient.h>
 #include <StreamString.h>
 
+#include "Actions.h"
 #include "Global.h"
 #include "Cmd.h"
 #include "Config.h"
@@ -244,7 +245,7 @@ void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
         addCommand(payloadStr);
     } else if (topicStr.indexOf("update")) {
         if (payloadStr == "1") {
-            perform_upgrade();
+            Actions::execute(ACT_UPGRADE);
         }
     } else if (topicStr.indexOf("devc")) {
         writeFile(DEVICE_COMMAND_FILE, payloadStr);
@@ -270,8 +271,7 @@ void publistWidget(const String& data) {
 bool publishChart(const String& name, const String& data) {
     String path = _deviceRoot;
     path += name;
-    path += "_ch";
-    path += "/status";
+    path += "_ch/status";
 
     String buf = "{\"status\":[" + data + "]}";
     return pushToQueue(path, data);

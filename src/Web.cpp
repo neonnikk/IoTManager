@@ -1,5 +1,8 @@
 #include "Web.h"
 
+#include "Objects/I2CScanner.h"
+#include "Objects/OneWireScanner.h"
+#include "Actions.h"
 #include "Global.h"
 #include "Runtime.h"
 #include "Collection/Logger.h"
@@ -16,7 +19,7 @@ void init() {
     server.on("/restart", HTTP_GET, [](AsyncWebServerRequest* request) {
         if (request->hasArg("device")) {
             if (request->getParam("device")->value() == "ok") {
-                perform_system_restart();
+                Actions::execute(ACT_SYSTEM_REBOOT);
                 request->send(200);
             }
         };
@@ -25,7 +28,7 @@ void init() {
     server.on(
         "/config", HTTP_GET, [](AsyncWebServerRequest* request) {
             if (request->hasArg("add")) {
-                config_add(request->getParam("add")->value());
+                add_to_config(request->getParam("add")->value());
                 request->redirect(PAGE_SETUP);
                 return;
             }
@@ -49,8 +52,7 @@ void init() {
                 return;
             }
             if (request->hasArg("refreshLogs")) {
-                // perform_logger_clear();
-                perform_logger_refresh();
+                Actions::execute(ACT_LOGGER_REFRESH);
                 request->redirect(PAGE_UTILITIES);
                 return;
             }
@@ -65,17 +67,17 @@ void init() {
                 return;
             }
             if (request->hasArg(TAG_SHARE_MQTT)) {
-                broadcast_mqtt_settings();
+                Actions::execute(ACT_MQTT_BROADCAST);
                 request->send(200);
                 return;
             }
             if (request->hasArg(TAG_I2C)) {
-                perform_bus_scanning(BS_I2C);
+                Actions::execute(ACT_BUS_SCAN, new I2CScanner());
                 request->redirect(PAGE_UTILITIES);
                 return;
             }
             if (request->hasArg(TAG_ONE_WIRE)) {
-                perform_bus_scanning(BS_ONE_WIRE);
+                Actions::execute(ACT_BUS_SCAN, new OneWireScanner());
                 request->redirect(PAGE_UTILITIES);
                 return;
             }
@@ -104,7 +106,7 @@ void init() {
         } else if (lastVersion == "notsupported") {
             msg = F("Обновление возможно только через usb!");
         } else if (lastVersion == "error" || lastVersion.isEmpty()) {
-            perform_updates_check();
+            Actions::execute(ACT_UPDATES_CHECK);
             msg = F("Нажмите на кнопку \"обновить прошивку\" повторно...");
         } else {
             // TODO Версия должна быть выше
@@ -125,12 +127,10 @@ void init() {
         request->send(200, "text/html", buf);
     });
 
-    /* 
-    * Upgrade
-    */
     server.on("/upgrade", HTTP_GET, [](AsyncWebServerRequest* request) {
-        perform_upgrade();
+        Actions::execute(ACT_UPGRADE);
         request->send(200);
     });
 }
-}
+
+}  // namespace Web
