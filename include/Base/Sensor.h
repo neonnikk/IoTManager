@@ -27,7 +27,7 @@ class Sensor : public Item,
     virtual float readSensor() = 0;
 
     const bool hasValue() override {
-        if (!millis_since(_lastRead) > _readInterval) {
+        if (millis_since(_lastRead) < _readInterval) {
             return false;
         }
         _lastRead = millis();

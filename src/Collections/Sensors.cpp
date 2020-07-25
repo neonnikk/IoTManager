@@ -49,6 +49,7 @@ Sensor* Collection<Sensor>::add(const String& name, const String& assign) {
             break;
         case SensorType_t::ULTRASONIC:
             item = new UltrasonicSensor{name, assign};
+
         default:
             break;
     }
