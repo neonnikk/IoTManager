@@ -4,7 +4,7 @@
 
 class ParamFile : public ParamStore {
    public:
-    ParamFile(const char* name);
+    ParamFile(const String& name);
     ~ParamFile();
 
     bool save();
@@ -14,5 +14,5 @@ class ParamFile : public ParamStore {
     virtual const String getFilename() const;
 
    protected:
-    char* _name;
+    String _name;
 };

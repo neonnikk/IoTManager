@@ -26,34 +26,25 @@ PubSubClient _mqtt(espClient);
 
 struct MqttMessage {
    private:
-    char* _topic;
-    char* _data;
+    String _topic;
+    String _data;
 
    public:
-    MqttMessage(const MqttMessage& b) : _topic{NULL}, _data{NULL} {
-        _topic = strdup(b._topic);
-        _data = strdup(b._data);
-    }
+    MqttMessage() : _topic{""}, _data{""} {};
 
-    MqttMessage(const char* topic, const char* data) : _topic{NULL}, _data{NULL} {
-        _topic = strdup(topic);
-        _data = strdup(data);
-    }
+    MqttMessage(const MqttMessage& b) : _topic{b._topic}, _data{b._data} {}
 
-    ~MqttMessage() {
-        if (_topic) free(_topic);
-        if (_data) free(_data);
-    }
+    MqttMessage(const String& topic, const String& data) : _topic{topic}, _data{data} {}
 
     bool isValid() const {
-        return _topic && _data;
+        return !_topic.isEmpty();
     }
 
-    const char* getTopic() const {
+    const String& getTopic() const {
         return _topic;
     }
 
-    const char* getData() const {
+    const String& getData() const {
         return _data;
     }
 };
@@ -62,6 +53,7 @@ std::list<MqttMessage> _queue;
 
 static unsigned long RECONNECT_INTERVAL = 5000;
 static size_t RECONNECT_ATTEMPTS_MAX = 10;
+
 unsigned long _lastConnetionAttempt = 0;
 size_t _connectionAttempts = 0;
 size_t _lastSize = 0;
@@ -138,12 +130,12 @@ boolean _mqtt_publish(const char* topic, const char* data) {
     return false;
 }
 
-bool pushToQueue(const String& topic, const String& data) {
+bool pushToQueue(const String topic, const String data) {
     if (_queue.size() > 32) {
         pm.error("queue full");
         return false;
     }
-    _queue.push_back(MqttMessage{topic.c_str(), data.c_str()});
+    _queue.push_back(MqttMessage{topic, data});
     return true;
 }
 
@@ -154,6 +146,7 @@ bool isConnected() {
 bool hasAttempts() {
     return !RECONNECT_ATTEMPTS_MAX || (_connectionAttempts < RECONNECT_ATTEMPTS_MAX);
 }
+
 bool publishStarted = false;
 void loop() {
     if (!NetworkManager::isNetworkActive()) {
@@ -192,21 +185,10 @@ void loop() {
     _connectionAttempts = 0;
 
     if (!_queue.empty()) {
-        size_t grow = _queue.size() > _lastSize ? _queue.size() - _lastSize : 0;
-        if (grow) {
-            grow = grow > 8 ? 8 : grow;
-        } else {
-            grow = 1;
+        if (_queue.front().isValid()) {
+            _mqtt.publish(_queue.front().getTopic().c_str(), _queue.front().getData().c_str());
         }
-
-        while (grow) {
-            auto message = _queue.front();
-            if (message.isValid()) {
-                _mqtt.publish(message.getTopic(), message.getData());
-            }
-            _queue.pop_front();
-            grow--;
-        }
+        _queue.pop_front();
     }
     _lastSize = _queue.size();
 }
@@ -222,16 +204,14 @@ bool extractObj(const String& str, String& objType, int& objId) {
 }
 
 void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
-    pm.info("<= " + String(topic));
-
     String topicStr = String(topic);
     StreamString payloadStr;
     payloadStr.write(payload, length);
 
     if (payloadStr.equalsIgnoreCase("hello")) {
-        runtime.publish();
-        pubish_widget_collection();
-        publish_widget_chart();
+        Actions::execute(ACT_WIDGET_PUBLISH);
+        // runtime.publish();
+        // publish_widget_chart();
     } else if (topicStr.endsWith("control")) {
         String objType;
         int objId;
@@ -252,7 +232,7 @@ void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
         load_device_config();
     } else if (topicStr.indexOf("devs")) {
         writeFile(DEVICE_SCENARIO_FILE, payloadStr);
-        Scenario::reinit();
+        Scenario::init();
     }
 }
 

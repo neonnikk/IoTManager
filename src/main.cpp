@@ -101,6 +101,8 @@ void loop() {
     // ws.cleanupClients();
     Actions::loop();
 
+    Sensors::update();
+
     metric.finish();
 }
 
@@ -138,14 +140,6 @@ void telemetry_task() {
             },
             nullptr, false);
     }
-}
-
-void sensors_task() {
-    ts.add(
-        SENSORS, ONE_SECOND_ms, [&](void*) {
-            Sensors::update();
-        },
-        nullptr, false);
 }
 
 void announce_task() {
@@ -205,8 +199,6 @@ void setup() {
 
     clock_task();
 
-    sensors_task();
-
     telemetry_task();
 
     announce_task();
@@ -240,23 +232,14 @@ void load_device_config() {
         }
     }
     file.close();
+
+    Scenario::init();
 }
 
 void load_device_preset(size_t num) {
     copyFile(getConfigFile(num, CT_CONFIG), DEVICE_COMMAND_FILE);
     copyFile(getConfigFile(num, CT_SCENARIO), DEVICE_SCENARIO_FILE);
     load_device_config();
-}
-
-void pubish_widget_collection() {
-    auto file = LittleFS.open(DEVICE_LAYOUT_FILE, FILE_READ);
-    if (file && file.available()) {
-        while (file.available()) {
-            String line = file.readStringUntil('\n');
-            MqttClient::publistWidget(line);
-        }
-        file.close();
-    }
 }
 
 void publish_widget_chart() {

@@ -47,7 +47,7 @@ void init() {
                 return;
             }
             if (request->hasArg("sceninit")) {
-                Scenario::reinit();
+                Scenario::init();
                 request->send(200);
                 return;
             }

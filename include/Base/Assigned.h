@@ -30,6 +30,20 @@ class PinAssigned {
         return String(_obj->getAssign()).toInt();
     }
 
+    uint8_t getPin(uint8_t num) {
+        String str = ",";
+        str += _obj->getAssign();
+        str += ",";
+        int startIndex = 0;
+        int endIndex = 0;
+        uint8_t i = num;
+        while (i++ < num) {
+            startIndex = str.indexOf(",");
+            endIndex = str.indexOf(",", startIndex);
+        }
+        return str.substring(startIndex, endIndex).toInt();
+    }
+
    private:
     Assigned* _obj;
 };

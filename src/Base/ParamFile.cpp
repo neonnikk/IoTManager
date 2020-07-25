@@ -16,13 +16,11 @@
 #define FILE_WRITE "w"
 #define FILE_APPEND "a"
 
-ParamFile::ParamFile(const char* name) : ParamStore() {
-    _name = strdup(name);
+ParamFile::ParamFile(const String& name) : ParamStore() {
+    _name = name;
 }
 
-ParamFile::~ParamFile() {
-    free(_name);
-}
+ParamFile::~ParamFile() {}
 
 const String ParamFile::getFilename() const {
     return _name;
@@ -30,7 +28,7 @@ const String ParamFile::getFilename() const {
 
 bool ParamFile::save() {
     bool res = false;
-    auto file = LittleFS.open(getFilename().c_str(), FILE_WRITE);
+    auto file = LittleFS.open(getFilename(), FILE_WRITE);
     if (file) {
         DynamicJsonBuffer buf;
         JsonObject& obj = buf.createObject();
@@ -44,7 +42,7 @@ bool ParamFile::save() {
 
 bool ParamFile::load() {
     bool res = false;
-    auto file = LittleFS.open(getFilename().c_str(), FILE_READ);
+    auto file = LittleFS.open(getFilename(), FILE_READ);
     if (file) {
         if (file.available()) {
             DynamicJsonBuffer buf;

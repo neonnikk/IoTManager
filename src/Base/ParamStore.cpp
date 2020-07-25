@@ -4,6 +4,10 @@ ParamStore::ParamStore() : KeyValueStore() {}
 
 ParamStore::ParamStore(const char* jsonStr) : KeyValueStore{jsonStr} {}
 
+void ParamStore::write(const String& key, const String& value, const ValueType_t type) {
+    KeyValueStore::write(key.c_str(), value.c_str(), type);
+}
+
 void ParamStore::write(const String& key, const String& value) {
     KeyValueStore::write(key.c_str(), value.c_str());
 }

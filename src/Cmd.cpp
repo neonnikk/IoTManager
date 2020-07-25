@@ -85,7 +85,7 @@ void cmd_init() {
     sCmd.addCommand("sensor", cmd_sensor);
 
     sCmd.addCommand("levelPr", cmd_levelPr);
-    sCmd.addCommand("ultrasonicCm", cmd_ultrasonicCm);
+
     sCmd.addCommand("dhtT", cmd_dhtT);
     sCmd.addCommand("dhtH", cmd_dhtH);
     sCmd.addCommand("dhtPerception", cmd_dhtPerception);
@@ -143,29 +143,6 @@ void cmd_init() {
     sCmd.addCommand("oneWire", cmd_oneWire);
 }
 
-// ultrasonicCm cm 14 12 Дистанция,#см Датчики fillgauge 1
-void cmd_ultrasonicCm() {
-    String measure_unit = sCmd.next();
-
-    String trig = sCmd.next();
-    String echo = sCmd.next();
-    String widget = sCmd.next();
-    String page = sCmd.next();
-    String type = sCmd.next();
-    String empty_level = sCmd.next();
-    String full_level = sCmd.next();
-    int order = String(sCmd.next()).toInt();
-
-    Ultrasonic::ultrasonicCm_value_name = measure_unit;
-
-    // options.write("trig", trig);
-    // options.write("echo", echo);
-    // pinMode(trig.toInt(), OUTPUT);
-    // pinMode(echo.toInt(), INPUT);
-
-    // Widgets::createWidget(widget, page, order, type, measure_unit);
-}
-
 //levelPr p 14 12 Вода#в#баке,#% Датчики fillgauge 125 20 1
 void cmd_levelPr() {
     String name = sCmd.next();
@@ -176,9 +153,8 @@ void cmd_levelPr() {
     String type = sCmd.next();
     String empty_level = sCmd.next();
     String full_level = sCmd.next();
-    int order = String(sCmd.next()).toInt();
 
-    Ultrasonic::levelPr_value_name = name;
+    // Ultrasonic::levelPr_value_name = name;
 
     // options.write("e_lev", empty_level);
     // options.write("f_lev", full_level);
@@ -193,18 +169,13 @@ void cmd_levelPr() {
 void cmd_dhtH() {
     String name = sCmd.next();
     String pin = sCmd.next();
-    String sensor_type = sCmd.next();
-    String widget_name = sCmd.next();
-    String page_name = sCmd.next();
-    String type = sCmd.next();
-    int order = String(sCmd.next()).toInt();
-    DHTSensor::dhtH_value_name = name;
-    if (sensor_type == "dht11") {
-        DHTSensor::dht.setup(pin.toInt(), DHTesp::DHT11);
-    }
-    if (sensor_type == "dht22") {
-        DHTSensor::dht.setup(pin.toInt(), DHTesp::DHT22);
-    }
+    // DHTSensor::dhtH_value_name = name;
+    // if (sensor_type == "dht11") {
+    //     DHTSensor::dht.setup(pin.toInt(), DHTesp::DHT11);
+    // }
+    // if (sensor_type == "dht22") {
+    //     DHTSensor::dht.setup(pin.toInt(), DHTesp::DHT22);
+    // }
     // Widgets::createWidget(widget_name, page_name, order, type, name);
 }
 
@@ -212,18 +183,13 @@ void cmd_dhtH() {
 void cmd_dhtT() {
     String name = sCmd.next();
     String pin = sCmd.next();
-    String sensor_type = sCmd.next();
-    String widget_name = sCmd.next();
-    String page_name = sCmd.next();
-    String type = sCmd.next();
-    int order = String(sCmd.next()).toInt();
-    DHTSensor::dhtT_value_name = name;
-    if (sensor_type == "dht11") {
-        DHTSensor::dht.setup(pin.toInt(), DHTesp::DHT11);
-    }
-    if (sensor_type == "dht22") {
-        DHTSensor::dht.setup(pin.toInt(), DHTesp::DHT22);
-    }
+    // DHTSensor::dhtT_value_name = name;
+    // if (sensor_type == "dht11") {
+    //     DHTSensor::dht.setup(pin.toInt(), DHTesp::DHT11);
+    // }
+    // if (sensor_type == "dht22") {
+    //     DHTSensor::dht.setup(pin.toInt(), DHTesp::DHT22);
+    // }
 
     // Widgets::createWidget(widget_name, page_name, order, type, name);
 }
@@ -232,117 +198,64 @@ void cmd_dhtT() {
 void cmd_dhtDewpoint() {
     String widget_name = sCmd.next();
     String page_name = sCmd.next();
-    int order = String(sCmd.next()).toInt();
 
     // Widgets::createWidget(widget_name, page_name, order, "anydata", "dhtDewpoint");
 }
 
 // dhtPerception Восприятие: Датчики 4
 void cmd_dhtPerception() {
-    String widget_name = sCmd.next();
-    String page_name = sCmd.next();
-    int order = String(sCmd.next()).toInt();
-
     // Widgets::createWidget(widget_name, page_name, order, "any-data", "dhtPerception");
 }
 
 // dhtComfort Степень#комфорта: Датчики 3
 void cmd_dhtComfort() {
-    String widget_name = sCmd.next();
-    String page_name = sCmd.next();
-    int order = String(sCmd.next()).toInt();
-
     // Widgets::createWidget(widget_name, page_name, order, "anydata", "dhtComfort");
 }
 
 // bmp280T temp1 0x76 Температура#bmp280 Датчики any-data 1
 void cmd_bmp280T() {
-    String name = sCmd.next();
-    String address = sCmd.next();
-    String widget_name = sCmd.next();
-    String page_name = sCmd.next();
-    String type = sCmd.next();
-    int order = String(sCmd.next()).toInt();
-    BMP280Sensor::bmp280T_value_name = name;
-
-    BMP280Sensor::bmp.begin(hexStringToUint8(address));
-    BMP280Sensor::bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
-                                  Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
-                                  Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
-                                  Adafruit_BMP280::FILTER_X16,      /* Filtering. */
-                                  Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+    // BMP280Sensor::bmp280T_value_name = name;
+    // BMP280Sensor::bmp.begin(hexStringToUint8(address));
+    // BMP280Sensor::bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
+    //                               Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
+    //                               Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
+    //                               Adafruit_BMP280::FILTER_X16,      /* Filtering. */
+    //                               Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
 
     // Widgets::createWidget(widget_name, page_name, order, type, name);
 }
 
 //bmp280P press1 0x76 Давление#bmp280 Датчики any-data 2
 void cmd_bmp280P() {
-    String name = sCmd.next();
-    String address = sCmd.next();
-    String widget_name = sCmd.next();
-    String page_name = sCmd.next();
-    String type = sCmd.next();
-    int order = String(sCmd.next()).toInt();
-    BMP280Sensor::bmp280P_value_name = name;
-
-    BMP280Sensor::bmp.begin(hexStringToUint8(address));
-    BMP280Sensor::bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
-                                  Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
-                                  Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
-                                  Adafruit_BMP280::FILTER_X16,      /* Filtering. */
-                                  Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+    // BMP280Sensor::bmp280P_value_name = name;
+    // BMP280Sensor::bmp.begin(hexStringToUint8(address));
+    // BMP280Sensor::bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
+    //                               Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
+    //                               Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
+    //                               Adafruit_BMP280::FILTER_X16,      /* Filtering. */
+    //                               Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
 
     // Widgets::createWidget(widget_name, page_name, order, type, name);
 }
 
-//=========================================================================================================================================
-//=============================================Модуль сенсоров bme280======================================================================
 //bme280T temp1 0x76 Температура#bmp280 Датчики any-data 1
 void cmd_bme280T() {
-    String name = sCmd.next();
-    String address = sCmd.next();
-    String descr = sCmd.next();
-    String page = sCmd.next();
-    String type = sCmd.next();
-    int order = String(sCmd.next()).toInt();
-
     // Widgets::createWidget(descr, page, order, type, name);
 }
 
 //bme280P pres1 0x76 Давление#bmp280 Датчики any-data 1
 void cmd_bme280P() {
-    String name = sCmd.next();
-    String address = sCmd.next();
-    String widget_name = sCmd.next();
-    String page_name = sCmd.next();
-    String type = sCmd.next();
-    int order = String(sCmd.next()).toInt();
-
     // Widgets::createWidget(widget_name, page_name, order, type, name);
 }
 
 //bme280H hum1 0x76 Влажность#bmp280 Датчики any-data 1
 void cmd_bme280H() {
-    String name = sCmd.next();
-    String address = sCmd.next();
-    String widget_name = sCmd.next();
-    String page_name = sCmd.next();
-    String type = sCmd.next();
-    int order = String(sCmd.next()).toInt();
 
-    //    Widgets::createWidget(widget_name, page_name, order, type, name);
 }
 
 //bme280A altit1 0x76 Высота#bmp280 Датчики any-data 1
 void cmd_bme280A() {
-    String name = sCmd.next();
-    String address = sCmd.next();
-    String descr = sCmd.next();
-    String page = sCmd.next();
-    String templateMame = sCmd.next();
-    int order = String(sCmd.next()).toInt();
 
-    // Widgets::createWidget(descr, page, order, templateMame, name);
 }
 
 bool extractCommand(const String &buf, size_t &startIndex, String &block) {

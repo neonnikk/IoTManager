@@ -14,7 +14,7 @@ KeyValueStore::~KeyValueStore() {
 
 KeyValue* KeyValueStore::find(const char* key) const {
     KeyValue* res{NULL};
-    for (auto* item : _items) {
+    for (auto item : _items) {
         if (strcmp(key, item->getKey()) == 0) {
             res = item;
             break;
@@ -24,7 +24,7 @@ KeyValue* KeyValueStore::find(const char* key) const {
 }
 
 bool KeyValueStore::write(const char* key, const char* value, ValueType_t valueType, KeyType_t keyType) {
-    auto* item = find(key);
+    auto item = find(key);
     if (!item) {
         item = new KeyValue{key, value, valueType, keyType};
         _items.push_back(item);

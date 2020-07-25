@@ -37,7 +37,6 @@ extern void fileExecute(const String filename);
 extern void statistics_init();
 extern void load_device_config();
 
-extern void pubish_widget_collection();
 extern void publish_widget_chart();
 
 extern void add_to_config(const String &);

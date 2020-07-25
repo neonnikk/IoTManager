@@ -1,11 +1,36 @@
 #pragma once
 
-#include "GyverFilters.h"
+#include <Arduino.h>
 
-#define TANK_LEVEL_SAMPLES 10
-namespace Ultrasonic {
-extern String levelPr_value_name;
-extern String ultrasonicCm_value_name;
+#include "Base/Sensor.h"
+#include "Base/ValueMap.h"
 
-void ultrasonic_reading();
-}
+class UltrasonicSensor : public Sensor,
+                         public PinAssigned {
+   public:
+    UltrasonicSensor(const String& name, const String& assign) : Sensor{name, assign, VT_INT},
+                                                                 PinAssigned{this} {
+        _trig = getPin(1);
+        _echo = getPin(2);
+        pinMode(_trig, OUTPUT);
+        pinMode(_echo, INPUT);
+    }
+
+    bool sensorReady() override {
+        return true;
+    }
+
+    float readSensor() override {
+        digitalWrite(_trig, LOW);
+        delayMicroseconds(2);
+        digitalWrite(_trig, HIGH);
+        delayMicroseconds(10);
+        digitalWrite(_trig, LOW);
+
+        // 3000 µs = 50cm // 30000 µs = 5 m
+        return pulseIn(_echo, HIGH, 30000) / 29 / 2;
+    }
+
+   private:
+    uint8_t _trig, _echo;
+};

@@ -42,6 +42,7 @@ bool mqtt_broadcast_settings(void* ptr = NULL);
 bool bus_scan(void* ptr = NULL);
 bool logger_refresh(void* ptr = NULL);
 bool logger_clear(void* ptr = NULL);
+bool widgets_pubish(void* ptr = NULL);
 
 ActionProc actions[NUM_ACTIONS] = {
     {config_load},
@@ -53,7 +54,8 @@ ActionProc actions[NUM_ACTIONS] = {
     {upgrade},
     {bus_scan},
     {logger_refresh},
-    {logger_clear}};
+    {logger_clear},
+    {widgets_pubish}};
 
 void execute(Act act, void* param, bool immediately) {
     if (!immediately) {
@@ -104,7 +106,24 @@ void config_restore() {
     writeFile(DEVICE_SCENARIO_FILE, scenarioBackup);
     writeFile(DEVICE_COMMAND_FILE, commandBackup);
     writeFile(DEVICE_CONFIG_FILE, configBackup);
-    config_load((void*)DEVICE_CONFIG_FILE);
+    config_load();
+}
+
+/*
+* Виджеты
+*/
+bool widgets_pubish(void* ptr) {
+    auto file = LittleFS.open(DEVICE_LAYOUT_FILE, FILE_READ);
+    if (file.available()) {
+        while (file.available()) {
+            String line = file.readStringUntil('\n');
+            line[line.length() - 1] = '\n';
+            Serial.print(line);
+            MqttClient::publistWidget(line);
+        }
+        file.close();
+    }
+    return true;
 }
 
 /*
@@ -126,8 +145,10 @@ bool mqtt_broadcast_settings(void* ptr) {
 bool bus_scan(void* ptr) {
     static BusScanner* bus = NULL;
     if (ptr != NULL) {
+        if (bus) delete bus;
         bus = (BusScanner*)ptr;
     }
+
     if (bus) {
         if (bus->scan()) {
             pm.info("scan done");

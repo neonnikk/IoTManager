@@ -20,6 +20,10 @@ class Collection {
         return NULL;
     }
 
+    std::vector<T*> getItems() {
+        return _list;
+    }
+
    private:
     T* last() {
         return _list.at(_list.size() - 1);
