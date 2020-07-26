@@ -44,7 +44,7 @@ size_t Switches::count() {
 }
 
 void Switches::loop() {
-    for (auto* item : _items) {
+    for (auto item : _items) {
         if (item->hasValue()) {
             item->getValue();
         }

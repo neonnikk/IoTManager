@@ -24,7 +24,7 @@ void process(KeyValue* obj) {
 
 void process(const String str) {
     if (config.general()->isScenarioEnabled()) {
-        _events.push_front(str);
+        _events.push_back(str);
     }
 }
 
@@ -34,16 +34,6 @@ bool isBlockEnabled(size_t num) {
 
 void enableBlock(size_t num, boolean value) {
     _items.at(num)->enable(value);
-}
-
-bool extractBlock(const String& buf, size_t& startIndex, String& block) {
-    int endIndex = buf.indexOf("end", startIndex);
-    if (endIndex < 0) {
-        return false;
-    }
-    block = buf.substring(startIndex, endIndex);
-    startIndex = endIndex + 4;
-    return true;
 }
 
 void clear() {

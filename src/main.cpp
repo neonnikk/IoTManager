@@ -28,43 +28,6 @@ static const char* MODULE = "Main";
 Metric m;
 boolean initialized = false;
 
-bool perform_mqtt_restart_flag = false;
-void perform_mqtt_restart() {
-    perform_mqtt_restart_flag = true;
-}
-
-bool perform_updates_check_flag = false;
-void perform_updates_check() {
-    perform_updates_check_flag = true;
-}
-
-bool perform_upgrade_flag = false;
-void perform_upgrade() {
-    perform_upgrade_flag = true;
-}
-
-boolean perform_bus_scanning_flag = false;
-BusScanner_t perform_bus_scanning_bus;
-void perform_bus_scanning(BusScanner_t bus) {
-    perform_bus_scanning_flag = true;
-    perform_bus_scanning_bus = bus;
-}
-
-bool perform_system_restart_flag = false;
-void perform_system_restart() {
-    perform_system_restart_flag = true;
-}
-
-bool perform_logger_refresh_flag = false;
-void perform_logger_refresh() {
-    perform_logger_refresh_flag = true;
-}
-
-bool perform_logger_clear_flag = false;
-void perform_logger_clear() {
-    perform_logger_clear_flag = true;
-}
-
 void loop() {
     if (!initialized) {
         return;
@@ -86,9 +49,9 @@ void loop() {
         Broadcast::loop();
     }
 
-    ts.update();
+    //ts.update();
 
-    Logger::update();
+    //Logger::update();
 
     if (config.hasChanged()) {
         Actions::execute(ACT_CONFIG_SAVE);
@@ -99,9 +62,9 @@ void loop() {
     ArduinoOTA.handle();
 
     // ws.cleanupClients();
-    // Actions::loop();
+    Actions::loop();
 
-    Sensors::update();
+    // Sensors::update();
 
     metric.finish();
 }
