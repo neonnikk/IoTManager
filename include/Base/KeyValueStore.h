@@ -2,26 +2,23 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+
 #include <functional>
 
 #include "KeyValue.h"
 
 class KeyValueStore {
-   protected:
-    std::vector<KeyValue*> _items;
-
    public:
     KeyValueStore();
-    KeyValueStore(const String& jsonStr);
+    KeyValueStore(const char* jsonStr);
     virtual ~KeyValueStore();
 
+    void fromJson(const char* jsonStr);
     void forEach(KeyValueHandler func);
-    void fromJson(const String& jsonStr);
     String& toJson(String& jsonStr) const;
 
    protected:
-    KeyValue* find(const char* key) const;
-    bool write(const char* key, const char* value, ValueType_t valueType = VT_STRING, KeyType_t keyType = KT_STATE);
+    void write(const char* key, const char* value, ValueType_t valueType = VT_STRING, KeyType_t keyType = KT_STATE);
     bool erase(const char* key);
     void clear();
 
@@ -32,8 +29,11 @@ class KeyValueStore {
 
     void save(JsonObject& obj) const;
 
-   protected:
-    virtual void onUpdate(KeyValue*){};
-    virtual void onAdd(KeyValue*){};
-    virtual void onErase(KeyValue*){};
+   private:
+    KeyValue* find(const char* key) const;
+    bool find(const char* key, KeyValue** item) const;
+    bool find(const char* key, KeyValue** item, size_t& num) const;
+
+   private:
+    std::vector<KeyValue*> _items;
 };

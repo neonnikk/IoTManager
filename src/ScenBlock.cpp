@@ -13,13 +13,11 @@ const String ParamItem::value() {
 }
 
 const String LiveParam::value() {
-    return runtime.read(_value);
+    return runtime.get(_value.c_str());
 }
 
-ScenBlock::ScenBlock(const String& str) {
-    size_t split = str.indexOf("\n");
-    _commands = str.substring(split + 1, str.indexOf("\nend"));
-    _valid = parseCondition(str.substring(0, split)) && !_commands.isEmpty();
+ScenBlock::ScenBlock(const String& condition, const String& commands) {
+    _valid = parseCondition(condition) && !_commands.isEmpty();
 }
 
 ScenBlock::~ScenBlock() {
@@ -38,22 +36,22 @@ bool ScenBlock::checkCondition(const String& key, const String& value) {
     }
     bool res = false;
     switch (_sign) {
-        case EquationSign::OP_EQUAL:
+        case EquationSign::EQUAL:
             res = value.equals(_param->value());
             break;
-        case EquationSign::OP_NOT_EQUAL:
+        case EquationSign::NOT_EQUAL:
             res = !value.equals(_param->value());
             break;
-        case EquationSign::OP_LESS:
+        case EquationSign::LESS:
             res = value.toFloat() < String(_param->value()).toFloat();
             break;
-        case EquationSign::OP_LESS_OR_EQAL:
+        case EquationSign::LESS_OR_EQAL:
             res = value.toFloat() <= String(_param->value()).toFloat();
             break;
-        case EquationSign::OP_GREATER:
+        case EquationSign::GREATER:
             res = value.toFloat() > String(_param->value()).toFloat();
             break;
-        case EquationSign::OP_GREATER_OR_EQAL:
+        case EquationSign::GREATER_OR_EQAL:
             res = value.toFloat() >= String(_param->value()).toFloat();
             break;
         default:
@@ -95,6 +93,7 @@ bool ScenBlock::parseCondition(const String& str) {
         pm.error("wrong param");
         return false;
     }
+
     return true;
 }
 
@@ -113,17 +112,17 @@ ParamItem* ScenBlock::createParam(const String& str) {
 bool ScenBlock::parseSign(const String& str, EquationSign& sign) {
     bool res = true;
     if (str.equals("=")) {
-        sign = EquationSign::OP_EQUAL;
+        sign = EquationSign::EQUAL;
     } else if (str.equals("!=")) {
-        sign = EquationSign::OP_NOT_EQUAL;
+        sign = EquationSign::NOT_EQUAL;
     } else if (str.equals("<")) {
-        sign = EquationSign::OP_LESS;
+        sign = EquationSign::LESS;
     } else if (str.equals(">")) {
-        sign = EquationSign::OP_GREATER;
+        sign = EquationSign::GREATER;
     } else if (str.equals(">=")) {
-        sign = EquationSign::OP_GREATER_OR_EQAL;
+        sign = EquationSign::GREATER_OR_EQAL;
     } else if (str.equals("<=")) {
-        sign = EquationSign::OP_LESS_OR_EQAL;
+        sign = EquationSign::LESS_OR_EQAL;
     } else {
         res = false;
     }

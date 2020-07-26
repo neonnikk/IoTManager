@@ -11,6 +11,7 @@ extern const char* DEVICE_BOOT_FILE;
 extern const char* DEVICE_LAYOUT_FILE;
 
 extern const char* TAG_INIT;
+extern const char* TAG_INVERTED;
 extern const char* TAG_OPTIONS;
 extern const char* TAG_RUNTIME;
 extern const char* TAG_SERVO;

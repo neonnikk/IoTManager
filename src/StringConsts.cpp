@@ -30,6 +30,7 @@ const char* TAG_CHECK_MQTT = "check_mqtt";
 
 const char* TAG_LOG = "log";
 const char* TAG_BUTTON = "button";
+const char* TAG_INVERTED = "inverted";
 const char* TAG_SENSOR = "sensor";
 const char* TAG_STORE = "store";
 const char* TAG_TYPE = "type";

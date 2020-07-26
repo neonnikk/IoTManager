@@ -3,9 +3,11 @@
 #include "Value.h"
 #include "Mapper.h"
 
-class ValueMap {
+class ValueMap : public Value {
    public:
-    ValueMap(Value* obj) : _obj{obj}, _mapper{NULL} {};
+    ValueMap(ValueType_t type) : Value(type) {
+        _mapper = NULL;
+    }
 
     ~ValueMap() {
         if (_mapper) {
@@ -20,19 +22,15 @@ class ValueMap {
         _mapper = mapper;
     }
 
-    String mapValue(const String& value) {
-        return String(mapValue(value.toInt()), DEC);
-    }
-
-    int mapValue(const int value) {
-        int res = value;
+   protected:
+    virtual const String onGetValue() override {
+        String value = Value::onGetValue();
         if (_mapper) {
-            res = _mapper->mapValue(value);
+            return String(_mapper->mapValue(value.toInt()), DEC);
         }
-        return res;
+        return value;
     }
 
    private:
-    Value* _obj;
     Mapper* _mapper;
 };

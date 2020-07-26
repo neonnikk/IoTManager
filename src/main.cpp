@@ -226,9 +226,10 @@ void load_device_config() {
 
     while (file.available()) {
         String line = file.readStringUntil('\n');
-        line.replace("\r", "");
-        if (!line.startsWith("//") && !line.isEmpty()) {
-            executeCommand(line);
+        if (!line.isEmpty()) {
+            if (!line.startsWith("//")) {
+                executeCommand(line);
+            }
         }
     }
     file.close();

@@ -39,7 +39,7 @@ Telnet *telnet = NULL;
 unsigned long parsePeriod(const String &str, unsigned long default_time_syfix) {
     unsigned long res = 0;
     if (str.indexOf("digit") != -1) {
-        res = runtime.readInt(str);
+        res = runtime.getInt(str);
     } else {
         if (str.endsWith("ms")) {
             res = str.substring(0, str.indexOf("ms")).toInt();
@@ -250,12 +250,10 @@ void cmd_bme280P() {
 
 //bme280H hum1 0x76 Влажность#bmp280 Датчики any-data 1
 void cmd_bme280H() {
-
 }
 
 //bme280A altit1 0x76 Высота#bmp280 Датчики any-data 1
 void cmd_bme280A() {
-
 }
 
 bool extractCommand(const String &buf, size_t &startIndex, String &block) {

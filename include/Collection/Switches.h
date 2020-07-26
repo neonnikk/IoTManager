@@ -2,10 +2,6 @@
 
 #include "Objects/Switch.h"
 
-class Switches;
-
-extern Switches switches;
-
 class Switches {
    public:
     Switch* add(const String& name, const String& assign);
@@ -21,3 +17,5 @@ class Switches {
     std::vector<Switch*> _items;
     OnSwitchChangeState _onChange;
 };
+
+extern Switches switches;

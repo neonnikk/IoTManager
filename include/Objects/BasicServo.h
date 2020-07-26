@@ -14,13 +14,11 @@
 
 class BasicServo : public Item,
                    public PinAssigned,
-                   public Value,
                    public ValueMap {
    public:
     BasicServo(const String& name, const String& assign) : Item{name, assign},
                                                            PinAssigned{this},
-                                                           Value{VT_INT},
-                                                           ValueMap{this} {
+                                                           ValueMap{VT_INT} {
         _obj.attach(getPin());
     };
 

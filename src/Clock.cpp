@@ -38,8 +38,6 @@ void Clock::loop() {
     if (drift > 1) {
         // Обработать ситуации c дрифтом времени на значительные величины
     }
-    // TODO сохранять время на флеше
-
     _unixtime = now;
 
     breakEpochToTime(_unixtime, _time_utc);
@@ -112,7 +110,7 @@ const String Clock::getDateTimeDotFormated(unsigned long unix_time) {
     return getDateTimeDotFormated(time);
 }
 
-const String Clock::getDateTimeDotFormated(Time_t tm) {
+const String Clock::getDateTimeDotFormated(const Time_t& tm) {
     char buf[32];
     sprintf(buf, "%02d.%02d.%02d %02d:%02d:%02d", tm.day_of_month, tm.month, tm.year, tm.hour, tm.minute, tm.second);
     return String(buf);
@@ -130,6 +128,7 @@ const String Clock::getTime(bool seconds) {
     }
     return String(buf);
 }
+
 /*
 * Время с момента запуска "чч:мм:cc" далее "дд чч:мм"
 */

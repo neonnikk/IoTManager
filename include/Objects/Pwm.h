@@ -16,18 +16,16 @@
 
 class Pwm : public Item,
             public PinAssigned,
-            public Value,
             public ValueMap {
    public:
     Pwm(const String& name, const String& assign) : Item{name, assign},
                                                     PinAssigned{this},
-                                                    Value{VT_INT},
-                                                    ValueMap{this} {
+                                                    ValueMap{VT_INT} {
         pinMode(getPin(), OUTPUT);
     }
 
    protected:
     void onValueUpdate(const String& value) override {
-        analogWrite(getPin(), mapValue(value.toInt()));
+        analogWrite(getPin(), value.toFloat());
     }
 };

@@ -13,16 +13,18 @@ static const char* MODULE = "Scenario";
 namespace Scenario {
 
 std::vector<ScenBlock*> _items;
-StringQueue _events;
+
+std::list<String> _events;
+
 bool _ready = false;
 
 void process(KeyValue* obj) {
     process(obj->getKey());
 }
 
-void process(const String name) {
+void process(const String str) {
     if (config.general()->isScenarioEnabled()) {
-        _events.push(name);
+        _events.push_front(str);
     }
 }
 
@@ -32,10 +34,6 @@ bool isBlockEnabled(size_t num) {
 
 void enableBlock(size_t num, boolean value) {
     _items.at(num)->enable(value);
-}
-
-void reinit() {
-    _ready = false;
 }
 
 bool extractBlock(const String& buf, size_t& startIndex, String& block) {
@@ -48,65 +46,72 @@ bool extractBlock(const String& buf, size_t& startIndex, String& block) {
     return true;
 }
 
-const String removeComments(const String buf) {
-    String res = "";
-    size_t startIndex = 0;
-    while (startIndex < buf.length() - 1) {
-        int endIndex = buf.indexOf("\n", startIndex);
-        String line = buf.substring(startIndex, endIndex);
-        startIndex = endIndex + 1;
-        if (!line.startsWith("//")) {
-            res += line + "\n";
+void clear() {
+    for (auto item : _items) {
+        delete item;
+    }
+    _items.clear();
+}
+
+void load() {
+    auto file = LittleFS.open(DEVICE_SCENARIO_FILE, FILE_READ);
+    if (!file) {
+        pm.error("open " + String(DEVICE_SCENARIO_FILE));
+        return;
+    }
+    String condition = "";
+    String commands = "";
+    bool in_block = false;
+    while (file.available()) {
+        String line = file.readStringUntil('\n');
+        Serial.println(line);
+        if (line.startsWith("//")) {
+            continue;
+        }
+        if (in_block) {
+            if (line.startsWith("end")) {
+                Serial.println("commands: " + commands);
+                _items.push_back(new ScenBlock(condition, commands));
+                condition = "";
+                commands = "";
+                in_block = false;
+                continue;
+            }
+            commands += line;
+            commands += '\n';
+        } else {
+            condition = line;
+            Serial.println("condition: " + condition);
+            in_block = true;
         }
     }
-    return res;
+    file.close();
 }
 
 void init() {
-    _items.clear();
-    String buf;
-    if (!readFile(DEVICE_SCENARIO_FILE, buf)) {
+    clear();
+
+    load();
+
+    if (_items.size()) {
+        pm.info("items: " + String(_items.size()));
+    } else {
+        pm.info("disabled");
         config.general()->enableScenario(false);
-        return;
     }
-    if (buf.isEmpty()) {
-        return;
-    }
-    buf += "\n";
-    buf.replace("\r\n", "\n");
-    buf.replace("\r", "\n");
-
-    buf = removeComments(buf);
-
-    size_t pos = 0;
-    while (pos < buf.length() - 1) {
-        String item;
-        if (!extractBlock(buf, pos, item)) {
-            break;
-        }
-        if (!item.isEmpty()) {
-            _items.push_back(new ScenBlock(item));
-        }
-    }
-
-    pm.info("items: " + String(_items.size(), DEC));
 }
 
 void loop() {
-    if (!_ready) {
-        _ready = true;
-        init();
+    if (!config.general()->isScenarioEnabled()) {
         return;
     }
-    if (!_events.available()) {
+    if (!_events.size()) {
         return;
     }
-    String event;
-    _events.pop(event);
-    if (event.isEmpty()) {
-        return;
-    }
-    String value = runtime.read(event);
+
+    String event = _events.front();
+    String value = runtime.get(event.c_str());
+
     for (auto item : _items) {
         if (item->isEnabled()) {
             if (item->checkCondition(event, value)) {
@@ -114,6 +119,8 @@ void loop() {
             }
         }
     }
+
+    _events.pop_front();
 }
 
 }  // namespace Scenario

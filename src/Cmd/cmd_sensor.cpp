@@ -9,8 +9,10 @@ void cmd_sensor() {
     ParamStore params{sCmd.next()};
     String templateOverride{sCmd.next()};
 
-    String objName = getObjectName(params.read(TAG_NAME), params.read(TAG_ID));
-    String assign = params.read(TAG_PIN);
+    Serial.println(params.get(TAG_NAME));
+
+    String objName = getObjectName(params.get(TAG_NAME), params.get(TAG_ID));
+    String assign = params.get(TAG_PIN);
 
     auto item = sensors.add(objName, assign);
     if (!item) {
@@ -18,15 +20,15 @@ void cmd_sensor() {
         return;
     }
 
-    item->setReadInterval(parsePeriod(params.read("refresh", "5s")));
+    item->setReadInterval(parsePeriod(params.get("refresh", "5s")));
 
-    auto mapper = createMapper(params.read("map"));
+    auto mapper = createMapper(params.get("map"));
     if (mapper) {
         item->setMap(mapper);
     }
 
     // TODO
-    String filter = params.read("filter");
+    String filter = params.get("filter");
 
     Widgets::createWidget(objName, params, "anydata", templateOverride);
 }

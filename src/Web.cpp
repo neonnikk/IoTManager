@@ -97,7 +97,7 @@ void init() {
 
     server.on("/check", HTTP_GET, [](AsyncWebServerRequest* request) {
         String msg = "";
-        String lastVersion = runtime.read(TAG_LAST_VERSION);
+        String lastVersion = runtime.get(TAG_LAST_VERSION);
         // Errors
         if (!FLASH_4MB) {
             msg = F("Обновление \"по воздуху\" не поддерживается!");

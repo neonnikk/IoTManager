@@ -32,7 +32,13 @@ void ParamStore::writeAsFloat(const String& key, const String& value) {
     KeyValueStore::write(key.c_str(), value.c_str(), VT_FLOAT);
 }
 
-const String ParamStore::read(const String& key, const char* defaults) const {
+const String ParamStore::get(const char* key) const {
+    String buf;
+    read(key, buf);
+    return buf;
+}
+
+const String ParamStore::get(const String& key, const char* defaults) const {
     String value;
     ValueType_t type;
     if (!KeyValueStore::read(key.c_str(), value, type)) {
@@ -41,13 +47,7 @@ const String ParamStore::read(const String& key, const char* defaults) const {
     return value;
 }
 
-const String ParamStore::read(const String& key) const {
-    String buf;
-    KeyValueStore::read(key.c_str(), buf);
-    return buf;
-}
-
-int ParamStore::readInt(const String& key, int defaults) const {
+int ParamStore::getInt(const String& key, int defaults) const {
     String value;
     if (KeyValueStore::read(key.c_str(), value)) {
         return value.toInt();
@@ -55,8 +55,8 @@ int ParamStore::readInt(const String& key, int defaults) const {
     return defaults;
 }
 
-float ParamStore::readFloat(const String& key) const {
-    return read(key).toFloat();
+float ParamStore::getFloat(const String& key) const {
+    return get(key.c_str()).toFloat();
 }
 
 void ParamStore::erase(const String& obj) {

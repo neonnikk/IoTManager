@@ -34,42 +34,46 @@ SensorType_t getSensorType(const String& typeStr) {
 
 template <>
 Sensor* Collection<Sensor>::add(const String& name, const String& assign) {
-    Sensor* item = NULL;
     SensorType_t type = getSensorType(name);
+    Sensor* item = NULL;
     switch (type) {
-        case SensorType_t::ADC:
+        case ADC:
             item = new ADCSensor{name, assign};
             break;
-        case SensorType_t::DALLAS:
+        case DALLAS:
             if (!onewire.attached()) {
                 pm.error("attach bus first");
                 break;
             }
             item = new DallasSensor{name, assign};
             break;
-        case SensorType_t::ULTRASONIC:
+        case ULTRASONIC:
             item = new UltrasonicSensor{name, assign};
-
+            break;
+        case NUM_SENSOR_TYPES:
         default:
+            pm.error("unknown '" + name + "'");
             break;
     }
     if (item) {
         _list.push_back(item);
-        return last();
+        item = last();
     }
-    return NULL;
+    return item;
 }
 
 namespace Sensors {
+
 void update() {
     for (auto item : sensors.getItems()) {
         if (item->hasValue()) {
             String name = item->getName();
             String value = item->getValue();
             ValueType_t type = item->getValueType();
-            pm.info(name + " : " + value + String(type));
+            pm.info(name + ": " + value + " (" + type + " )");
             //runtime.write(name, value, type);
         }
     }
 }
+
 }  // namespace Sensors

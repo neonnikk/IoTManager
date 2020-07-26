@@ -10,16 +10,16 @@ void cmd_servo() {
     ParamStore params{sCmd.next()};
     String temlateOverride{sCmd.next()};
 
-    String objId = getObjectName(TAG_SERVO, params.read(TAG_ID));
-    String assign = params.read(TAG_PIN);
-    int state = params.readInt(TAG_STATE, 0);
+    String objId = getObjectName(TAG_SERVO, params.get(TAG_ID));
+    String assign = params.get(TAG_PIN);
+    int state = params.getInt(TAG_STATE, 0);
 
     auto item = servos.add(objId, assign);
     if (!item) {
         pm.error("on add: " + objId);
         return;
     }
-    auto mapper = createMapper(params.read("map"));
+    auto mapper = createMapper(params.get("map"));
     if (mapper) {
         item->setMap(mapper);
     }

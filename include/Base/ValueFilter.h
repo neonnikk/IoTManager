@@ -1,9 +1,13 @@
-#include "Value.h"
+#pragma once
+
+#include "ValueMap.h"
 #include "Filter.h"
 
-class ValueFilter : public Value {
+class ValueFilter : public ValueMap {
    public:
-    ValueFilter(ValueType_t type) : Value(type), _filter{NULL} {};
+    ValueFilter(ValueType_t type) : ValueMap{type} {
+        _filter = NULL;
+    }
 
     ~ValueFilter() {
         if (_filter) {
@@ -12,15 +16,19 @@ class ValueFilter : public Value {
     }
 
     void setFilter(Filter* filter) {
+        if (_filter) {
+            delete _filter;
+        }
         _filter = filter;
     }
 
    protected:
     virtual const String onGetValue() override {
-        String value = Value::onGetValue();
+        String value = ValueMap::onGetValue();
         if (_filter) {
-            _filter->process(value.toFloat());
-            return String(_filter->get(), 2);
+            if (_filter->process(value.toFloat())) {
+                value = String(_filter->get(), 2);
+            }
         }
         return value;
     }

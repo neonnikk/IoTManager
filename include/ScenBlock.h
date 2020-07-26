@@ -3,12 +3,12 @@
 #include <Arduino.h>
 
 enum class EquationSign : uint8_t {
-    OP_EQUAL,
-    OP_NOT_EQUAL,
-    OP_LESS,
-    OP_LESS_OR_EQAL,
-    OP_GREATER,
-    OP_GREATER_OR_EQAL
+    EQUAL,
+    NOT_EQUAL,
+    LESS,
+    LESS_OR_EQAL,
+    GREATER,
+    GREATER_OR_EQAL
 };
 
 class ParamItem {
@@ -29,7 +29,7 @@ class LiveParam : public ParamItem {
 
 class ScenBlock {
    public:
-    ScenBlock(const String& str);
+    ScenBlock(const String& condition, const String& commands);
     ~ScenBlock();
     bool enable(bool enabled);
     bool isEnabled();

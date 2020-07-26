@@ -10,18 +10,18 @@ void cmd_log() {
     ParamStore params{sCmd.next()};
     String temlateOverride{sCmd.next()};
 
-    int id = params.readInt(TAG_ID);
+    int id = params.getInt(TAG_ID);
     if (!id) {
         pm.error(TAG_ID);
         return;
     }
-    String data = params.read(TAG_DATA);
+    String data = params.get(TAG_DATA);
     if (!data) {
         pm.error(TAG_DATA);
         return;
     }
-    unsigned long interval_ms = parsePeriod(params.read(TAG_INTERVAL, "5s"));
-    unsigned long period_ms = parsePeriod(params.read(TAG_PERIOD, "1h"));
+    unsigned long interval_ms = parsePeriod(params.get(TAG_INTERVAL, "5s"));
+    unsigned long period_ms = parsePeriod(params.get(TAG_PERIOD, "1h"));
 
     Logger::add(id, data, interval_ms, period_ms);
 

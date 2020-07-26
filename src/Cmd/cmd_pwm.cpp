@@ -12,16 +12,16 @@ void cmd_pwm() {
     ParamStore params{sCmd.next()};
     String temlateOverride{sCmd.next()};
 
-    String name = getObjectName(TAG_PWM, params.read(TAG_ID).c_str());
-    String assign = params.read(TAG_PIN);
-    int state = params.readInt(TAG_STATE, 0);
+    String name = getObjectName(TAG_PWM, params.get(TAG_ID));
+    String assign = params.get(TAG_PIN);
+    int state = params.getInt(TAG_STATE, 0);
 
     auto item = pwms.add(name, assign);
     if (!item) {
         pm.error("on add: " + name);
         return;
     }
-    auto mapper = createMapper(params.read("map"));
+    auto mapper = createMapper(params.get("map"));
     if (mapper) {
         item->setMap(mapper);
     }

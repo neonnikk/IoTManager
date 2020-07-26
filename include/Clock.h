@@ -39,8 +39,8 @@ class Clock {
     * Локальное дата время "дд.ММ.гг чч.мм.cc"
     */
     const String getDateTimeDotFormated();
-    const String getDateTimeDotFormated(unsigned long);
-    const String getDateTimeDotFormated(Time_t tm);
+    const String getDateTimeDotFormated(const unsigned long);
+    const String getDateTimeDotFormated(const Time_t& tm);
     /*
     * Локальное время "чч:мм:cc" , seconds = false то "чч:мм"
     */

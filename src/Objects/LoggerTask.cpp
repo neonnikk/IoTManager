@@ -52,8 +52,9 @@ void LoggerTask::update() {
     }
 
     if (!_lastUpdated || (millis_since(_lastUpdated) >= _interval)) {
+        _lastUpdated = millis();
         String objId = _meta.getName();
-        String value = runtime.read(objId);
+        String value = runtime.get(objId.c_str());
         if (value.isEmpty()) {
             return;
         }
@@ -62,7 +63,6 @@ void LoggerTask::update() {
             _buffer.push(entry);
             MqttClient::publishChart(objId, entry.asChartEntry());
         }
-        _lastUpdated = millis();
     }
 
     if (millis_since(_bufferFlushed) > ONE_MINUTE_ms) {

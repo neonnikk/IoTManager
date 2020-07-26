@@ -19,10 +19,10 @@ void cmd_button() {
     ParamStore params{sCmd.next()};
     String temlateOverride{sCmd.next()};
 
-    String name = getObjectName(TAG_BUTTON, params.read(TAG_ID));
-    String assign = params.read(TAG_PIN);
-    bool inverted = params.readInt("inverted", false);
-    bool state = params.readInt(TAG_STATE, LOW);
+    String name = getObjectName(TAG_BUTTON, params.get(TAG_ID));
+    String assign = params.get(TAG_PIN);
+    bool inverted = params.getInt(TAG_INVERTED, false);
+    bool state = params.getInt(TAG_STATE, LOW);
 
     auto item = buttons.add(name, assign);
     if (!item) {
@@ -34,6 +34,7 @@ void cmd_button() {
     item->setValue(state);
 
     runtime.write(name, state);
+
     Widgets::createWidget(name, params, "toggle", temlateOverride);
 }
 

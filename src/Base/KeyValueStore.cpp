@@ -4,7 +4,7 @@ KeyValueStore::KeyValueStore() {
     _items.reserve(8);
 };
 
-KeyValueStore::KeyValueStore(const String& jsonStr) {
+KeyValueStore::KeyValueStore(const char* jsonStr) : KeyValueStore() {
     fromJson(jsonStr);
 }
 
@@ -13,65 +13,70 @@ KeyValueStore::~KeyValueStore() {
 }
 
 KeyValue* KeyValueStore::find(const char* key) const {
-    KeyValue* res{NULL};
-    for (auto item : _items) {
-        if (strcmp(key, item->getKey()) == 0) {
-            res = item;
-            break;
-        }
-    }
-    return res;
-}
-
-bool KeyValueStore::write(const char* key, const char* value, ValueType_t valueType, KeyType_t keyType) {
-    auto item = find(key);
-    if (!item) {
-        item = new KeyValue{key, value, valueType, keyType};
-        _items.push_back(item);
-        onAdd(item);
-        return true;
-    } else {
-        item->setValue(value, valueType);
-        onUpdate(item);
-        return false;
-    }
-}
-
-bool KeyValueStore::read(const char* key, String& value) const {
-    bool res = false;
-    auto item = find(key);
+    KeyValue* item = NULL;
+    find(key, &item);
     if (item) {
-        value = item->getValue();
-        res = true;
+        Serial.printf("find: %s ", key);
+        Serial.printf("%s", item->getValue());
+        Serial.println();
     }
-    return res;
+    return item;
 }
 
-bool KeyValueStore::read(const char* key, String& value, ValueType_t& type) const {
-    bool res = false;
-    auto item = find(key);
-    if (item) {
-        value = item->getValue();
-        type = item->getType();
-        res = true;
-    }
-    return res;
+bool KeyValueStore::find(const char* key, KeyValue** item) const {
+    size_t num;
+    return find(key, item, num);
 }
 
-bool KeyValueStore::erase(const char* key) {
+bool KeyValueStore::find(const char* key, KeyValue** item, size_t& num) const {
     for (size_t i = 0; i < _items.size(); i++) {
         if (strcmp(key, _items.at(i)->getKey()) == 0) {
-            onErase(_items.at(i));
-            _items.erase(_items.begin() + i);
+            *(item) = _items.at(i);
+            num = i;
             return true;
         }
     }
     return false;
 }
 
-void KeyValueStore::clear() {
-    for (auto* item : _items) {
+void KeyValueStore::write(const char* key, const char* value, ValueType_t valueType, KeyType_t keyType) {
+    KeyValue* item = find(key);
+    if (!item) {
+        _items.push_back(new KeyValue{key, value, valueType, keyType});
+        item = _items.at(_items.size() - 1);
+    }
+    item->setValue(value, valueType);
+}
+
+bool KeyValueStore::read(const char* key, String& value) const {
+    ValueType_t type = VT_STRING;
+    return read(key, value, type);
+}
+
+bool KeyValueStore::read(const char* key, String& value, ValueType_t& type) const {
+    KeyValue* item = find(key);
+    if (item) {
+        value = String(item->getValue());
+        type = item->getType();
+        return true;
+    }
+    return false;
+}
+
+bool KeyValueStore::erase(const char* key) {
+    KeyValue* item = NULL;
+    size_t num = 0;
+    if (find(key, &item, num)) {
+        _items.erase(_items.begin() + num);
         delete item;
+        return true;
+    }
+    return false;
+}
+
+void KeyValueStore::clear() {
+    for (size_t i = 0; i < _items.size(); i++) {
+        delete _items.at(i);
     }
     _items.clear();
 }
@@ -101,18 +106,18 @@ void KeyValueStore::load(JsonObject& obj) {
     }
 }
 
-void KeyValueStore::fromJson(const String& jsonStr) {
+void KeyValueStore::fromJson(const char* inStr) {
     DynamicJsonBuffer buf;
-    JsonObject& obj = buf.parse(jsonStr.c_str());
+    JsonObject& obj = buf.parse(inStr);
     load(obj);
 }
 
-String& KeyValueStore::toJson(String& jsonStr) const {
+String& KeyValueStore::toJson(String& outStr) const {
     DynamicJsonBuffer json;
     JsonObject& obj = json.createObject();
     save(obj);
-    obj.printTo(jsonStr);
-    return jsonStr;
+    obj.printTo(outStr);
+    return outStr;
 }
 
 void KeyValueStore::forEach(KeyValueHandler func) {

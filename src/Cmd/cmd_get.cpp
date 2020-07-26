@@ -14,7 +14,7 @@ void cmd_get() {
             if (param.isEmpty()) {
                 res = runtime.asJson();
             } else {
-                res = runtime.read(param);
+                res = runtime.get(param.c_str());
             }
         } else if (obj.equalsIgnoreCase("devices")) {
             Devices::get(res, param.toInt());
