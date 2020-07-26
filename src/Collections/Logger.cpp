@@ -54,7 +54,9 @@ void init() {
 void clear() {
     for (size_t i = 0; i < _list.size(); i++) {
         _list.at(i)->clear();
+        delete _list[i];
     }
+    _list.clear();
 }
 
 }  // namespace Logger

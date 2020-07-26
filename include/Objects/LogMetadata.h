@@ -78,8 +78,8 @@ class LogMetadata {
         return _header.type;
     }
 
-    void add(const LogEntry& logEntry) {
-        unsigned long entry_time = logEntry.getTime();
+    void add(LogEntry* logEntry) {
+        unsigned long entry_time = logEntry->getTime();
         if (!_header.start_time) {
             _header.start_time = entry_time;
         }

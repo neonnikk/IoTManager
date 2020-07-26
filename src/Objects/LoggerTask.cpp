@@ -59,15 +59,15 @@ void LoggerTask::update() {
             return;
         }
         if (now.hasSynced()) {
-            LogEntry entry = LogEntry(now.getEpoch(), value.toFloat());
-            _buffer.push(entry);
-            MqttClient::publishChart(objId, entry.asChartEntry());
+            LogEntry* entry = new LogEntry(now.getEpoch(), value.toFloat());
+            _buffer.push_back(entry);
+            MqttClient::publishChart(objId, entry->asChartEntry());
         }
     }
 
     if (millis_since(_bufferFlushed) > ONE_MINUTE_ms) {
         if (_buffer.size()) {
-            _writer = new LogWriter(_meta, _buffer);
+            _writer = new LogWriter(_meta, &_buffer);
             _writer->setActive();
         }
         _bufferFlushed = millis();

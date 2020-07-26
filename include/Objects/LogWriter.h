@@ -12,15 +12,15 @@ class LogWriter {
    private:
     File _file;
     LogMetadata *_meta;
-    LogBuffer *_buffer;
+    std::list<LogEntry *> *_buffer;
     bool _active;
     size_t _pos;
 
    public:
-    LogWriter(LogMetadata &meta, LogBuffer &buffer) : _meta{&meta},
-                                                      _buffer{&buffer},
-                                                      _active{false},
-                                                      _pos{0} {
+    LogWriter(LogMetadata &meta, std::list<LogEntry *> *buffer) : _meta{&meta},
+                                                                  _buffer{buffer},
+                                                                  _active{false},
+                                                                  _pos{0} {
     }
 
     void setActive(bool value = true) {
@@ -41,11 +41,12 @@ class LogWriter {
         }
 
         if (_file) {
-            if (_buffer->available()) {
-                LogEntry item;
-                _buffer->pop(item);
+            if (_buffer->size()) {
+                LogEntry *item = _buffer->front();
                 _meta->add(item);
-                item.write(_file);
+                item->write(_file);
+                delete item;
+                _buffer->pop_front();
             } else {
                 _file.close();
                 _meta->store();

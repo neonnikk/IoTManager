@@ -15,11 +15,6 @@ KeyValueStore::~KeyValueStore() {
 KeyValue* KeyValueStore::find(const char* key) const {
     KeyValue* item = NULL;
     find(key, &item);
-    if (item) {
-        Serial.printf("find: %s ", key);
-        Serial.printf("%s", item->getValue());
-        Serial.println();
-    }
     return item;
 }
 

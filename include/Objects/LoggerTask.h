@@ -27,7 +27,7 @@ class LoggerTask {
 
    private:
     LogMetadata _meta;
-    LogBuffer _buffer;
+    std::list<LogEntry*> _buffer;
     size_t _id;
     unsigned long _interval;
     unsigned long _period;

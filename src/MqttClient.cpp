@@ -24,32 +24,36 @@ namespace MqttClient {
 WiFiClient espClient;
 PubSubClient _mqtt(espClient);
 
-struct MqttMessage {
+class MqttMessage {
    private:
-    String _topic;
-    String _data;
+    char* _topic;
+    char* _data;
 
    public:
-    MqttMessage() : _topic{""}, _data{""} {};
-
-    MqttMessage(const MqttMessage& b) : _topic{b._topic}, _data{b._data} {}
-
-    MqttMessage(const String& topic, const String& data) : _topic{topic}, _data{data} {}
-
-    bool isValid() const {
-        return !_topic.isEmpty();
+    MqttMessage(const char* topic, const char* data) {
+        _topic = strdup(topic);
+        _data = strdup(data);
     }
 
-    const String& getTopic() const {
+    ~MqttMessage() {
+        delete _topic;
+        delete _data;
+    }
+
+    bool isValid() const {
+        return strlen(_topic) > 0;
+    }
+
+    const String getTopic() const {
         return _topic;
     }
 
-    const String& getData() const {
+    const String getData() const {
         return _data;
     }
 };
 
-std::list<MqttMessage> _queue;
+std::list<MqttMessage*> _queue;
 
 static unsigned long RECONNECT_INTERVAL = 5000;
 static size_t RECONNECT_ATTEMPTS_MAX = 10;
@@ -135,7 +139,7 @@ bool pushToQueue(const String topic, const String data) {
         pm.error("queue full");
         return false;
     }
-    _queue.push_back(MqttMessage{topic, data});
+    _queue.push_back(new MqttMessage(topic.c_str(), data.c_str()));
     return true;
 }
 
@@ -152,8 +156,6 @@ void loop() {
     if (!NetworkManager::isNetworkActive()) {
         return;
     }
-
-    _mqtt.loop();
 
     if (!config.mqtt()->isEnabled()) {
         if (isConnected()) {
@@ -185,12 +187,18 @@ void loop() {
     _connectionAttempts = 0;
 
     if (!_queue.empty()) {
-        if (_queue.front().isValid()) {
-            _mqtt.publish(_queue.front().getTopic().c_str(), _queue.front().getData().c_str());
+        MqttMessage* msg = _queue.front();
+        Serial.println(msg->getData());
+        Serial.println(msg->getTopic());
+        if (msg->isValid()) {
+            _mqtt.publish(msg->getTopic().c_str(), msg->getData().c_str());
         }
         _queue.pop_front();
+        delete msg;
     }
     _lastSize = _queue.size();
+
+    _mqtt.loop();
 }
 
 bool extractObj(const String& str, String& objType, int& objId) {
@@ -210,7 +218,7 @@ void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length) {
 
     if (payloadStr.equalsIgnoreCase("hello")) {
         Actions::execute(ACT_WIDGET_PUBLISH);
-        // runtime.publish();
+        runtime.publish();
         // publish_widget_chart();
     } else if (topicStr.endsWith("control")) {
         String objType;
