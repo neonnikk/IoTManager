@@ -39,7 +39,7 @@ bool mqtt_restart(void* ptr = NULL);
 bool updates_check(void* ptr = NULL);
 bool upgrade(void* ptr = NULL);
 bool mqtt_broadcast_settings(void* ptr = NULL);
-bool bus_scan(void* ptr = NULL);
+bool bus_scan(void* ptr);
 bool logger_refresh(void* ptr = NULL);
 bool logger_clear(void* ptr = NULL);
 bool widgets_pubish(void* ptr = NULL);
@@ -57,20 +57,20 @@ ActionProc actions[NUM_ACTIONS] = {
     {logger_clear},
     {widgets_pubish}};
 
-void execute(Act act, void* param, bool immediately) {
-    if (!immediately) {
-        actions[act].runFlag = true;
-        actions[act].param = param;
-    } else {
-        actions[act].proc(param);
-    }
+void start(Act act) {
+    bool actionComplete = actions[act].proc(actions[act].param);
+    actions[act].runFlag = !actionComplete;
+}
+
+void execute(Act act, void* arg, bool immediately) {
+    actions[act].param = arg;
+    actions[act].runFlag = true;
+    if (immediately) start(act);
 }
 
 void loop() {
     for (size_t i = 0; i < NUM_ACTIONS; i++) {
-        if (actions[i].runFlag) {
-            actions[i].runFlag = !actions[i].proc(actions[i].param);
-        }
+        if (actions[i].runFlag) start(Act(i));
     }
 }
 
@@ -117,12 +117,11 @@ bool widgets_pubish(void* ptr) {
     if (file.available()) {
         while (file.available()) {
             String line = file.readStringUntil('\n');
-            line[line.length() - 1] = '\n';
             Serial.print(line);
             MqttClient::publistWidget(line);
         }
-        file.close();
     }
+    file.close();
     return true;
 }
 
@@ -139,20 +138,17 @@ bool mqtt_broadcast_settings(void* ptr) {
     return true;
 }
 
-/*
-* Сканирование шины
-*/
+/**
+ *  @brief  Сканирование шины
+ *
+ */
+BusScanner* bus = NULL;
 bool bus_scan(void* ptr) {
-    static BusScanner* bus = NULL;
-    if (ptr != NULL) {
-        if (bus) delete bus;
-        bus = (BusScanner*)ptr;
-    }
-
+    bus = (BusScanner*)ptr;
     if (bus) {
         if (bus->scan()) {
-            pm.info("scan done");
-            runtime.write(bus->tag(), bus->results());
+            pm.info(bus->tag() + ":scan done");
+            runtime.property(bus->tag(), bus->results());
             delete bus;
             bus = NULL;
             return true;

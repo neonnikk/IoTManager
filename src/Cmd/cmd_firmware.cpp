@@ -9,9 +9,8 @@ void cmd_firmwareUpdate() {
 }
 
 void cmd_firmwareVersion() {
-    String widget = sCmd.next();
-    String page = sCmd.next();
-    int order = String(sCmd.next()).toInt();
+    ParamStore params{sCmd.next()};
+    String temlateOverride{sCmd.next()};
 
-    //Widgets::createWidget(widget, page, order, "anydata", TAG_FIRMWARE);
+    Widgets::createWidget(TAG_FIRMWARE, params, "anydata", temlateOverride);
 }

@@ -10,6 +10,8 @@ extern HardwareSerial *mySerial;
 
 #include "StringCommand.h"
 
+#include "Actions.h"
+#include "Pins.h"
 #include "Consts.h"
 #include "StringConsts.h"
 #include "PrintMessage.h"

@@ -10,7 +10,6 @@ bool _used[NUM_PINS];
 
 void init() {
     memset(&_used[0], 0, NUM_PINS);
-
 }
 
 bool isValid(const String& str) {

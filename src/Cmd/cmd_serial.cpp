@@ -1,7 +1,5 @@
 #include "Cmd.h"
 
-static const char *MODULE = "cmd_serial";
-
 void cmd_serialEnd() {
     if (mySerial) {
         mySerial->end();
@@ -29,8 +27,7 @@ void cmd_serialBegin() {
 }
 
 void cmd_serialWrite() {
-    String payload = sCmd.next();
     if (term) {
-        term->println(payload.c_str());
+        term->println(sCmd.next());
     }
 }

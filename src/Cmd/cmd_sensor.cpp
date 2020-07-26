@@ -9,10 +9,9 @@ void cmd_sensor() {
     ParamStore params{sCmd.next()};
     String templateOverride{sCmd.next()};
 
-    Serial.println(params.get(TAG_NAME));
-
-    String objName = getObjectName(params.get(TAG_NAME), params.get(TAG_ID));
     String assign = params.get(TAG_PIN);
+
+    String objName = getObjectName(params.get(TAG_NAME), assign);
 
     auto item = sensors.add(objName, assign);
     if (!item) {

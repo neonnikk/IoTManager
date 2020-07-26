@@ -2,7 +2,7 @@
 
 #include "Utils/TimeUtils.h"
 
-Dallas::Dallas(uint8_t* addr) : _wire(onewire.get()),
+Dallas::Dallas(uint8_t* addr) : _wire(oneWire.get()),
                                 _addr{addr},
                                 _bitResolution{9},
                                 _requestConversationTime{0} {}

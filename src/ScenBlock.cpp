@@ -16,7 +16,7 @@ const String LiveParam::value() {
     return runtime.get(_value.c_str());
 }
 
-ScenBlock::ScenBlock(const String& condition, const String& commands) {
+ScenBlock::ScenBlock(const String& condition, const String& commands) : _enabled{true} {
     _valid = parseCondition(condition) && !_commands.isEmpty();
 }
 

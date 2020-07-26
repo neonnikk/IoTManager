@@ -83,11 +83,8 @@ void init() {
             }
 
             for (size_t i = 0; i < request->params(); i++) {
-                String param = request->getParam(i)->name();
-                String value = request->getParam(i)->value();
-                pm.info(param + ": " + value);
-                if (!config.setParamByName(param, value)) {
-                    pm.error("unknown: " + param);
+                if (!config.setParamByName(request->getParam(i)->name(), request->getParam(i)->value())) {
+                    pm.error("unknown: " + request->getParam(i)->name());
                     request->send(404);
                     return;
                 }

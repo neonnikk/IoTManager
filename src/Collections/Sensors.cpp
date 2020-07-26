@@ -41,8 +41,8 @@ Sensor* Collection<Sensor>::add(const String& name, const String& assign) {
             item = new ADCSensor{name, assign};
             break;
         case DALLAS:
-            if (!onewire.attached()) {
-                pm.error("attach bus first");
+            if (!oneWire.attached()) {
+                pm.error("not bus attached");
                 break;
             }
             item = new DallasSensor{name, assign};

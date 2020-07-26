@@ -7,8 +7,6 @@
 
 I2CScanner::I2CScanner() : BusScanner(TAG_I2C){};
 
-I2CScanner::~I2CScanner() {
-}
 bool I2CScanner::onInit() {
     Wire.begin();
     _addr = 8;
@@ -28,7 +26,7 @@ void format(uint8_t addr, String& res) {
 boolean I2CScanner::onScan() {
     Wire.beginTransmission(_addr);
     if (Wire.endTransmission() == 0) {
-        format(_addr, _results);
+        format(_addr, _resStr);
     }
     return ++_addr > 120;
 }

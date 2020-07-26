@@ -3,23 +3,20 @@
 #include "Objects/OneWireBus.h"
 
 #include "StringConsts.h"
-#include "PrintMessage.h"
-
-const char* MODULE = "OneWireScanner";
 
 OneWireScanner::OneWireScanner() : BusScanner(TAG_ONE_WIRE) {}
 
 OneWireScanner::~OneWireScanner(){};
 
 bool OneWireScanner::onInit() {
-    return onewire.attached();
+    return oneWire.attached();
 }
 
 bool OneWireScanner::onScan() {
-    if (!onewire.get()->search(_addr)) {
-        onewire.get()->reset_search();
+    if (!oneWire.get()->search(_addr)) {
+        oneWire.get()->reset_search();
         return true;
     }
-    onewire.addItem(_addr);
+    oneWire.addItem(_addr);
     return false;
 }

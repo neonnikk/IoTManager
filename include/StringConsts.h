@@ -23,7 +23,7 @@ extern const char* TAG_ONE_WIRE;
 extern const char* TAG_I2C;
 extern const char* TAG_SHARE_MQTT;
 extern const char* TAG_CHECK_MQTT;
-
+extern const char* TAG_PAGE;
 extern const char* TAG_LOG;
 extern const char* TAG_BUTTON;
 extern const char* TAG_SENSOR;
@@ -42,5 +42,7 @@ extern const char* TAG_TEXT;
 extern const char* TAG_UPTIME;
 extern const char* TAG_TIME;
 extern const char* TAG_DIGIT;
+extern const char* TAG_WIDGET;
+extern const char* TAG_ORDER;
 
 extern const char* strBoolEnabled(bool value);

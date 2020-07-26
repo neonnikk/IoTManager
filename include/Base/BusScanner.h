@@ -2,29 +2,30 @@
 
 #include <Arduino.h>
 
-#include "Utils/JsonUtils.h"
-
 class BusScanner {
    public:
-    BusScanner(const char* tag) : _intialized{false} {
-        strcpy(_tag, tag);
+    BusScanner(const char* tag) : _resStr{""},
+                                  _intialized{false} {
+        _tag = strdup(tag);
     }
-    virtual ~BusScanner(){};
+
+    virtual ~BusScanner() {
+        free(_tag);
+    };
 
     const String results() {
-        return _results;
+        return _resStr;
     }
 
-    const char* tag() {
+    const String tag() {
         return _tag;
     }
 
     bool scan() {
-        _results = "";
         if (!_intialized) {
             bool res = onInit();
             if (!res) {
-                _results = "ошибка инициализации";
+                _resStr = String(F("ошибка инициализации"));
                 return true;
             }
             _intialized = true;
@@ -42,9 +43,9 @@ class BusScanner {
     };
 
    protected:
-    String _results;
+    String _resStr;
 
    private:
+    char* _tag;
     bool _intialized;
-    char _tag[16];
 };

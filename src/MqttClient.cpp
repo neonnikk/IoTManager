@@ -69,13 +69,13 @@ String _pass;
 String _uuid;
 String _prefix;
 
+void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length);
+
 MqttWriter* getWriter(const char* topic) {
     String path = _deviceRoot;
     path += topic;
     return new MqttWriter(&_mqtt, path.c_str());
 }
-
-void handleSubscribedUpdates(char* topic, uint8_t* payload, size_t length);
 
 void init() {
     _addr = config.mqtt()->getServer();
@@ -89,6 +89,8 @@ void init() {
     _deviceRoot += "/";
     _deviceRoot += _uuid;
     _deviceRoot += "/";
+
+    _mqtt.setBufferSize(512);
 }
 
 bool connect() {
@@ -119,19 +121,6 @@ void reconnect() {
     disconnect();
     init();
     connect();
-}
-
-boolean _mqtt_publish(const char* topic, const char* data) {
-    if (!_mqtt.connected()) {
-        pm.error("not connected");
-        return false;
-    }
-    if (_mqtt.beginPublish(topic, strlen(data), false)) {
-        _mqtt.print(data);
-        return _mqtt.endPublish();
-    }
-    pm.error("on publish");
-    return false;
 }
 
 bool pushToQueue(const String topic, const String data) {
@@ -173,6 +162,7 @@ void loop() {
         init();
         connect();
         _lastConnetionAttempt = millis();
+        return;
     }
 
     if (!isConnected()) {
@@ -184,12 +174,12 @@ void loop() {
         return;
     }
 
+    _mqtt.loop();
+
     _connectionAttempts = 0;
 
     if (!_queue.empty()) {
         MqttMessage* msg = _queue.front();
-        Serial.println(msg->getData());
-        Serial.println(msg->getTopic());
         if (msg->isValid()) {
             _mqtt.publish(msg->getTopic().c_str(), msg->getData().c_str());
         }
@@ -197,8 +187,6 @@ void loop() {
         delete msg;
     }
     _lastSize = _queue.size();
-
-    _mqtt.loop();
 }
 
 bool extractObj(const String& str, String& objType, int& objId) {

@@ -14,17 +14,13 @@ namespace Scenario {
 
 std::vector<ScenBlock*> _items;
 
-std::list<String> _events;
+std::list<KeyValue*> _events;
 
 bool _ready = false;
 
 void process(KeyValue* obj) {
-    process(obj->getKey());
-}
-
-void process(const String str) {
     if (config.general()->isScenarioEnabled()) {
-        _events.push_back(str);
+        _events.push_back(obj);
     }
 }
 
@@ -59,7 +55,6 @@ void load() {
         }
         if (in_block) {
             if (line.startsWith("end")) {
-                Serial.println("commands: " + commands);
                 _items.push_back(new ScenBlock(condition, commands));
                 condition = "";
                 commands = "";
@@ -70,7 +65,6 @@ void load() {
             commands += '\n';
         } else {
             condition = line;
-            Serial.println("condition: " + condition);
             in_block = true;
         }
     }
@@ -94,22 +88,23 @@ void loop() {
     if (!config.general()->isScenarioEnabled()) {
         return;
     }
+    return;
     if (!_events.size()) {
         return;
     }
 
-    String event = _events.front();
-    String value = runtime.get(event.c_str());
-
+    Serial.printf("events: %d", _events.size());
+    KeyValue* kv = _events.front();
+    _events.pop_front();
     for (auto item : _items) {
         if (item->isEnabled()) {
-            if (item->checkCondition(event, value)) {
+            if (item->checkCondition(kv->getKey(), kv->getValue())) {
                 addCommands(item->getCommands());
+            } else {
+                Serial.printf("%s: %s\t", kv->getKey(), kv->getValue());
             }
         }
     }
-
-    _events.pop_front();
 }
 
 }  // namespace Scenario

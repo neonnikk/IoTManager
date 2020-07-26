@@ -5,7 +5,6 @@
 class I2CScanner : public BusScanner {
    public:
     I2CScanner();
-    ~I2CScanner();
 
    protected:
     bool onInit() override;

@@ -60,7 +60,7 @@ void init() {
     });
 
     server.on("/onewire.json", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(200, "application/json", onewire.asJson());
+        request->send(200, "application/json", oneWire.asJson());
     });
 
     server.on("/logs.json", HTTP_GET, [](AsyncWebServerRequest *request) {
