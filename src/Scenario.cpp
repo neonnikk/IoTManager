@@ -54,7 +54,6 @@ void load() {
     bool in_block = false;
     while (file.available()) {
         String line = file.readStringUntil('\n');
-        Serial.println(line);
         if (line.startsWith("//")) {
             continue;
         }
