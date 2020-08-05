@@ -48,4 +48,3 @@ extern void loop_items();
 
 extern void init_mod();
 extern void web_init();
-extern void telemetry_task();

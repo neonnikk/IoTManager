@@ -59,7 +59,9 @@ void loop() {
 
     MqttClient::loop();
 
+#ifdef OTA_UPDATES
     ArduinoOTA.handle();
+#endif
 
     // ws.cleanupClients();
     Actions::loop();
@@ -87,21 +89,19 @@ void load_runtime() {
     runtime.property(TAG_FIRMWARE, FIRMWARE_VERSION);
 }
 
-void telemetry_task() {
-    if (!TELEMETRY_UPDATE_INTERVAL_s) {
-        pm.info("Telemetry: disabled");
+void check_update_task() {
+    if (!CHECK_UPDATE_INTERVAL_h) {
+        pm.info("Check updates: disabled");
         return;
     }
-    if (TELEMETRY_UPDATE_INTERVAL_s) {
+    if (CHECK_UPDATE_INTERVAL_h) {
         ts.add(
-            STATISTICS, TELEMETRY_UPDATE_INTERVAL_s * ONE_SECOND_ms, [&](void*) {
+            CHECK_UPDATE, CHECK_UPDATE_INTERVAL_h * ONE_HOUR_ms, [&](void*) {
                 if (!NetworkManager::isNetworkActive()) {
                     return;
                 }
-                String url = "http://backup.privet.lv/visitors/?";
-                WebClient::get(url);
             },
-            nullptr, false);
+            nullptr, true);
     }
 }
 
@@ -162,7 +162,7 @@ void setup() {
 
     clock_task();
 
-    telemetry_task();
+    check_update_task();
 
     announce_task();
 

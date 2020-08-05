@@ -44,5 +44,7 @@ extern const char* TAG_TIME;
 extern const char* TAG_DIGIT;
 extern const char* TAG_WIDGET;
 extern const char* TAG_ORDER;
+extern const char* TAG_DIGITAL;
+extern const char* TAG_VALUE;
 
 extern const char* strBoolEnabled(bool value);

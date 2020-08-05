@@ -49,6 +49,8 @@ const char* TAG_PWM = "pwm";
 const char* TAG_DIGIT = "digit";
 const char* TAG_WIDGET = "widget";
 const char* TAG_ORDER = "order";
+const char* TAG_DIGITAL = "digital";
+const char* TAG_VALUE = "value";
 
 const char* strBoolEnabled(bool value) {
     return value ? "enabled" : "disabled";

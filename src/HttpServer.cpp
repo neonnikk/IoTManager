@@ -81,8 +81,14 @@ void init() {
 
     server.begin();
 
+#ifdef OTA_UPDATES
     initOTA();
+#endif
+
+#ifdef USE_MDNS
     initMDNS();
+#endif
+
     initWS();
 }
 

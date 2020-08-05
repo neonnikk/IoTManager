@@ -3,54 +3,41 @@
 #include "Collection/Widgets.h"
 
 void cmd_inputDigit() {
-    String name = sCmd.next();
-    String number = name.substring(5);
-  
-    String descr = sCmd.next();
-    descr.replace("#", " ");
-    String page_name = sCmd.next();
-    page_name.replace("#", " ");
-    String value = sCmd.next();
-    int order = String(sCmd.next()).toInt();
+    ParamStore params{sCmd.next()};
+    String temlateOverride{sCmd.next()};
 
-    String objName = "digit" + number;
+    String objName = getObjectName(TAG_DIGITAL, params.get(TAG_ID));
+    String value = params.get(TAG_VALUE);
 
-    runtime.writeAsInt(objName, value);
-
-    // Widgets::createWidget(descr, page_name, order, "inputNum", objName);
+    runtime.write(objName, value);
+    Widgets::createWidget(objName, params, "inputNum", temlateOverride);
 }
 
 void cmd_inputTime() {
-    String name = sCmd.next();
-    String number = name.substring(4);
-    String widget_name = sCmd.next();
-    widget_name.replace("#", " ");
-    String page_name = sCmd.next();
-    page_name.replace("#", " ");
-    String state = sCmd.next();
-    int order = String(sCmd.next()).toInt();
+    ParamStore params{sCmd.next()};
+    String temlateOverride{sCmd.next()};
 
-    String objName = "time" + name;
+    String objName = getObjectName(TAG_TIME, params.get(TAG_ID));
+    String value = params.get(TAG_STATE);
 
-    runtime.write(objName, state);
-
-//    Widgets::createWidget(widget_name, page_name, order, "inputTime", "time" + number);
+    runtime.write(objName, value);
+    Widgets::createWidget(objName, params, "inputTime", temlateOverride);
 }
 
 void cmd_digitSet() {
-    String name = sCmd.next();
-    String value = sCmd.next();
+    ParamStore params{sCmd.next()};
 
-    String objName = "digit" + name;
+    String objName = getObjectName(TAG_DIGIT, params.get(TAG_ID));
+    String value = params.get(TAG_VALUE);
 
     runtime.writeAsInt(objName, value);
 }
 
 void cmd_timeSet() {
-    String name = sCmd.next();
-    String value = sCmd.next();
+    ParamStore params{sCmd.next()};
 
-    String objName = "time" + name;
+    String objName = getObjectName(TAG_TIME, params.get(TAG_ID));
+    String value = params.get(TAG_VALUE);
 
     runtime.write(objName, value);
 }

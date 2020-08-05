@@ -5,14 +5,27 @@
 #define FIRMWARE_VERSION "2.3.6-dev"
 #define LED_PIN LED_BUILTIN
 #define FLASH_4MB true
-#define TELEMETRY_UPDATE_INTERVAL_s 0
+#define CHECK_UPDATE_INTERVAL_h 24
+
+/*
+* Optional modules
+*/
+
+/*
+* RAM 48, ROM 16 348 
+*/
+#define OTA_UPDATES
+/*
+* RAM 48, ROM 16 348 
+*/
+// #define USE_MDNS
 
 enum SchedulerTask { WIFI_SCAN,
                      NETWORK_CONNECTION,
                      SENSORS,
                      LOGGER,
                      TIME,
-                     STATISTICS,
+                     CHECK_UPDATE,
                      ANNOUNCE };
 
 enum ErrorType_t {

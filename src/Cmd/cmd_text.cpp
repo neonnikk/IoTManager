@@ -4,13 +4,13 @@
 #include "Collection/Widgets.h"
 
 void cmd_text() {
-    String name = getObjectName(TAG_TEXT, sCmd.next());
-    String value = sCmd.next();
-    String page = sCmd.next();
-    int order = String(sCmd.next()).toInt();
+    ParamStore params{sCmd.next()};
+    String temlateOverride{sCmd.next()};
 
-    runtime.write(name, value);
-    // Widgets::createWidget(value, page, order, "anydata", name);
+    String objName = getObjectName(TAG_TEXT, params.get(TAG_ID));
+    String value = params.get("value");
+    runtime.write(objName, value);
+    Widgets::createWidget(objName, params, "anydata", temlateOverride);
 }
 
 void cmd_textSet() {
