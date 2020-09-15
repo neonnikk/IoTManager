@@ -73,9 +73,7 @@ void load() {
 
 void init() {
     clear();
-
     load();
-
     if (_items.size()) {
         pm.info("items: " + String(_items.size()));
     } else {

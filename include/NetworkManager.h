@@ -4,11 +4,16 @@
 #include <IPAddress.h>
 
 namespace NetworkManager {
-
 void init();
+
 bool isNetworkActive();
+
 void startSTAMode();
+
 bool startAPMode();
+
 void startScaninng();
+
 IPAddress getHostIP();
+
 }

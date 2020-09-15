@@ -59,10 +59,18 @@ void onConnect(IPAddress ip) {
     }
 }
 
+bool isCriticalError(uint8_t reason) {
+    return reason >= 200;
+}
+
 void onDisconnect(uint8_t reason) {
     led.set(LedStatus::SLOW);
     pm.error("disconnected: " + String(reason, DEC));
     _connected = false;
+    if (isCriticalError(reason)) {
+        config.network()->setMode(WIFI_AP_STA);
+        startAPMode();
+    }
 }
 
 #ifdef ESP32
@@ -86,7 +94,6 @@ void init() {
     WiFi.hostname(config.network()->getHostname());
 #endif
     WiFiMode_t mode = (WiFiMode_t)config.network()->getMode();
-
 #ifdef ESP32
     WiFi.onEvent(WiFiGotIP, WiFiEvent_t::SYSTEM_EVENT_STA_GOT_IP);
     WiFi.onEvent(WiFiDisconnect, WiFiEvent_t::SYSTEM_EVENT_STA_DISCONNECTED);
@@ -100,7 +107,6 @@ void init() {
         onDisconnect(event.reason);
     });
 #endif
-
     switch (mode) {
         case WIFI_AP:
             startAPMode();
@@ -122,13 +128,12 @@ IPAddress getHostIP() {
 }
 
 void startSTAMode() {
-    ts.remove(WIFI_SCAN);
-
     String ssid, passwd;
     config.network()->getSSID(WIFI_STA, ssid);
     config.network()->getPasswd(WIFI_STA, passwd);
-
     pm.info("STA Mode: " + ssid);
+
+    ts.remove(WIFI_SCAN);
 
     WiFi.mode(WIFI_STA);
     if (ssid.isEmpty() && passwd.isEmpty()) {
@@ -138,18 +143,15 @@ void startSTAMode() {
             pm.error("on begin");
         }
     }
-    WiFi.setAutoReconnect(true);
 };
 
 bool startAPMode() {
-    WiFi.setAutoReconnect(false);
-
-    led.set(LedStatus::ON);
-
     String ssid, passwd;
     config.network()->getSSID(WIFI_AP, ssid);
     config.network()->getPasswd(WIFI_AP, passwd);
     pm.info("AP Mode: " + ssid);
+
+    led.set(LedStatus::ON);
 
     WiFi.mode(WIFI_AP);
     WiFi.softAP(ssid.c_str(), passwd.c_str());
